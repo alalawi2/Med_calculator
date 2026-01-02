@@ -1,3 +1,4 @@
+import { expandedMedications } from "./medications-expanded";
 export interface Calculator {
   id: string;
   name: string;
@@ -1458,6 +1459,7 @@ export const BISAP: Calculator = {
 
 // MEDICATION DOSING
 export const medications: MedicationDose[] = [
+  ...expandedMedications,
   {
     id: "vancomycin",
     name: "Vancomycin",
@@ -1548,6 +1550,8 @@ export const medications: MedicationDose[] = [
   },
 ];
 
+import { expansionCalculators } from "./calculators-expansion";
+
 export const allCalculators: Calculator[] = [
   qSOFA,
   SOFA,
@@ -1567,6 +1571,7 @@ export const allCalculators: Calculator[] = [
   MELD,
   Glasgow_Blatchford,
   BISAP,
+  ...expansionCalculators,
 ];
 
 export const categories = [
