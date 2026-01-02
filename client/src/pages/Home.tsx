@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { Sidebar } from "@/components/Sidebar";
 import { CalculatorView } from "@/components/CalculatorView";
+import { MedicationDosing } from "@/components/MedicationDosing";
 import { calculators } from "@/lib/calculators";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function Home() {
   const [selectedCalculatorId, setSelectedCalculatorId] = useState("qsofa");
@@ -13,6 +15,7 @@ export default function Home() {
     const stored = localStorage.getItem("medresearch_favorites");
     return stored ? JSON.parse(stored) : [];
   });
+  const [activeTab, setActiveTab] = useState("calculators");
 
   // Update recently used when calculator is selected
   useEffect(() => {
@@ -36,13 +39,15 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 flex">
       {/* Sidebar */}
-      <Sidebar
-        selectedCalculatorId={selectedCalculatorId}
-        onSelectCalculator={setSelectedCalculatorId}
-        recentlyUsed={recentlyUsed}
-        favorites={favorites}
-        onToggleFavorite={toggleFavorite}
-      />
+      {activeTab === "calculators" && (
+        <Sidebar
+          selectedCalculatorId={selectedCalculatorId}
+          onSelectCalculator={setSelectedCalculatorId}
+          recentlyUsed={recentlyUsed}
+          favorites={favorites}
+          onToggleFavorite={toggleFavorite}
+        />
+      )}
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
@@ -55,21 +60,39 @@ export default function Home() {
                   MedResearch Academy
                 </p>
                 <h1 className="text-3xl font-bold text-slate-900 mt-1">Clinical Decision Support</h1>
-                <p className="text-sm text-slate-600 mt-1">Evidence-based calculators for on-call physicians</p>
+                <p className="text-sm text-slate-600 mt-1">Evidence-based calculators and medication dosing for on-call physicians</p>
               </div>
             </div>
           </div>
         </header>
 
+        {/* Tabs */}
+        <div className="border-b border-slate-200 bg-white px-8">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="bg-transparent border-b border-slate-200 rounded-none w-full justify-start">
+              <TabsTrigger value="calculators" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600">
+                Clinical Calculators
+              </TabsTrigger>
+              <TabsTrigger value="medications" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600">
+                Medication Dosing
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+
         {/* Content */}
         <main className="flex-1 overflow-auto">
           <div className="px-8 py-8 max-w-4xl">
-            {selectedCalculator ? (
-              <CalculatorView calculator={selectedCalculator} />
+            {activeTab === "calculators" ? (
+              selectedCalculator ? (
+                <CalculatorView calculator={selectedCalculator} />
+              ) : (
+                <div className="text-center py-12">
+                  <p className="text-slate-600">Select a calculator from the sidebar to begin</p>
+                </div>
+              )
             ) : (
-              <div className="text-center py-12">
-                <p className="text-slate-600">Select a calculator from the sidebar to begin</p>
-              </div>
+              <MedicationDosing />
             )}
           </div>
         </main>
