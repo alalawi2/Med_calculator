@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { Sidebar } from "@/components/Sidebar";
-import { CalculatorView } from "@/components/CalculatorView";
+import { CalculatorViewEnhanced } from "@/components/CalculatorViewEnhanced";
 import { MedicationDosing } from "@/components/MedicationDosing";
 import { calculators } from "@/lib/calculators";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { executeCalculator } from "@/lib/calculator-wrapper";
+import { CalculationResult } from "@/lib/calculator-engine";
 
 export default function Home() {
   const [selectedCalculatorId, setSelectedCalculatorId] = useState("qsofa");
@@ -35,6 +37,11 @@ export default function Home() {
   };
 
   const selectedCalculator = calculators.find((c) => c.id === selectedCalculatorId);
+
+  const handleCalculate = (inputs: Record<string, any>): CalculationResult | null => {
+    if (!selectedCalculator) return null;
+    return executeCalculator(selectedCalculator, inputs);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 flex">
@@ -82,10 +89,13 @@ export default function Home() {
 
         {/* Content */}
         <main className="flex-1 overflow-auto">
-          <div className="px-8 py-8 max-w-4xl">
+          <div className="px-8 py-8 max-w-5xl">
             {activeTab === "calculators" ? (
               selectedCalculator ? (
-                <CalculatorView calculator={selectedCalculator} />
+                <CalculatorViewEnhanced
+                  calculator={selectedCalculator}
+                  onCalculate={handleCalculate}
+                />
               ) : (
                 <div className="text-center py-12">
                   <p className="text-slate-600">Select a calculator from the sidebar to begin</p>
