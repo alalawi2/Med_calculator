@@ -87,7 +87,7 @@ export function Sidebar({
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span>{calc.shortName}</span>
+                      <span>{calc.name}</span>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -129,7 +129,7 @@ export function Sidebar({
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span>{calc.shortName}</span>
+                      <span>{calc.name}</span>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -197,7 +197,7 @@ export function Sidebar({
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         {categoryIcons[calc.category]}
-                        <span className="font-medium">{calc.shortName}</span>
+                        <span className="font-medium">{calc.name}</span>
                       </div>
                       <p className="text-xs text-slate-500 mt-0.5">{calc.description}</p>
                     </div>

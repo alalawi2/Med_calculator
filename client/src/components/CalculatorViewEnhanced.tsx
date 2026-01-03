@@ -41,14 +41,14 @@ export function CalculatorViewEnhanced({
     setResult(calculationResult);
   };
 
-  const getRiskColor = (risk: string) => {
+  const getRiskColor = (risk: string | undefined) => {
     if (!risk) return "border-slate-200";
     if (risk.toLowerCase().includes("low")) return "border-green-500";
     if (risk.toLowerCase().includes("high") || risk.toLowerCase().includes("critical")) return "border-red-500";
     return "border-yellow-500";
   };
 
-  const getRiskBgColor = (risk: string) => {
+  const getRiskBgColor = (risk: string | undefined) => {
     if (!risk) return "bg-slate-50";
     if (risk.toLowerCase().includes("low")) return "bg-green-50";
     if (risk.toLowerCase().includes("high") || risk.toLowerCase().includes("critical")) return "bg-red-50";
@@ -141,37 +141,58 @@ export function CalculatorViewEnhanced({
 
       {/* Results Section */}
       {result && (
-        <Card className={`border-2 ${getRiskColor(result.risk)}`}>
-          <CardHeader className={getRiskBgColor(result.risk)}>
+        <Card className={`border-2 ${getRiskColor(result.riskLevel)}`}>
+          <CardHeader className={getRiskBgColor(result.riskLevel)}>
             <CardTitle className="flex items-center gap-2">
-              {result.risk?.toLowerCase().includes("low") && <CheckCircle2 className="w-5 h-5 text-green-600" />}
-              {result.risk?.toLowerCase().includes("high") && <AlertTriangle className="w-5 h-5 text-red-600" />}
-              {result.risk?.toLowerCase().includes("moderate") && <AlertCircle className="w-5 h-5 text-yellow-600" />}
-              Score: {result.score}
+              {result.riskLevel?.toLowerCase().includes("low") && (
+                <CheckCircle2 className="w-5 h-5 text-green-600" />
+              )}
+              {result.riskLevel?.toLowerCase().includes("high") && (
+                <AlertTriangle className="w-5 h-5 text-red-600" />
+              )}
+              {result.riskLevel?.toLowerCase().includes("critical") && (
+                <AlertTriangle className="w-5 h-5 text-red-700" />
+              )}
+              {result.riskLevel?.toLowerCase().includes("medium") && (
+                <AlertCircle className="w-5 h-5 text-yellow-600" />
+              )}
+              Score: {result.score} / {result.maxScore}
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-6 space-y-4">
             <div>
-              <p className="text-sm font-semibold">Risk Level: {result.risk}</p>
+              <p className="text-sm font-semibold">
+                Risk Level: <span className="uppercase">{result.riskLevel}</span> ({result.riskPercentage}%)
+              </p>
               <p className="text-sm text-slate-600 mt-1">{result.interpretation}</p>
             </div>
 
-            {result.recommendations && (
+            {result.recommendations && result.recommendations.length > 0 && (
               <Alert>
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>
                   <p className="font-semibold mb-2">Recommended Actions:</p>
                   <ul className="list-disc list-inside space-y-1 text-sm">
-                    {Array.isArray(result.recommendations) ? (
-                      result.recommendations.map((rec: string, idx: number) => (
-                        <li key={idx}>{rec}</li>
-                      ))
-                    ) : (
-                      <li>{result.recommendations}</li>
-                    )}
+                    {result.recommendations.map((rec: string, idx: number) => (
+                      <li key={idx}>{rec}</li>
+                    ))}
                   </ul>
                 </AlertDescription>
               </Alert>
+            )}
+
+            {result.managementPathway && result.managementPathway.length > 0 && (
+              <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <p className="font-semibold text-sm mb-2">Management Pathway:</p>
+                <div className="space-y-2">
+                  {result.managementPathway.map((step, idx) => (
+                    <div key={idx} className="text-sm">
+                      <p className="font-medium text-slate-900">{step.action}</p>
+                      <p className="text-xs text-slate-600">{step.rationale}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
 
             <Button onClick={() => setFeedbackOpen(true)} variant="outline" className="w-full">
@@ -211,12 +232,14 @@ export function CalculatorViewEnhanced({
 
       {/* Feedback Modal */}
       <FeedbackModal
-        isOpen={feedbackOpen}
-        onClose={() => setFeedbackOpen(false)}
-        calculatorId={calculator.id}
+        open={feedbackOpen}
+        onOpenChange={setFeedbackOpen}
         calculatorName={calculator.name}
         onSubmit={(feedback) => {
-          submitFeedback(feedback);
+          submitFeedback({
+            calculatorId: calculator.id,
+            ...feedback,
+          });
           setFeedbackOpen(false);
         }}
       />
