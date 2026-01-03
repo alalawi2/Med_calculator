@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { Sidebar } from "@/components/Sidebar";
 import { CalculatorViewEnhanced } from "@/components/CalculatorViewEnhanced";
 import { MedicationDosing } from "@/components/MedicationDosing";
-import { calculators } from "@/lib/calculators";
+import { SearchBar } from "@/components/SearchBar";
+import { calculators, medications } from "@/lib/calculators";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { executeCalculator } from "@/lib/calculator-wrapper";
 import { CalculationResult } from "@/lib/calculator-engine";
@@ -61,7 +62,7 @@ export default function Home() {
         {/* Header */}
         <header className="border-b border-slate-200 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
           <div className="px-8 py-6">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide">
                   MedResearch Academy
@@ -70,6 +71,12 @@ export default function Home() {
                 <p className="text-sm text-slate-600 mt-1">Evidence-based calculators and medication dosing for on-call physicians</p>
               </div>
             </div>
+            <SearchBar
+              calculators={calculators}
+              medications={medications}
+              onSelectCalculator={setSelectedCalculatorId}
+              onSelectMedication={() => setActiveTab("medications")}
+            />
           </div>
         </header>
 
