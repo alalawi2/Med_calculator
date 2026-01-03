@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { medications } from "@/lib/calculators-extended";
+import { medications } from "@/lib/calculators";
 import { Search } from "lucide-react";
 
 export function MedicationDosing() {

@@ -416,3 +416,7 @@ export const expandedMedications: MedicationDose[] = [
     ],
   },
 ];
+
+
+
+export { expandedMedications as medications };
