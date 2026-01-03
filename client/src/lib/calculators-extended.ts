@@ -53,7 +53,7 @@ export const allCalculators: Calculator[] = [
         { min: 2, max: 3, risk: "High", color: "red", action: "Activate sepsis protocol" },
       ],
     },
-    clinicalUse: ["Sepsis identification", "Mortality prediction", "ICU admission criteria"],
+    clinicalUses: ["Sepsis identification", "Mortality prediction", "ICU admission criteria"],
     references: [
       {
         authors: "Singer M, et al.",

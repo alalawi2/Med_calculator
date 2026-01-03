@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertTriangle, BookOpen, CheckCircle2, AlertCircle, TrendingUp, Zap } from "lucide-react";
+import { AlertTriangle, BookOpen, CheckCircle2, AlertCircle } from "lucide-react";
 import { Calculator } from "@/lib/calculators";
 import { CalculationResult } from "@/lib/calculator-engine";
 import { FeedbackModal } from "./FeedbackModal";
@@ -24,94 +24,53 @@ export function CalculatorViewEnhanced({
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const { submitFeedback } = useFeedback();
 
+  if (!calculator) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-slate-600">No calculator selected</p>
+      </div>
+    );
+  }
+
   const handleInputChange = (id: string, value: any) => {
     setInputs((prev) => ({ ...prev, [id]: value }));
   };
 
   const handleCalculate = () => {
     const calculationResult = onCalculate(inputs);
-    if (calculationResult) {
-      setResult(calculationResult);
-    }
+    setResult(calculationResult);
   };
 
-  const handleSubmitFeedback = (data: any) => {
-    submitFeedback({
-      calculatorId: calculator.id,
-      ...data,
-    });
+  const getRiskColor = (risk: string) => {
+    if (!risk) return "border-slate-200";
+    if (risk.toLowerCase().includes("low")) return "border-green-500";
+    if (risk.toLowerCase().includes("high") || risk.toLowerCase().includes("critical")) return "border-red-500";
+    return "border-yellow-500";
   };
 
-  const isComplete = calculator.inputs.every((input) => inputs[input.id] !== undefined);
-
-  const getRiskColor = (level: string) => {
-    switch (level) {
-      case "critical":
-        return "bg-red-50 border-red-200 text-red-900";
-      case "high":
-        return "bg-orange-50 border-orange-200 text-orange-900";
-      case "medium":
-        return "bg-yellow-50 border-yellow-200 text-yellow-900";
-      case "low":
-        return "bg-green-50 border-green-200 text-green-900";
-      default:
-        return "bg-slate-50 border-slate-200 text-slate-900";
-    }
-  };
-
-  const getRiskBadgeColor = (level: string) => {
-    switch (level) {
-      case "critical":
-        return "destructive";
-      case "high":
-        return "secondary";
-      case "medium":
-        return "outline";
-      case "low":
-        return "default";
-      default:
-        return "outline";
-    }
-  };
-
-  const getFrequencyBadge = (freq: string) => {
-    switch (freq) {
-      case "critical":
-        return "destructive";
-      case "high":
-        return "secondary";
-      default:
-        return "default";
-    }
-  };
-
-  const getFrequencyColor = (freq: string) => {
-    switch (freq) {
-      case "critical":
-        return "bg-red-50 border-red-200";
-      case "high":
-        return "bg-orange-50 border-orange-200";
-      default:
-        return "bg-blue-50 border-blue-200";
-    }
+  const getRiskBgColor = (risk: string) => {
+    if (!risk) return "bg-slate-50";
+    if (risk.toLowerCase().includes("low")) return "bg-green-50";
+    if (risk.toLowerCase().includes("high") || risk.toLowerCase().includes("critical")) return "bg-red-50";
+    return "bg-yellow-50";
   };
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <Card className={`border-2 ${getFrequencyColor(calculator.frequency)}`}>
+      <Card className="border-2 border-blue-200">
         <CardHeader>
           <div className="flex items-start justify-between">
             <div>
               <CardTitle className="text-2xl">{calculator.name}</CardTitle>
               <CardDescription className="mt-2">{calculator.description}</CardDescription>
             </div>
-            <Badge variant={getFrequencyBadge(calculator.frequency) as any}>
-              {calculator.frequency.toUpperCase()}
+            <Badge variant="outline" className="text-xs">
+              {calculator.category}
             </Badge>
           </div>
           <div className="mt-4 flex flex-wrap gap-2">
-            {calculator.useCases.map((useCase) => (
+            {calculator.clinicalUses?.map((useCase: string) => (
               <Badge key={useCase} variant="outline" className="text-xs">
                 {useCase}
               </Badge>
@@ -123,79 +82,58 @@ export function CalculatorViewEnhanced({
       {/* Input Section */}
       <Card>
         <CardHeader>
-          <CardTitle>Patient Assessment</CardTitle>
-          <CardDescription>Enter patient parameters to calculate score</CardDescription>
+          <CardTitle className="text-lg">Patient Information</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
-          {calculator.inputs.map((input) => (
-            <div key={input.id} className="space-y-3">
-              <div className="flex items-start justify-between">
-                <div>
-                  <label className="text-sm font-semibold text-slate-900">{input.label}</label>
-                  <p className="text-xs text-slate-600 mt-1">{input.description}</p>
-                  {input.normal && (
-                    <p className="text-xs text-slate-500 mt-1">Normal: {input.normal}</p>
-                  )}
-                </div>
-              </div>
-
-              {input.type === "boolean" && (
+        <CardContent className="space-y-4">
+          {calculator.inputs?.map((input: any) => (
+            <div key={input.id} className="space-y-2">
+              <label className="text-sm font-medium">{input.label}</label>
+              <p className="text-xs text-slate-600">{input.description}</p>
+              {input.type === "boolean" ? (
                 <div className="flex gap-2">
                   <Button
-                    variant={inputs[input.id] === false ? "default" : "outline"}
-                    onClick={() => handleInputChange(input.id, false)}
-                    className="flex-1"
-                  >
-                    No
-                  </Button>
-                  <Button
-                    variant={inputs[input.id] === true ? "destructive" : "outline"}
+                    variant={inputs[input.id] === true ? "default" : "outline"}
                     onClick={() => handleInputChange(input.id, true)}
-                    className="flex-1"
+                    className="w-20"
                   >
                     Yes
                   </Button>
+                  <Button
+                    variant={inputs[input.id] === false ? "default" : "outline"}
+                    onClick={() => handleInputChange(input.id, false)}
+                    className="w-20"
+                  >
+                    No
+                  </Button>
                 </div>
-              )}
-
-              {input.type === "number" && (
-                <div className="flex gap-2">
-                  <input
-                    type="number"
-                    value={inputs[input.id] ?? ""}
-                    onChange={(e) =>
-                      handleInputChange(input.id, e.target.value ? parseFloat(e.target.value) : null)
-                    }
-                    placeholder={`Enter ${input.label.toLowerCase()}`}
-                    className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  {input.unit && (
-                    <div className="text-xs text-slate-600 flex items-center px-2">
-                      {inputs[input.id] ? `${inputs[input.id]} ${input.unit}` : "—"}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {input.type === "select" && (
+              ) : input.type === "number" ? (
+                <input
+                  type="number"
+                  min={input.min}
+                  max={input.max}
+                  value={inputs[input.id] ?? ""}
+                  onChange={(e) => handleInputChange(input.id, parseFloat(e.target.value))}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-md"
+                  placeholder={`Enter ${input.label.toLowerCase()}`}
+                />
+              ) : input.type === "select" ? (
                 <select
                   value={inputs[input.id] ?? ""}
-                  onChange={(e) => handleInputChange(input.id, e.target.value ? parseInt(e.target.value) : null)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  onChange={(e) => handleInputChange(input.id, e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-md"
                 >
-                  <option value="">Select option...</option>
-                  {input.options?.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
+                  <option value="">Select an option</option>
+                  {input.options?.map((option: string, idx: number) => (
+                    <option key={idx} value={option}>
+                      {option}
                     </option>
                   ))}
                 </select>
-              )}
+              ) : null}
             </div>
           ))}
 
-          <Button onClick={handleCalculate} disabled={!isComplete} className="w-full mt-6">
-            <Zap className="w-4 h-4 mr-2" />
+          <Button onClick={handleCalculate} className="w-full mt-6" size="lg">
             Calculate Score
           </Button>
         </CardContent>
@@ -203,193 +141,84 @@ export function CalculatorViewEnhanced({
 
       {/* Results Section */}
       {result && (
-        <>
-          {/* Score Display */}
-          <Card className={`border-2 ${getRiskColor(result.riskLevel)}`}>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-lg">Calculation Result</CardTitle>
-                </div>
-                <Badge variant={getRiskBadgeColor(result.riskLevel) as any}>
-                  {result.riskLevel.toUpperCase()}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 bg-white/50 rounded">
-                  <p className="text-xs text-slate-600 uppercase font-semibold">Score</p>
-                  <p className="text-3xl font-bold text-slate-900 mt-1">
-                    {result.score}/{result.maxScore}
-                  </p>
-                </div>
-                <div className="p-4 bg-white/50 rounded">
-                  <p className="text-xs text-slate-600 uppercase font-semibold">Risk</p>
-                  <p className="text-3xl font-bold text-slate-900 mt-1">{result.riskPercentage}%</p>
-                </div>
-              </div>
+        <Card className={`border-2 ${getRiskColor(result.risk)}`}>
+          <CardHeader className={getRiskBgColor(result.risk)}>
+            <CardTitle className="flex items-center gap-2">
+              {result.risk?.toLowerCase().includes("low") && <CheckCircle2 className="w-5 h-5 text-green-600" />}
+              {result.risk?.toLowerCase().includes("high") && <AlertTriangle className="w-5 h-5 text-red-600" />}
+              {result.risk?.toLowerCase().includes("moderate") && <AlertCircle className="w-5 h-5 text-yellow-600" />}
+              Score: {result.score}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-6 space-y-4">
+            <div>
+              <p className="text-sm font-semibold">Risk Level: {result.risk}</p>
+              <p className="text-sm text-slate-600 mt-1">{result.interpretation}</p>
+            </div>
 
-              <div className="p-4 bg-white/50 rounded">
-                <p className="font-semibold text-slate-900">{result.interpretation}</p>
-              </div>
+            {result.recommendations && (
+              <Alert>
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  <p className="font-semibold mb-2">Recommended Actions:</p>
+                  <ul className="list-disc list-inside space-y-1 text-sm">
+                    {Array.isArray(result.recommendations) ? (
+                      result.recommendations.map((rec: string, idx: number) => (
+                        <li key={idx}>{rec}</li>
+                      ))
+                    ) : (
+                      <li>{result.recommendations}</li>
+                    )}
+                  </ul>
+                </AlertDescription>
+              </Alert>
+            )}
 
-              {/* Recommendations */}
-              <div className="space-y-2">
-                <p className="text-sm font-semibold text-slate-900">Recommendations:</p>
-                {result.recommendations.map((rec, idx) => (
-                  <div key={idx} className="flex gap-2 text-sm">
-                    <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-slate-700">{rec}</span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Management Pathway */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <TrendingUp className="w-5 h-5" />
-                Management Pathway
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {result.managementPathway.map((step, idx) => (
-                <div
-                  key={idx}
-                  className={`p-4 rounded border-l-4 ${
-                    step.priority === "immediate"
-                      ? "border-l-red-500 bg-red-50"
-                      : step.priority === "urgent"
-                        ? "border-l-orange-500 bg-orange-50"
-                        : "border-l-blue-500 bg-blue-50"
-                  }`}
-                >
-                  <div className="flex items-start gap-3">
-                    <Badge
-                      variant={
-                        step.priority === "immediate"
-                          ? "destructive"
-                          : step.priority === "urgent"
-                            ? "secondary"
-                            : "default"
-                      }
-                      className="text-xs"
-                    >
-                      {step.priority.toUpperCase()}
-                    </Badge>
-                    <div className="flex-1">
-                      <p className="font-semibold text-slate-900">{step.action}</p>
-                      <p className="text-sm text-slate-700 mt-1">{step.rationale}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          {/* Feedback Button */}
-          <Button
-            onClick={() => setFeedbackOpen(true)}
-            variant="outline"
-            className="w-full"
-          >
-            Share Feedback
-          </Button>
-        </>
+            <Button onClick={() => setFeedbackOpen(true)} variant="outline" className="w-full">
+              Provide Feedback
+            </Button>
+          </CardContent>
+        </Card>
       )}
 
-      {/* Tabs for Additional Info */}
-      <Tabs defaultValue="references" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="references">References</TabsTrigger>
-          <TabsTrigger value="details">Details</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="references" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Clinical Evidence</CardTitle>
-              <CardDescription>Highly-cited research and clinical guidelines</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {calculator.references.map((ref, idx) => (
-                <div key={idx} className="p-4 bg-slate-50 rounded border border-slate-200">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <p className="font-semibold text-slate-900">
-                        {ref.authors} ({ref.year})
-                      </p>
-                      <p className="text-sm text-slate-700 mt-2">{ref.title}</p>
-                      <p className="text-xs text-slate-600 mt-2">
-                        {ref.journal}. {ref.volume}:{ref.pages}
-                      </p>
-                      <p className="text-xs text-slate-600 mt-1">
-                        <strong>Impact Factor:</strong> {ref.impactFactor} |{" "}
-                        <strong>Citations:</strong> {ref.citations}+
-                      </p>
-                    </div>
-                    {ref.badge && (
-                      <Badge
-                        className={`ml-2 ${
-                          ref.badge === "most-cited"
-                            ? "bg-blue-600"
-                            : ref.badge === "highly-cited"
-                              ? "bg-slate-600"
-                              : "bg-slate-500"
-                        }`}
-                      >
-                        {ref.badge === "most-cited"
-                          ? "Most Cited"
-                          : ref.badge === "highly-cited"
-                            ? "Highly Cited"
-                            : "Cited"}
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="details" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Calculator Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <p className="text-sm font-semibold text-slate-900">Category</p>
-                <p className="text-sm text-slate-700 mt-1">{calculator.category}</p>
+      {/* References Section */}
+      {calculator.references && calculator.references.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <BookOpen className="w-5 h-5" />
+              Evidence & References
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {calculator.references.map((ref: any, idx: number) => (
+              <div key={idx} className="text-sm border-l-2 border-blue-300 pl-3 py-2">
+                <p className="font-semibold">{ref.authors} ({ref.year})</p>
+                <p className="text-slate-700">{ref.title}</p>
+                <p className="text-xs text-slate-600">
+                  {ref.journal} {ref.volume && `Vol. ${ref.volume}`} {ref.pages && `pp. ${ref.pages}`}
+                </p>
+                {ref.citations && (
+                  <p className="text-xs text-blue-600 mt-1">
+                    Citations: {ref.citations} | Impact Factor: {ref.impactFactor}
+                  </p>
+                )}
               </div>
-              <div>
-                <p className="text-sm font-semibold text-slate-900">Frequency</p>
-                <Badge className="mt-1">{calculator.frequency}</Badge>
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-slate-900">Use Cases</p>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {calculator.useCases.map((useCase) => (
-                    <Badge key={useCase} variant="outline">
-                      {useCase}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+            ))}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Feedback Modal */}
       <FeedbackModal
-        open={feedbackOpen}
-        onOpenChange={setFeedbackOpen}
+        isOpen={feedbackOpen}
+        onClose={() => setFeedbackOpen(false)}
+        calculatorId={calculator.id}
         calculatorName={calculator.name}
-        onSubmit={handleSubmitFeedback}
+        onSubmit={(feedback) => {
+          submitFeedback(feedback);
+          setFeedbackOpen(false);
+        }}
       />
     </div>
   );
