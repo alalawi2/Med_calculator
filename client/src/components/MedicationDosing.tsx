@@ -116,7 +116,7 @@ export function MedicationDosing() {
                   <CardTitle className="text-lg">Clinical Evidence</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {currentMed.references.map((ref, idx) => (
+                  {currentMed.references.map((ref: any, idx: number) => (
                     <div key={idx} className="p-4 bg-slate-50 rounded border border-slate-200">
                       <p className="font-semibold text-slate-900">
                         {ref.authors} ({ref.year})

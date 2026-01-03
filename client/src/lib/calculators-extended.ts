@@ -1,11 +1,12 @@
 export interface Calculator {
-id: string;
+ id: string;
  name: string;
  category: string;
- subcategory: string;
+ categories?: string[];
+ subcategory?: string;
  description: string;
  inputs: any[];
- scoring: any;
+ scoring?: any;
  clinicalUses: string[];
  references: any[];
 }

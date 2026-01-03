@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Search, Heart, Zap, Wind, AlertTriangle, Clock, Star } from "lucide-react";
-import { calculators, categories } from "@/lib/calculators";
+import { calculators } from "@/lib/calculators";
 
 interface SidebarProps {
   selectedCalculatorId: string;
@@ -160,7 +160,7 @@ export function Sidebar({
               >
                 All Calculators
               </button>
-              {categories.map((category) => (
+              {Array.from(new Set(calculators.flatMap((calc) => calc.categories || [calc.category]))).sort().map((category) => (
                 <button
                   key={category}
                   onClick={() => setActiveCategory(category)}
