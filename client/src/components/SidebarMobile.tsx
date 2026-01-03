@@ -63,7 +63,7 @@ export default function SidebarMobile({
         >
           {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </Button>
-      </div>
+      </button>
 
       {/* Mobile Sidebar Overlay */}
       {isOpen && (
@@ -89,7 +89,7 @@ export default function SidebarMobile({
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-8 text-sm"
             />
-          </div>
+          </button>
 
           {/* Tabs */}
           <div className="flex gap-2 border-b border-border">
@@ -127,7 +127,7 @@ export default function SidebarMobile({
                 ⭐
               </button>
             )}
-          </div>
+          </button>
 
           {/* Calculator List */}
           <div className="space-y-2">
@@ -157,7 +157,7 @@ export default function SidebarMobile({
                       <p className="text-xs text-muted-foreground truncate">
                         {calc.categories?.[0] || calc.category}
                       </p>
-                    </div>
+                    </button>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -167,13 +167,13 @@ export default function SidebarMobile({
                     >
                       {favorites.includes(calc.id) ? "⭐" : "☆"}
                     </button>
-                  </div>
-                </div>
+                  </button>
+                </button>
               ))
             )}
-          </div>
-        </div>
-      </div>
+          </button>
+        </button>
+      </button>
 
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex md:w-64 md:flex-col md:border-r md:border-border md:bg-muted/30 md:overflow-y-auto">
@@ -187,7 +187,7 @@ export default function SidebarMobile({
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-8"
             />
-          </div>
+          </button>
 
           {/* Tabs */}
           <div className="flex gap-2 border-b border-border">
@@ -225,7 +225,7 @@ export default function SidebarMobile({
                 ⭐
               </button>
             )}
-          </div>
+          </button>
 
           {/* Calculator List */}
           <div className="space-y-2">
@@ -252,7 +252,7 @@ export default function SidebarMobile({
                       <p className="text-xs text-muted-foreground">
                         {calc.categories?.[0] || calc.category}
                       </p>
-                    </div>
+                    </button>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -262,12 +262,12 @@ export default function SidebarMobile({
                     >
                       {favorites.includes(calc.id) ? "⭐" : "☆"}
                     </button>
-                  </div>
-                </div>
+                  </button>
+                </button>
               ))
             )}
-          </div>
-        </div>
+          </button>
+        </button>
       </aside>
     </>
   );
