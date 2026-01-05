@@ -1,7 +1,7 @@
 export interface Calculator {
  id: string;
  name: string;
- category: string;
+ category?: string;
  categories?: string[];
  subcategory?: string;
  description: string;

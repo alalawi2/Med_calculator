@@ -160,7 +160,7 @@ export function Sidebar({
               >
                 All Calculators
               </button>
-              {Array.from(new Set(calculators.flatMap((calc) => calc.categories || [calc.category]))).sort().map((category) => (
+              {Array.from(new Set(calculators.flatMap((calc) => calc.categories || []))).sort().map((category) => (
                 <button
                   key={category}
                   onClick={() => setActiveCategory(category)}
@@ -196,7 +196,7 @@ export function Sidebar({
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        {categoryIcons[calc.category]}
+                        {calc.categories && calc.categories[0] ? categoryIcons[calc.categories[0]] : null}
                         <span className="font-medium">{calc.name}</span>
                       </div>
                       <p className="text-xs text-slate-500 mt-0.5">{calc.description}</p>
