@@ -114,16 +114,16 @@ export function CalculatorFormEnhanced({
   const progressPercent = (filledCount / inputs.length) * 100;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 max-w-4xl">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border border-blue-200">
-        <div className="flex items-start gap-4">
-          <div className="p-3 bg-blue-100 rounded-lg">
-            <Calculator className="w-6 h-6 text-blue-600" />
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-8 rounded-lg border border-blue-200">
+        <div className="flex items-start gap-6">
+          <div className="p-3 bg-blue-100 rounded-lg flex-shrink-0">
+            <Calculator className="w-7 h-7 text-blue-600" />
           </div>
-          <div className="flex-1">
-            <h2 className="text-2xl font-bold text-slate-900">{calculatorName}</h2>
-            <p className="text-slate-600 mt-1">{calculatorDescription}</p>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-3xl font-bold text-slate-900 mb-2">{calculatorName}</h2>
+            <p className="text-slate-600 text-base leading-relaxed">{calculatorDescription}</p>
           </div>
         </div>
       </div>
@@ -145,8 +145,8 @@ export function CalculatorFormEnhanced({
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+      <form onSubmit={handleSubmit} className="space-y-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {inputs.map((input) => {
             const hasError = errors[input.id];
             const isTouched = touched[input.id];
@@ -154,37 +154,37 @@ export function CalculatorFormEnhanced({
             const isValid = value !== undefined && value !== null && value !== "" && !hasError;
 
             return (
-              <div key={input.id} className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="block text-sm font-semibold text-slate-900">
+              <div key={input.id} className="space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <label className="block text-base font-semibold text-slate-900">
                     {input.label}
                   </label>
                   {isTouched && (
-                    <div>
+                    <div className="flex-shrink-0">
                       {isValid ? (
-                        <CheckCircle2 className="w-4 h-4 text-green-500" />
+                        <CheckCircle2 className="w-5 h-5 text-green-500" />
                       ) : hasError ? (
-                        <AlertCircle className="w-4 h-4 text-red-500" />
+                        <AlertCircle className="w-5 h-5 text-red-500" />
                       ) : null}
                     </div>
                   )}
                 </div>
 
                 {input.description && (
-                  <p className="text-xs text-slate-500 flex items-center gap-1">
-                    <Info className="w-3 h-3" />
-                    {input.description}
+                  <p className="text-sm text-slate-600 flex items-start gap-2">
+                    <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>{input.description}</span>
                   </p>
                 )}
 
                 {input.type === "boolean" && (
-                  <div className="flex gap-2">
+                  <div className="flex gap-3">
                     <Button
                       type="button"
                       onClick={() => handleInputChange(input.id, true)}
                       onBlur={() => handleBlur(input.id)}
                       variant={value === true ? "default" : "outline"}
-                      className="flex-1"
+                      className="flex-1 h-10 text-base"
                     >
                       Yes
                     </Button>
@@ -193,7 +193,7 @@ export function CalculatorFormEnhanced({
                       onClick={() => handleInputChange(input.id, false)}
                       onBlur={() => handleBlur(input.id)}
                       variant={value === false ? "default" : "outline"}
-                      className="flex-1"
+                      className="flex-1 h-10 text-base"
                     >
                       No
                     </Button>
@@ -209,7 +209,7 @@ export function CalculatorFormEnhanced({
                     onChange={(e) => handleInputChange(input.id, e.target.value)}
                     onBlur={() => handleBlur(input.id)}
                     placeholder={`${input.min || 0} - ${input.max || "∞"}`}
-                    className={`h-10 w-full ${
+                    className={`h-11 w-full text-base ${
                       hasError && isTouched
                         ? "border-red-500 focus:ring-red-500"
                         : isValid
@@ -224,7 +224,7 @@ export function CalculatorFormEnhanced({
                     value={value || ""}
                     onChange={(e) => handleInputChange(input.id, e.target.value)}
                     onBlur={() => handleBlur(input.id)}
-                    className={`w-full h-10 px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 ${
+                    className={`w-full h-11 px-3 py-2 border rounded-md text-base focus:outline-none focus:ring-2 ${
                       hasError && isTouched
                         ? "border-red-500 focus:ring-red-500"
                         : isValid
@@ -242,9 +242,9 @@ export function CalculatorFormEnhanced({
                 )}
 
                 {hasError && isTouched && (
-                  <p className="text-xs text-red-500 flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3" />
-                    {hasError}
+                  <p className="text-sm text-red-600 flex items-start gap-2 mt-2">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>{hasError}</span>
                   </p>
                 )}
               </div>
