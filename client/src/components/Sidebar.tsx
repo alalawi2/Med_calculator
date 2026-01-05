@@ -7,7 +7,7 @@ import { Search, Heart, AlertTriangle, Clock, Star, Stethoscope } from "lucide-r
 import { calculators } from "@/lib/calculators";
 
 interface SidebarProps {
-  selectedCalculatorId: string | null;
+  selectedCalculatorId: string;
   onSelectCalculator: (id: string) => void;
   recentlyUsed: string[];
   favorites: string[];
