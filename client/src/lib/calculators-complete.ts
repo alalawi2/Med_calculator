@@ -12,7 +12,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "qsofa",
     name: "qSOFA Score",
-    categories: ["Critical Care", "Infectious Disease", "Emergency Medicine"],
+    categories: ["Intensive Care", "Infectious Disease"],
     description: "Identifies high-risk patients for sepsis-related mortality outside the ICU",
     clinicalUses: ["Sepsis identification", "Mortality prediction", "ICU admission criteria"],
     inputs: [
@@ -66,7 +66,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "sofa",
     name: "SOFA Score",
-    categories: ["Critical Care", "Intensive Care", "Emergency Medicine"],
+    categories: ["Intensive Care"],
     description: "Sequential Organ Failure Assessment - Predicts ICU mortality and organ dysfunction",
     clinicalUses: ["ICU mortality prediction", "Organ dysfunction assessment", "Treatment response"],
     inputs: [
@@ -134,7 +134,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "apache2",
     name: "APACHE II Score",
-    categories: ["Critical Care", "Intensive Care"],
+    categories: ["Intensive Care"],
     description: "Acute Physiology and Chronic Health Evaluation - ICU mortality prediction",
     clinicalUses: ["ICU severity assessment", "Mortality prediction", "Treatment outcomes"],
     inputs: [
@@ -243,7 +243,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "heart",
     name: "HEART Score",
-    categories: ["Cardiology", "Emergency Medicine"],
+    categories: ["Cardiology", "Intensive Care"],
     description: "Chest pain risk assessment - Identifies low-risk patients safe for discharge",
     clinicalUses: ["ACS risk assessment", "Admission decisions", "Discharge safety"],
     inputs: [
@@ -412,7 +412,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "timi",
     name: "TIMI Risk Score",
-    categories: ["Cardiology", "Emergency Medicine"],
+    categories: ["Cardiology", "Intensive Care"],
     description: "Acute Coronary Syndrome risk - Predicts 14-day mortality and complications",
     clinicalUses: ["ACS risk stratification", "Mortality prediction", "Treatment decisions"],
     inputs: [
@@ -469,7 +469,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "framingham",
     name: "Framingham Risk Score",
-    categories: ["Cardiology", "Prevention", "Primary Care"],
+    categories: ["Cardiology", "Intensive Care"],
     description: "10-year cardiovascular disease risk - Guides preventive therapy",
     clinicalUses: ["CVD risk assessment", "Prevention decisions", "Statin therapy"],
     inputs: [
@@ -535,9 +535,9 @@ export const completeCalculators: Calculator[] = [
   {
     id: "ascvd",
     name: "ASCVD Risk Calculator",
-    categories: ["Cardiology", "Prevention", "Primary Care"],
+    categories: ["Cardiology", "Intensive Care"],
     description: "Atherosclerotic cardiovascular disease risk - Updated Framingham model",
-    clinicalUses: ["ASCVD risk assessment", "Statin therapy decisions", "Prevention"],
+    clinicalUses: ["ASCVD risk assessment", "Statin therapy decisions", "Cardiology"],
     inputs: [
       {
         id: "age",
@@ -615,7 +615,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "nihss",
     name: "NIHSS (NIH Stroke Scale)",
-    categories: ["Neurology", "Emergency Medicine"],
+    categories: ["Neurology", "Intensive Care"],
     description: "Acute stroke severity assessment - Determines thrombolytic eligibility",
     clinicalUses: ["Stroke severity", "Thrombolytic decisions", "Outcome prediction"],
     inputs: [
@@ -767,7 +767,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "curb65",
     name: "CURB-65 Score",
-    categories: ["Pulmonology", "Infectious Disease", "Emergency Medicine"],
+    categories: ["Respiratory", "Infectious Disease", "Intensive Care"],
     description: "Pneumonia severity - Determines admission vs outpatient management",
     clinicalUses: ["Pneumonia severity", "Admission decisions", "Mortality prediction"],
     inputs: [
@@ -814,7 +814,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "psi_port",
     name: "PSI/PORT Score",
-    categories: ["Pulmonology", "Infectious Disease"],
+    categories: ["Respiratory", "Infectious Disease"],
     description: "Pneumonia Severity Index - Comprehensive mortality prediction",
     clinicalUses: ["Pneumonia risk stratification", "Admission decisions", "Mortality"],
     inputs: [
@@ -942,7 +942,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "ckd_epi",
     name: "CKD-EPI GFR",
-    categories: ["Nephrology", "Pharmacology"],
+    categories: ["Nephrology", "Intensive Care"],
     description: "Estimated Glomerular Filtration Rate - Kidney function assessment",
     clinicalUses: ["Renal function assessment", "Drug dosing", "CKD staging"],
     inputs: [
@@ -990,7 +990,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "creatinine_clearance",
     name: "Creatinine Clearance",
-    categories: ["Nephrology", "Pharmacology"],
+    categories: ["Nephrology", "Intensive Care"],
     description: "Cockcroft-Gault equation - Renal function for drug dosing",
     clinicalUses: ["Drug dosing adjustments", "Renal function", "Medication safety"],
     inputs: [
@@ -1085,7 +1085,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "glasgow_blatchford",
     name: "Glasgow-Blatchford Score",
-    categories: ["Gastroenterology", "Emergency Medicine"],
+    categories: ["Gastroenterology", "Intensive Care"],
     description: "Upper GI bleed risk - Predicts need for intervention",
     clinicalUses: ["GI bleed severity", "Intervention prediction", "Admission decisions"],
     inputs: [
@@ -1145,7 +1145,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "bisap",
     name: "BISAP Score",
-    categories: ["Gastroenterology", "Emergency Medicine", "Pancreatitis"],
+    categories: ["Gastroenterology", "Intensive Care"],
     description: "Acute pancreatitis severity - Predicts mortality",
     clinicalUses: ["Pancreatitis severity", "Mortality prediction", "ICU admission"],
     inputs: [
@@ -1195,7 +1195,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "centor",
     name: "Centor Score",
-    categories: ["Infectious Disease", "Emergency Medicine"],
+    categories: ["Infectious Disease", "Intensive Care"],
     description: "Strep throat risk - Guides antibiotic therapy",
     clinicalUses: ["Strep throat risk", "Antibiotic decisions", "Testing decisions"],
     inputs: [
@@ -1245,7 +1245,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "news2",
     name: "NEWS2 Score",
-    categories: ["Critical Care", "Emergency Medicine", "General Medicine"],
+    categories: ["Intensive Care"],
     description: "National Early Warning Score - Detects clinical deterioration",
     clinicalUses: ["Early deterioration detection", "Escalation decisions", "Monitoring"],
     inputs: [
@@ -1308,7 +1308,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "glasgow_coma",
     name: "Glasgow Coma Scale",
-    categories: ["Neurology", "Critical Care", "Trauma"],
+    categories: ["Neurology", "Intensive Care", "Perioperative Medicine"],
     description: "Consciousness assessment - Evaluates neurological status",
     clinicalUses: ["Consciousness assessment", "Prognosis prediction", "Monitoring"],
     inputs: [
@@ -1348,7 +1348,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "wells_dvt",
     name: "Wells' DVT Score",
-    categories: ["Cardiology", "Emergency Medicine", "Hematology"],
+    categories: ["Cardiology", "Intensive Care", "Hematology"],
     description: "Deep vein thrombosis risk - Guides imaging decisions",
     clinicalUses: ["DVT risk assessment", "Imaging decisions", "Treatment decisions"],
     inputs: [
@@ -1420,7 +1420,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "wells_pe",
     name: "Wells' PE Score",
-    categories: ["Cardiology", "Emergency Medicine", "Hematology"],
+    categories: ["Cardiology", "Intensive Care", "Hematology"],
     description: "Pulmonary embolism risk - Guides imaging decisions",
     clinicalUses: ["PE risk assessment", "Imaging decisions", "Treatment decisions"],
     inputs: [
@@ -1480,7 +1480,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "asa_physical_status",
     name: "ASA Physical Status Classification",
-    categories: ["Perioperative Medicine", "Anesthesiology", "Surgery"],
+    categories: ["Perioperative Medicine"],
     description: "American Society of Anesthesiologists classification for perioperative risk assessment",
     clinicalUses: ["Perioperative risk stratification", "Anesthesia planning", "Surgical risk communication"],
     inputs: [
@@ -1531,7 +1531,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "rcri",
     name: "RCRI (Revised Cardiac Risk Index)",
-    categories: ["Perioperative Medicine", "Cardiology", "Anesthesiology"],
+    categories: ["Perioperative Medicine", "Cardiology"],
     description: "Lee Index - Predicts major cardiac complications after non-cardiac surgery",
     clinicalUses: ["Cardiac risk assessment", "Perioperative planning", "Risk stratification"],
     inputs: [
@@ -1597,7 +1597,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "caprini_vte",
     name: "Caprini Score for VTE Risk",
-    categories: ["Perioperative Medicine", "Hematology", "Surgery"],
+    categories: ["Perioperative Medicine", "Hematology"],
     description: "Assesses venous thromboembolism risk in surgical patients",
     clinicalUses: ["VTE prophylaxis", "Risk stratification", "Thromboprophylaxis decisions"],
     inputs: [
@@ -1675,7 +1675,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "pesi",
     name: "PESI (Pulmonary Embolism Severity Index)",
-    categories: ["Pulmonology", "Emergency Medicine", "Critical Care"],
+    categories: ["Respiratory", "Intensive Care"],
     description: "Predicts 30-day mortality in pulmonary embolism - guides outpatient vs inpatient management",
     clinicalUses: ["PE severity assessment", "Disposition decisions", "Risk stratification"],
     inputs: [
@@ -1764,7 +1764,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "smart_cop",
     name: "SMART-COP Score",
-    categories: ["Pulmonology", "Emergency Medicine", "Infectious Disease"],
+    categories: ["Respiratory", "Intensive Care", "Infectious Disease"],
     description: "Predicts need for intensive respiratory or vasopressor support in pneumonia",
     clinicalUses: ["ICU admission", "Severe pneumonia identification", "Risk stratification"],
     inputs: [
@@ -1841,7 +1841,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "child_pugh",
     name: "Child-Pugh Score",
-    categories: ["Hepatology", "Gastroenterology", "Critical Care"],
+    categories: ["Hepatology", "Gastroenterology", "Intensive Care"],
     description: "Classic liver disease severity classification - predicts mortality and surgical risk",
     clinicalUses: ["Cirrhosis severity", "Surgical risk", "Prognosis assessment"],
     inputs: [
@@ -1906,7 +1906,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "fib4",
     name: "FIB-4 Index",
-    categories: ["Hepatology", "Gastroenterology", "Primary Care"],
+    categories: ["Hepatology", "Gastroenterology", "Intensive Care"],
     description: "Non-invasive liver fibrosis assessment - widely used for NAFLD and chronic hepatitis",
     clinicalUses: ["Fibrosis screening", "NAFLD assessment", "Cirrhosis risk"],
     inputs: [
@@ -1966,7 +1966,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "meld_na",
     name: "MELD-Na Score",
-    categories: ["Hepatology", "Gastroenterology", "Transplant Surgery"],
+    categories: ["Hepatology", "Gastroenterology", "Perioperative Medicine"],
     description: "Enhanced MELD with serum sodium - improved mortality prediction for liver transplant allocation",
     clinicalUses: ["Transplant prioritization", "Mortality prediction", "Waitlist management"],
     inputs: [
