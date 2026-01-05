@@ -8,7 +8,7 @@ interface CalculationResult {
   riskLevel: "low" | "moderate" | "high" | "critical";
   riskPercentage: number;
   recommendations: string[];
-  managementPathway: string;
+  managementPathway: any;
   interpretation: string;
 }
 
@@ -56,6 +56,32 @@ export function ResultsDisplayEnhanced({
   };
 
   const colors = getRiskColor(result.riskLevel);
+
+  const renderManagementPathway = () => {
+    if (typeof result.managementPathway === "string") {
+      return result.managementPathway.split("\n").map((line: string, idx: number) => (
+        <div key={idx} className="flex items-start gap-3">
+          <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+            {idx + 1}
+          </div>
+          <p className={`text-sm ${colors.text}`}>{line}</p>
+        </div>
+      ));
+    } else if (Array.isArray(result.managementPathway)) {
+      return result.managementPathway.map((step: any, idx: number) => (
+        <div key={idx} className="flex items-start gap-3">
+          <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+            {idx + 1}
+          </div>
+          <div>
+            <p className={`text-sm font-semibold ${colors.text}`}>{step.action}</p>
+            <p className="text-xs text-slate-600 mt-1">{step.rationale}</p>
+          </div>
+        </div>
+      ));
+    }
+    return null;
+  };
 
   return (
     <div className="space-y-6">
@@ -110,14 +136,7 @@ export function ResultsDisplayEnhanced({
           <div className="p-4 bg-white rounded-lg border border-slate-200">
             <p className="text-xs font-semibold text-slate-600 uppercase mb-3">Recommended Management Pathway</p>
             <div className="space-y-2">
-              {result.managementPathway.split("\n").map((line, idx) => (
-                <div key={idx} className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
-                    {idx + 1}
-                  </div>
-                  <p className={`text-sm ${colors.text}`}>{line}</p>
-                </div>
-              ))}
+              {renderManagementPathway()}
             </div>
           </div>
 
@@ -125,7 +144,7 @@ export function ResultsDisplayEnhanced({
           <div className="space-y-3">
             <p className="text-xs font-semibold text-slate-600 uppercase">Clinical Recommendations</p>
             <div className="space-y-2">
-              {result.recommendations.map((rec, idx) => (
+              {result.recommendations.map((rec: string, idx: number) => (
                 <div key={idx} className="p-3 bg-white rounded-lg border border-slate-200 flex items-start gap-3">
                   <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mt-0.5">
                     ✓

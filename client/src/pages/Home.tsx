@@ -73,7 +73,6 @@ export default function Home() {
 
   const sidebarContent = (
     <Sidebar
-      calculators={calculators}
       selectedCalculatorId={selectedCalculatorId}
       onSelectCalculator={setSelectedCalculatorId}
       favorites={favorites}
