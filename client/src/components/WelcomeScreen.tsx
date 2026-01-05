@@ -188,53 +188,7 @@ export default function WelcomeScreen({ calculators, onSelectCalculator }: Welco
         </div>
       </div>
 
-      {/* Browse by Specialty - Full Width */}
-      <div className="w-full py-16 px-6 md:px-12 lg:px-16 bg-white">
-        <div className="mb-8">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Browse by Specialty</h2>
-          <p className="text-gray-600">Explore calculators across all medical disciplines</p>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
-          {categories.map((cat) => (
-            <Card key={cat.name} className="border-0 shadow-sm hover:shadow-md transition-shadow cursor-pointer hover:bg-blue-50">
-              <CardContent className="pt-6">
-                <p className="font-semibold text-gray-900 mb-1 text-sm">{cat.name}</p>
-                <p className="text-xs text-gray-600">{cat.count} calculators</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
 
-      {/* Key Features - Full Width */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 py-16 w-full px-6 md:px-12 lg:px-16">
-        <div className="mb-8">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Why Choose MedResearch Academy</h2>
-          <p className="text-gray-600">Trusted tools for clinical excellence</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-            <Zap className="w-8 h-8 text-blue-600 mb-4" />
-            <h3 className="font-bold text-gray-900 mb-2">Instant Calculations</h3>
-            <p className="text-sm text-gray-600">Real-time scoring with immediate risk stratification</p>
-          </div>
-          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-            <BookOpen className="w-8 h-8 text-blue-600 mb-4" />
-            <h3 className="font-bold text-gray-900 mb-2">Evidence-Based</h3>
-            <p className="text-sm text-gray-600">All calculators backed by peer-reviewed research</p>
-          </div>
-          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-            <CheckCircle className="w-8 h-8 text-blue-600 mb-4" />
-            <h3 className="font-bold text-gray-900 mb-2">Clinical References</h3>
-            <p className="text-sm text-gray-600">Access original studies and clinical guidelines</p>
-          </div>
-          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-            <Calculator className="w-8 h-8 text-blue-600 mb-4" />
-            <h3 className="font-bold text-gray-900 mb-2">Comprehensive</h3>
-            <p className="text-sm text-gray-600">32+ calculators across all medical specialties</p>
-          </div>
-        </div>
-      </div>
 
       {/* Clinical Disclaimer - Full Width */}
       <div className="w-full py-16 px-6 md:px-12 lg:px-16 bg-white">
