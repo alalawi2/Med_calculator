@@ -6,7 +6,7 @@
 export interface CalculationResult {
   score: number;
   maxScore: number;
-  riskLevel: "low" | "medium" | "high" | "critical";
+  riskLevel: "low" | "moderate" | "high" | "critical";
   riskPercentage: number;
   interpretation: string;
   recommendations: string[];
@@ -117,7 +117,7 @@ export function calculateSOFA(inputs: {
   else if (inputs.creatinine >= 2) score += 2;
   else if (inputs.creatinine >= 1.2) score += 1;
 
-  const riskLevel = score >= 11 ? "critical" : score >= 8 ? "high" : score >= 5 ? "medium" : "low";
+  const riskLevel = score >= 11 ? "critical" : score >= 8 ? "high" : score >= 5 ? "moderate" : "low";
   const mortalityRates: Record<string, number> = {
     critical: 95,
     high: 60,
@@ -187,7 +187,7 @@ export function calculateAPACHE(inputs: {
   else if (inputs.age_apache >= 55) score += 3;
   else if (inputs.age_apache >= 45) score += 1;
 
-  const riskLevel = score >= 25 ? "critical" : score >= 20 ? "high" : score >= 15 ? "medium" : "low";
+  const riskLevel = score >= 25 ? "critical" : score >= 20 ? "high" : score >= 15 ? "moderate" : "low";
   const mortalityRates: Record<string, number> = {
     critical: 85,
     high: 55,
@@ -224,7 +224,7 @@ export function calculateAPACHE(inputs: {
 export function calculateNIHSS(inputs: Record<string, number>): CalculationResult {
   const score = Object.values(inputs).reduce((a, b) => a + (typeof b === "number" ? b : 0), 0);
 
-  let riskLevel: "low" | "medium" | "high" | "critical" = "low";
+  let riskLevel: "low" | "moderate" | "high" | "critical" = "low";
   let interpretation = "";
   let recommendations: string[] = [];
 
@@ -241,7 +241,7 @@ export function calculateNIHSS(inputs: Record<string, number>): CalculationResul
       "✓ Intensive monitoring",
     ];
   } else if (score <= 14) {
-    riskLevel = "medium";
+    riskLevel = "moderate";
     interpretation = "Moderate stroke - High thrombolytic benefit";
     recommendations = [
       "✓ Activate stroke protocol",
@@ -316,7 +316,7 @@ export function calculateCHA2DS2VASc(inputs: Record<string, boolean>): Calculati
   };
 
   const riskPercentage = strokeRiskRates[Math.min(score, 9)] || 17.4;
-  const riskLevel = score >= 5 ? "high" : score >= 2 ? "medium" : "low";
+  const riskLevel = score >= 5 ? "high" : score >= 2 ? "moderate" : "low";
 
   return {
     score,
@@ -327,7 +327,7 @@ export function calculateCHA2DS2VASc(inputs: Record<string, boolean>): Calculati
     recommendations: [
       riskLevel === "high"
         ? "✓ Anticoagulation strongly recommended"
-        : riskLevel === "medium"
+        : riskLevel === "moderate"
           ? "✓ Anticoagulation recommended"
           : "✓ Anticoagulation may be considered",
       "✓ Assess bleeding risk (HAS-BLED score)",
@@ -351,7 +351,7 @@ export function calculateGCS(inputs: {
 }): CalculationResult {
   const score = inputs.eye_opening + inputs.verbal_response + inputs.motor_response;
 
-  let riskLevel: "low" | "medium" | "high" | "critical" = "low";
+  let riskLevel: "low" | "moderate" | "high" | "critical" = "low";
   let interpretation = "";
   let recommendations: string[] = [];
 
@@ -360,7 +360,7 @@ export function calculateGCS(inputs: {
     interpretation = "Mild head injury - Good prognosis";
     recommendations = ["✓ Observation", "✓ Repeat neuro checks q1h", "✓ Discharge if criteria met"];
   } else if (score >= 9) {
-    riskLevel = "medium";
+    riskLevel = "moderate";
     interpretation = "Moderate head injury - Consider ICU admission";
     recommendations: [
       "✓ ICU admission",
@@ -423,7 +423,7 @@ export function calculateHEART(inputs: {
   else if (inputs.age_heart < 65) score += 1;
   else score += 2;
 
-  const riskLevel = score <= 3 ? "low" : score <= 6 ? "medium" : "high";
+  const riskLevel = score <= 3 ? "low" : score <= 6 ? "moderate" : "high";
   const maceRates: Record<string, number> = {
     low: 1.7,
     medium: 20.3,
@@ -473,7 +473,7 @@ export function calculateCURB65(inputs: Record<string, boolean>): CalculationRes
     5: 57.0,
   };
 
-  const riskLevel = score === 0 ? "low" : score <= 2 ? "medium" : "high";
+  const riskLevel = score === 0 ? "low" : score <= 2 ? "moderate" : "high";
 
   return {
     score,
@@ -521,7 +521,7 @@ export function calculateCrCl(inputs: {
     ((140 - inputs.age_crcl) * inputs.weight_crcl) / (72 * inputs.creatinine_crcl);
   if (inputs.gender_crcl === "female") crcl *= 0.85;
 
-  const riskLevel: "low" | "medium" | "high" | "critical" = crcl >= 90 ? "low" : crcl >= 60 ? "medium" : crcl >= 30 ? "high" : "critical";
+  const riskLevel: "low" | "moderate" | "high" | "critical" = crcl >= 90 ? "low" : crcl >= 60 ? "moderate" : crcl >= 30 ? "high" : "critical";
   const ckcStage: string =
     crcl >= 90
       ? "Stage 1 (Normal)"
@@ -578,7 +578,7 @@ export function calculateMELD(inputs: {
     critical: 80,
   };
 
-  const riskLevel: "low" | "medium" | "high" | "critical" = score < 10 ? "low" : score < 20 ? "medium" : score < 30 ? "high" : "critical";
+  const riskLevel: "low" | "moderate" | "high" | "critical" = score < 10 ? "low" : score < 20 ? "moderate" : score < 30 ? "high" : "critical";
 
   return {
     score,
@@ -628,8 +628,8 @@ export function calculateASA(inputs: { asa_class: string; emergency: boolean }):
     6: 0,
   };
 
-  const riskLevel: "low" | "medium" | "high" | "critical" =
-    score === 1 ? "low" : score === 2 ? "low" : score === 3 ? "medium" : "high";
+  const riskLevel: "low" | "moderate" | "high" | "critical" =
+    score === 1 ? "low" : score === 2 ? "low" : score === 3 ? "moderate" : "high";
 
   return {
     score,
@@ -686,8 +686,8 @@ export function calculateRCRI(inputs: Record<string, boolean>): CalculationResul
   };
 
   const riskPercentage = score >= 3 ? 11.0 : cardiacRiskRates[score];
-  const riskLevel: "low" | "medium" | "high" =
-    score === 0 ? "low" : score === 1 ? "low" : score === 2 ? "medium" : "high";
+  const riskLevel: "low" | "moderate" | "high" =
+    score === 0 ? "low" : score === 1 ? "low" : score === 2 ? "moderate" : "high";
 
   return {
     score,
@@ -743,8 +743,8 @@ export function calculateCaprini(inputs: Record<string, any>): CalculationResult
   if (inputs.previous_vte) score += 3;
   if (inputs.thrombophilia) score += 3;
 
-  const riskLevel: "low" | "medium" | "high" | "critical" =
-    score <= 2 ? "low" : score <= 4 ? "medium" : score <= 6 ? "high" : "critical";
+  const riskLevel: "low" | "moderate" | "high" | "critical" =
+    score <= 2 ? "low" : score <= 4 ? "moderate" : score <= 6 ? "high" : "critical";
 
   const vteRiskRates: Record<string, number> = {
     low: 0.5,
@@ -818,8 +818,8 @@ export function calculatePESI(inputs: Record<string, any>): CalculationResult {
     "V (Very High)": 24.5,
   };
 
-  const riskLevel: "low" | "medium" | "high" | "critical" =
-    score < 86 ? "low" : score < 106 ? "medium" : score < 126 ? "high" : "critical";
+  const riskLevel: "low" | "moderate" | "high" | "critical" =
+    score < 86 ? "low" : score < 106 ? "moderate" : score < 126 ? "high" : "critical";
 
   return {
     score,
@@ -859,7 +859,7 @@ export function calculateSMARTCOP(inputs: Record<string, boolean>): CalculationR
   if (inputs.ph) score += 2; // P
 
   const irvs_risk = score >= 5 ? 92 : score >= 3 ? 62 : 8;
-  const riskLevel: "low" | "medium" | "high" = score <= 2 ? "low" : score <= 4 ? "medium" : "high";
+  const riskLevel: "low" | "moderate" | "high" = score <= 2 ? "low" : score <= 4 ? "moderate" : "high";
 
   return {
     score,
@@ -930,7 +930,7 @@ export function calculateChildPugh(inputs: Record<string, any>): CalculationResu
   const twoYearSurvival = score <= 6 ? 85 : score <= 9 ? 60 : 35;
   const perioperativeMortality = score <= 6 ? 10 : score <= 9 ? 30 : 82;
 
-  const riskLevel: "low" | "medium" | "high" = score <= 6 ? "low" : score <= 9 ? "medium" : "high";
+  const riskLevel: "low" | "moderate" | "high" = score <= 6 ? "low" : score <= 9 ? "moderate" : "high";
 
   return {
     score,
@@ -976,7 +976,7 @@ export function calculateFIB4(inputs: { age: number; ast: number; alt: number; p
         ? "Indeterminate - further evaluation recommended"
         : "High probability of advanced fibrosis (F3-F4)";
 
-  const riskLevel: "low" | "medium" | "high" = score < 1.3 ? "low" : score <= 2.67 ? "medium" : "high";
+  const riskLevel: "low" | "moderate" | "high" = score < 1.3 ? "low" : score <= 2.67 ? "moderate" : "high";
 
   return {
     score: Math.round(score * 100) / 100,
@@ -1031,8 +1031,8 @@ export function calculateMELDNa(inputs: {
   const meldNa = meld + 1.32 * (137 - sodiumAdjusted) - (0.033 * meld * (137 - sodiumAdjusted));
   const score = Math.min(Math.max(Math.round(meldNa), 6), 40);
 
-  const riskLevel: "low" | "medium" | "high" | "critical" =
-    score < 10 ? "low" : score < 20 ? "medium" : score < 30 ? "high" : "critical";
+  const riskLevel: "low" | "moderate" | "high" | "critical" =
+    score < 10 ? "low" : score < 20 ? "moderate" : score < 30 ? "high" : "critical";
 
   const mortalityRates: Record<string, number> = {
     low: 2,
@@ -1076,7 +1076,7 @@ export function calculateAPRI(inputs: { ast: number; ast_upper_limit: number; pl
           ? "High probability of cirrhosis"
           : "High probability of significant fibrosis";
 
-  const riskLevel: "low" | "medium" | "high" = score < 0.5 ? "low" : score <= 1.5 ? "medium" : "high";
+  const riskLevel: "low" | "moderate" | "high" = score < 0.5 ? "low" : score <= 1.5 ? "moderate" : "high";
 
   return {
     score: Math.round(score * 100) / 100,
@@ -1112,7 +1112,7 @@ export function calculateGenericScore(inputs: Record<string, boolean | number>):
     return sum;
   }, 0);
 
-  const riskLevel: "low" | "medium" | "high" = score === 0 ? "low" : score <= 2 ? "medium" : "high";
+  const riskLevel: "low" | "moderate" | "high" = score === 0 ? "low" : score <= 2 ? "moderate" : "high";
 
   return {
     score: score as number,
