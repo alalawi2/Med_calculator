@@ -243,7 +243,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "heart",
     name: "HEART Score",
-    categories: ["Cardiology", "Emergency Medicine", "Chest Pain"],
+    categories: ["Cardiology", "Emergency Medicine"],
     description: "Chest pain risk assessment - Identifies low-risk patients safe for discharge",
     clinicalUses: ["ACS risk assessment", "Admission decisions", "Discharge safety"],
     inputs: [
@@ -296,7 +296,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "cha2ds2vasc",
     name: "CHA₂DS₂-VASc Score",
-    categories: ["Cardiology", "Neurology", "Stroke Prevention"],
+    categories: ["Cardiology", "Neurology"],
     description: "Stroke risk in atrial fibrillation - Guides anticoagulation decisions",
     clinicalUses: ["Stroke risk assessment", "Anticoagulation decisions", "AF management"],
     inputs: [
@@ -615,7 +615,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "nihss",
     name: "NIHSS (NIH Stroke Scale)",
-    categories: ["Neurology", "Stroke", "Emergency Medicine"],
+    categories: ["Neurology", "Emergency Medicine"],
     description: "Acute stroke severity assessment - Determines thrombolytic eligibility",
     clinicalUses: ["Stroke severity", "Thrombolytic decisions", "Outcome prediction"],
     inputs: [
@@ -703,7 +703,7 @@ export const completeCalculators: Calculator[] = [
         authors: "Brott T, et al.",
         year: 1989,
         title: "Measurements of acute cerebral infarction: a clinical examination scale",
-        journal: "Stroke",
+        journal: "Neurology",
         volume: "20",
         pages: "864-870",
         citations: 2400,
@@ -715,7 +715,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "abcd2",
     name: "ABCD2 Score",
-    categories: ["Neurology", "Stroke Prevention"],
+    categories: ["Neurology"],
     description: "TIA/Stroke risk after TIA - Guides urgent imaging and treatment",
     clinicalUses: ["TIA risk assessment", "Imaging urgency", "Treatment decisions"],
     inputs: [
@@ -767,7 +767,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "curb65",
     name: "CURB-65 Score",
-    categories: ["Respiratory", "Infectious Disease", "Emergency Medicine"],
+    categories: ["Pulmonology", "Infectious Disease", "Emergency Medicine"],
     description: "Pneumonia severity - Determines admission vs outpatient management",
     clinicalUses: ["Pneumonia severity", "Admission decisions", "Mortality prediction"],
     inputs: [
@@ -814,7 +814,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "psi_port",
     name: "PSI/PORT Score",
-    categories: ["Respiratory", "Infectious Disease"],
+    categories: ["Pulmonology", "Infectious Disease"],
     description: "Pneumonia Severity Index - Comprehensive mortality prediction",
     clinicalUses: ["Pneumonia risk stratification", "Admission decisions", "Mortality"],
     inputs: [
@@ -942,7 +942,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "ckd_epi",
     name: "CKD-EPI GFR",
-    categories: ["Renal", "Nephrology", "Drug Dosing"],
+    categories: ["Nephrology", "Pharmacology"],
     description: "Estimated Glomerular Filtration Rate - Kidney function assessment",
     clinicalUses: ["Renal function assessment", "Drug dosing", "CKD staging"],
     inputs: [
@@ -990,7 +990,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "creatinine_clearance",
     name: "Creatinine Clearance",
-    categories: ["Renal", "Nephrology", "Drug Dosing"],
+    categories: ["Nephrology", "Pharmacology"],
     description: "Cockcroft-Gault equation - Renal function for drug dosing",
     clinicalUses: ["Drug dosing adjustments", "Renal function", "Medication safety"],
     inputs: [
@@ -1039,7 +1039,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "meld",
     name: "MELD Score",
-    categories: ["Hepatology", "Gastroenterology", "Liver Disease"],
+    categories: ["Hepatology", "Gastroenterology"],
     description: "Model for End-Stage Liver Disease - Liver transplant priority",
     clinicalUses: ["Liver disease severity", "Transplant priority", "Mortality prediction"],
     inputs: [
@@ -1085,7 +1085,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "glasgow_blatchford",
     name: "Glasgow-Blatchford Score",
-    categories: ["Gastroenterology", "Emergency Medicine", "GI Bleeding"],
+    categories: ["Gastroenterology", "Emergency Medicine"],
     description: "Upper GI bleed risk - Predicts need for intervention",
     clinicalUses: ["GI bleed severity", "Intervention prediction", "Admission decisions"],
     inputs: [
@@ -1348,7 +1348,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "wells_dvt",
     name: "Wells' DVT Score",
-    categories: ["Vascular", "Emergency Medicine", "Thromboembolism"],
+    categories: ["Cardiology", "Emergency Medicine", "Hematology"],
     description: "Deep vein thrombosis risk - Guides imaging decisions",
     clinicalUses: ["DVT risk assessment", "Imaging decisions", "Treatment decisions"],
     inputs: [
@@ -1420,7 +1420,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "wells_pe",
     name: "Wells' PE Score",
-    categories: ["Vascular", "Emergency Medicine", "Thromboembolism"],
+    categories: ["Cardiology", "Emergency Medicine", "Hematology"],
     description: "Pulmonary embolism risk - Guides imaging decisions",
     clinicalUses: ["PE risk assessment", "Imaging decisions", "Treatment decisions"],
     inputs: [
