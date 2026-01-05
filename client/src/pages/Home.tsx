@@ -4,6 +4,7 @@ import { CalculatorFormEnhanced } from "@/components/CalculatorFormEnhanced";
 import { ResultsDisplayEnhanced } from "@/components/ResultsDisplayEnhanced";
 import { MedicationDosing } from "@/components/MedicationDosing";
 import { SearchBar } from "@/components/SearchBar";
+import WelcomeScreen from "@/components/WelcomeScreen";
 import { calculators, medications } from "@/lib/calculators";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { executeCalculator } from "@/lib/calculator-wrapper";
@@ -14,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function Home() {
-  const [selectedCalculatorId, setSelectedCalculatorId] = useState("qsofa");
+  const [selectedCalculatorId, setSelectedCalculatorId] = useState<string | null>(null);
   const [recentlyUsed, setRecentlyUsed] = useState<string[]>(() => {
     const stored = localStorage.getItem("medresearch_recent");
     return stored ? JSON.parse(stored) : [];
@@ -43,11 +44,13 @@ export default function Home() {
 
   // Update recently used when calculator is selected
   useEffect(() => {
-    setRecentlyUsed((prev) => {
-      const updated = [selectedCalculatorId, ...prev.filter((id) => id !== selectedCalculatorId)].slice(0, 5);
-      localStorage.setItem("medresearch_recent", JSON.stringify(updated));
-      return updated;
-    });
+    if (selectedCalculatorId) {
+      setRecentlyUsed((prev) => {
+        const updated = [selectedCalculatorId, ...prev.filter((id) => id !== selectedCalculatorId)].slice(0, 5);
+        localStorage.setItem("medresearch_recent", JSON.stringify(updated));
+        return updated;
+      });
+    }
   }, [selectedCalculatorId]);
 
   const toggleFavorite = (id: string) => {
@@ -58,7 +61,7 @@ export default function Home() {
     });
   };
 
-  const selectedCalculator = calculators.find((c) => c.id === selectedCalculatorId);
+  const selectedCalculator = selectedCalculatorId ? calculators.find((c) => c.id === selectedCalculatorId) : null;
 
   const handleCalculate = (inputs: Record<string, any>) => {
     setIsLoading(true);
@@ -86,18 +89,25 @@ export default function Home() {
     // Handle medication selection if needed
   };
 
+  const handleBackToHome = () => {
+    setSelectedCalculatorId(null);
+  };
+
   return (
     <div className="flex flex-col h-screen bg-white md:flex-row">
       {/* Mobile Header */}
       <header className="sticky top-0 z-50 bg-gradient-to-r from-blue-50 to-white border-b border-gray-200 md:hidden">
         <div className="flex items-center justify-between px-4 py-2">
-          <div className="flex items-center gap-2">
+          <button
+            onClick={handleBackToHome}
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          >
             <img src="/medresearch-academy-logo.jpg" alt="MedResearch Academy" className="h-10 w-10 object-contain" />
             <div>
               <span className="text-xs font-bold text-blue-700 block">MedResearch Academy</span>
               <span className="text-xs text-gray-500">Clinical Support</span>
             </div>
-          </div>
+          </button>
           <Button
             variant="ghost"
             size="sm"
@@ -111,13 +121,13 @@ export default function Home() {
 
       {/* Desktop Header */}
       <header className="hidden md:flex sticky top-0 z-50 w-full bg-gradient-to-r from-blue-50 to-white border-b border-gray-200 items-center justify-between px-8 py-3">
-        <div className="flex items-center gap-3">
+        <button onClick={handleBackToHome} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
           <img src="/medresearch-academy-logo.jpg" alt="MedResearch Academy" className="h-12 w-12 object-contain" />
           <div>
             <h1 className="text-xl font-bold text-blue-700">MedResearch Academy</h1>
             <p className="text-xs text-gray-500">Clinical Decision Support</p>
           </div>
-        </div>
+        </button>
         <SearchBar
           calculators={calculators}
           medications={medications}
@@ -164,17 +174,20 @@ export default function Home() {
           </Alert>
         </div>
 
-        {/* Tabs */}
-        <div className="p-4 md:p-6">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="calculators">Clinical Calculators</TabsTrigger>
-              <TabsTrigger value="medications">Medication Dosing</TabsTrigger>
-            </TabsList>
+        {/* Welcome Screen or Tabs */}
+        {!selectedCalculatorId ? (
+          <WelcomeScreen calculators={calculators} onSelectCalculator={handleSelectCalculator} />
+        ) : (
+          <div className="p-4 md:p-6">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="calculators">Clinical Calculators</TabsTrigger>
+                <TabsTrigger value="medications">Medication Dosing</TabsTrigger>
+              </TabsList>
 
-            {/* Calculators Tab */}
-            <TabsContent value="calculators" className="space-y-6">
-              {selectedCalculator && (
+              {/* Calculators Tab */}
+              <TabsContent value="calculators" className="space-y-6">
+                {selectedCalculator && (
                 <div className="space-y-6">
                   <div>
                     <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">{selectedCalculator.name}</h2>
@@ -220,8 +233,9 @@ export default function Home() {
                 <MedicationDosing />
               </div>
             </TabsContent>
-          </Tabs>
-        </div>
+            </Tabs>
+          </div>
+        )}
       </main>
 
       {/* Feedback Modal */}
