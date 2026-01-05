@@ -15,7 +15,7 @@ interface SearchBarProps {
   calculators: any[];
   medications: any[];
   onSelectCalculator?: (id: string) => void;
-  onSelectMedication?: (id: string) => void;
+  onSelectMedication?: () => void;
   onClose?: () => void;
 }
 
@@ -76,7 +76,7 @@ export function SearchBar({
     if (result.type === "calculator" && onSelectCalculator) {
       onSelectCalculator(result.id);
     } else if (result.type === "medication" && onSelectMedication) {
-      onSelectMedication(result.id);
+      onSelectMedication();
     }
     setSearchQuery("");
     setIsOpen(false);
