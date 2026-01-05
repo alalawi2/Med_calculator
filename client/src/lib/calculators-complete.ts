@@ -1,4 +1,4 @@
-import { Calculator } from "./calculators";
+import { Calculator } from "./calculators-extended";
 
 /**
  * Complete Calculator Database - 25+ Evidence-Based Clinical Calculators
