@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { executeCalculator } from "@/lib/calculator-wrapper";
 import { CalculationResult } from "@/lib/calculator-engine";
 import { FeedbackModal } from "@/components/FeedbackModal";
-import { Menu, X, Stethoscope, AlertCircle } from "lucide-react";
+import { Menu, X, Stethoscope, AlertCircle, Pill } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -27,6 +27,7 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState("calculators");
   const [calculationResult, setCalculationResult] = useState<CalculationResult | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
+  const [showMedications, setShowMedications] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -193,14 +194,8 @@ export default function Home() {
           <WelcomeScreen calculators={calculators} onSelectCalculator={handleSelectCalculator} />
         ) : (
           <div className="p-4 md:p-6">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6">
-                <TabsTrigger value="calculators">Clinical Calculators</TabsTrigger>
-                <TabsTrigger value="medications">Medication Dosing</TabsTrigger>
-              </TabsList>
-
-              {/* Calculators Tab */}
-              <TabsContent value="calculators" className="space-y-6">
+            {/* Calculators Content */}
+            <div className="space-y-6">
                 {selectedCalculator && (
                 <div className="space-y-6">
                   <div>
@@ -227,30 +222,53 @@ export default function Home() {
                           result={calculationResult}
                           calculatorName={selectedCalculator.name}
                         />
-                        <Button
-                          onClick={() => setShowFeedback(true)}
-                          variant="outline"
-                          className="w-full mt-4"
-                        >
-                          Provide Feedback
-                        </Button>
+                        <div className="flex flex-col gap-2 mt-4">
+                          <Button
+                            onClick={() => setShowFeedback(true)}
+                            variant="outline"
+                            className="w-full"
+                          >
+                            Provide Feedback
+                          </Button>
+                          <Button
+                            onClick={() => setShowMedications(true)}
+                            variant="outline"
+                            className="w-full"
+                          >
+                            View Medication Dosing
+                          </Button>
+                        </div>
                       </div>
                     )}
                   </div>
                 </div>
               )}
-            </TabsContent>
-
-            {/* Medications Tab */}
-            <TabsContent value="medications">
-              <div className="bg-white rounded-lg border border-gray-200 p-3 md:p-6 shadow-sm">
-                <MedicationDosing />
-              </div>
-            </TabsContent>
-            </Tabs>
+            </div>
           </div>
         )}
         </main>
+
+        {/* Medication Dosing Modal */}
+        {showMedications && (
+          <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-lg shadow-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="sticky top-0 bg-white border-b border-gray-200 p-4 md:p-6 flex items-center justify-between">
+                <h2 className="text-xl md:text-2xl font-bold text-gray-900">Medication Dosing Calculator</h2>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowMedications(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+              <div className="p-4 md:p-6">
+                <MedicationDosing />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Feedback Modal */}
