@@ -1039,7 +1039,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "meld",
     name: "MELD Score",
-    categories: ["Hepatology", "Gastroenterology"],
+    categories: ["Gastroenterology"],
     description: "Model for End-Stage Liver Disease - Liver transplant priority",
     clinicalUses: ["Liver disease severity", "Transplant priority", "Mortality prediction"],
     inputs: [
@@ -1070,7 +1070,7 @@ export const completeCalculators: Calculator[] = [
         authors: "Kamath PS, et al.",
         year: 2001,
         title: "A model to predict survival in patients with end-stage liver disease",
-        journal: "Hepatology",
+        journal: "Gastroenterology",
         volume: "33",
         pages: "464-470",
         citations: 2100,
@@ -1841,7 +1841,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "child_pugh",
     name: "Child-Pugh Score",
-    categories: ["Hepatology", "Gastroenterology", "Intensive Care"],
+    categories: ["Gastroenterology", "Intensive Care"],
     description: "Classic liver disease severity classification - predicts mortality and surgical risk",
     clinicalUses: ["Cirrhosis severity", "Surgical risk", "Prognosis assessment"],
     inputs: [
@@ -1894,7 +1894,7 @@ export const completeCalculators: Calculator[] = [
         authors: "Cholongitas E, et al.",
         year: 2005,
         title: "A systematic review of the performance of the model for end-stage liver disease",
-        journal: "Hepatology",
+        journal: "Gastroenterology",
         volume: "44",
         pages: "1515-1527",
         citations: 1200,
@@ -1906,7 +1906,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "fib4",
     name: "FIB-4 Index",
-    categories: ["Hepatology", "Gastroenterology", "Intensive Care"],
+    categories: ["Gastroenterology", "Intensive Care"],
     description: "Non-invasive liver fibrosis assessment - widely used for NAFLD and chronic hepatitis",
     clinicalUses: ["Fibrosis screening", "NAFLD assessment", "Cirrhosis risk"],
     inputs: [
@@ -1944,7 +1944,7 @@ export const completeCalculators: Calculator[] = [
         authors: "Sterling RK, et al.",
         year: 2006,
         title: "Development of a simple noninvasive index to predict significant fibrosis",
-        journal: "Hepatology",
+        journal: "Gastroenterology",
         volume: "43",
         pages: "1317-1325",
         citations: 2400,
@@ -1966,7 +1966,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "meld_na",
     name: "MELD-Na Score",
-    categories: ["Hepatology", "Gastroenterology", "Perioperative Medicine"],
+    categories: ["Gastroenterology", "Perioperative Medicine"],
     description: "Enhanced MELD with serum sodium - improved mortality prediction for liver transplant allocation",
     clinicalUses: ["Transplant prioritization", "Mortality prediction", "Waitlist management"],
     inputs: [
@@ -2031,7 +2031,7 @@ export const completeCalculators: Calculator[] = [
   {
     id: "apri",
     name: "APRI Score",
-    categories: ["Hepatology", "Gastroenterology", "Infectious Disease"],
+    categories: ["Gastroenterology", "Infectious Disease"],
     description: "AST to Platelet Ratio Index - simple fibrosis assessment for chronic liver disease",
     clinicalUses: ["Fibrosis screening", "Hepatitis C assessment", "Cirrhosis prediction"],
     inputs: [
@@ -2063,7 +2063,7 @@ export const completeCalculators: Calculator[] = [
         authors: "Wai CT, et al.",
         year: 2003,
         title: "A simple noninvasive index can predict both significant fibrosis and cirrhosis",
-        journal: "Hepatology",
+        journal: "Gastroenterology",
         volume: "38",
         pages: "518-526",
         citations: 1900,

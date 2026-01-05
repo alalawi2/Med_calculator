@@ -9,8 +9,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { executeCalculator } from "@/lib/calculator-wrapper";
 import { CalculationResult } from "@/lib/calculator-engine";
 import { FeedbackModal } from "@/components/FeedbackModal";
-import { Menu, X, Stethoscope } from "lucide-react";
+import { Menu, X, Stethoscope, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function Home() {
   const [selectedCalculatorId, setSelectedCalculatorId] = useState("qsofa");
@@ -26,7 +27,19 @@ export default function Home() {
   const [calculationResult, setCalculationResult] = useState<CalculationResult | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+      if (window.innerWidth >= 768) {
+        setSidebarOpen(true);
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Update recently used when calculator is selected
   useEffect(() => {
@@ -48,172 +61,163 @@ export default function Home() {
   const selectedCalculator = calculators.find((c) => c.id === selectedCalculatorId);
 
   const handleCalculate = (inputs: Record<string, any>) => {
-    if (!selectedCalculator) return;
-    
     setIsLoading(true);
-    setTimeout(() => {
-      const result = executeCalculator(selectedCalculator, inputs);
-      setCalculationResult(result);
+    try {
+      if (selectedCalculator) {
+        const result = executeCalculator(selectedCalculator, inputs);
+        setCalculationResult(result);
+      }
+    } catch (error) {
+      console.error("Calculation error:", error);
+    } finally {
       setIsLoading(false);
-      setShowFeedback(false);
-    }, 500);
-  };
-
-  const handlePrint = () => {
-    window.print();
-  };
-
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: `${selectedCalculator?.name} Result`,
-        text: `Risk Score: ${calculationResult?.score}`,
-      });
     }
   };
 
+  const handleSelectCalculator = (id: string) => {
+    setSelectedCalculatorId(id);
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+    setCalculationResult(null);
+  };
+
+  const handleSelectMedication = (medicationId: string) => {
+    // Handle medication selection if needed
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      {/* Professional Header */}
-      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg">
-                <Stethoscope className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-slate-900">MedResearch Academy</h1>
-                <p className="text-xs text-slate-500">Clinical Decision Support</p>
-              </div>
-            </div>
-
-            {/* Search Bar - Desktop */}
-            <div className="hidden md:block flex-1 max-w-md mx-8">
-              <SearchBar
-                calculators={calculators}
-                medications={medications}
-                onSelectCalculator={setSelectedCalculatorId}
-                onSelectMedication={() => setActiveTab("medications")}
-              />
-            </div>
-
-            {/* Mobile Menu Toggle */}
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="md:hidden p-2 hover:bg-slate-100 rounded-lg transition-colors"
-            >
-              {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
+    <div className="flex flex-col h-screen bg-white md:flex-row">
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-white border-b border-gray-200 md:hidden">
+        <div className="flex items-center justify-between px-4 py-3">
+          <div className="flex items-center gap-2">
+            <img src="/medresearch-academy-logo.png" alt="MedResearch Academy" className="h-8 w-8" />
+            <span className="text-sm font-bold text-blue-700">MedResearch Academy</span>
           </div>
-
-          {/* Search Bar - Mobile */}
-          <div className="md:hidden pb-4">
-            <SearchBar
-              calculators={calculators}
-              medications={medications}
-              onSelectCalculator={setSelectedCalculatorId}
-              onSelectMedication={() => setActiveTab("medications")}
-            />
-          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="md:hidden"
+          >
+            {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </Button>
         </div>
       </header>
 
-      {/* Main Content */}
-      <div className="flex h-[calc(100vh-80px)]">
-        {/* Sidebar */}
-        <aside
-          className={`${
-            sidebarOpen ? "w-full md:w-80" : "hidden md:w-80"
-          } bg-white border-r border-slate-200 overflow-y-auto transition-all duration-300 md:block`}
-        >
-          <Sidebar
-            selectedCalculatorId={selectedCalculatorId}
-            onSelectCalculator={setSelectedCalculatorId}
-            favorites={favorites}
-            onToggleFavorite={toggleFavorite}
-            recentlyUsed={recentlyUsed}
-          />
-        </aside>
-
-        {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto">
-          <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8">
-            {/* Tabs */}
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-8 bg-white">
-                <TabsTrigger value="calculators" className="text-base">
-                  Clinical Calculators
-                </TabsTrigger>
-                <TabsTrigger value="medications" className="text-base">
-                  Medication Dosing
-                </TabsTrigger>
-              </TabsList>
-
-              {/* Clinical Calculators Tab */}
-              <TabsContent value="calculators" className="space-y-8">
-                {selectedCalculator && (
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Form - Left Column */}
-                    <div className="lg:col-span-2">
-                      <div className="bg-white rounded-xl shadow-lg p-6 md:p-8">
-                        <CalculatorFormEnhanced
-                          calculatorName={selectedCalculator.name}
-                          calculatorDescription={selectedCalculator.description}
-                          inputs={selectedCalculator.inputs}
-                          onSubmit={handleCalculate}
-                          isLoading={isLoading}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Results - Right Column */}
-                    <div className="lg:col-span-1">
-                      {calculationResult ? (
-                        <div className="sticky top-20 space-y-4">
-                          <div className="bg-white rounded-xl shadow-lg p-6 overflow-y-auto max-h-[calc(100vh-200px)]">
-                            <ResultsDisplayEnhanced
-                              result={calculationResult}
-                              calculatorName={selectedCalculator.name}
-                              onPrint={handlePrint}
-                              onShare={handleShare}
-                            />
-                          </div>
-                          <Button
-                            onClick={() => setShowFeedback(true)}
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white h-10"
-                          >
-                            Provide Feedback
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="bg-white rounded-xl shadow-lg p-6 text-center">
-                          <div className="text-slate-400 mb-3">
-                            <Stethoscope className="w-12 h-12 mx-auto opacity-50" />
-                          </div>
-                          <p className="text-slate-600 font-medium">Enter patient information</p>
-                          <p className="text-sm text-slate-500 mt-1">Results will appear here</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </TabsContent>
-
-              {/* Medication Dosing Tab */}
-              <TabsContent value="medications">
-                <div className="bg-white rounded-xl shadow-lg p-6 md:p-8">
-                  <MedicationDosing />
-                </div>
-              </TabsContent>
-            </Tabs>
+      {/* Desktop Header */}
+      <header className="hidden md:flex sticky top-0 z-50 w-full bg-white border-b border-gray-200 items-center justify-between px-6 py-4">
+        <div className="flex items-center gap-3">
+          <img src="/medresearch-academy-logo.png" alt="MedResearch Academy" className="h-10 w-10" />
+          <div>
+            <h1 className="text-xl font-bold text-blue-700">MedResearch Academy</h1>
+            <p className="text-xs text-gray-500">Clinical Decision Support</p>
           </div>
-        </main>
-      </div>
+        </div>
+        <SearchBar
+          calculators={calculators}
+          medications={medications}
+          onSelectCalculator={handleSelectCalculator}
+        />
+      </header>
+
+      {/* Sidebar */}
+      {(sidebarOpen || !isMobile) && (
+        <aside className="fixed inset-y-0 left-0 z-40 w-64 bg-gray-50 border-r border-gray-200 overflow-y-auto md:sticky md:top-16 md:h-[calc(100vh-64px)]">
+        <Sidebar
+          selectedCalculatorId={selectedCalculatorId}
+          onSelectCalculator={handleSelectCalculator}
+          favorites={favorites}
+          onToggleFavorite={toggleFavorite}
+          recentlyUsed={recentlyUsed}
+        />
+        </aside>
+      )}
+
+      {/* Main Content */}
+      <main className="flex-1 overflow-y-auto md:mt-16 mt-0">
+        {/* Mobile Search */}
+        <div className="md:hidden px-4 py-3 border-b border-gray-200">
+          <SearchBar
+            calculators={calculators}
+            medications={medications}
+            onSelectCalculator={handleSelectCalculator}
+          />
+        </div>
+
+        {/* Disclaimer Alert */}
+        <div className="bg-blue-50 border-b border-blue-200 p-3 md:p-4">
+          <Alert className="border-0 bg-transparent">
+            <AlertCircle className="h-4 w-4 text-blue-600" />
+            <AlertDescription className="text-xs md:text-sm text-blue-800 ml-2">
+              <strong>Disclaimer:</strong> These calculators are clinical decision support tools only and should NOT replace professional medical judgment, clinical expertise, or consultation with qualified healthcare providers. Always verify results with current clinical guidelines and patient-specific factors. Brought by MedResearch Academy.
+            </AlertDescription>
+          </Alert>
+        </div>
+
+        {/* Tabs */}
+        <div className="p-4 md:p-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-6">
+              <TabsTrigger value="calculators">Clinical Calculators</TabsTrigger>
+              <TabsTrigger value="medications">Medication Dosing</TabsTrigger>
+            </TabsList>
+
+            {/* Calculators Tab */}
+            <TabsContent value="calculators" className="space-y-6">
+              {selectedCalculator && (
+                <div className="space-y-6">
+                  <div>
+                    <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">{selectedCalculator.name}</h2>
+                    <p className="text-sm md:text-base text-gray-600">{selectedCalculator.description}</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Form */}
+                    <div className="bg-white rounded-lg border border-gray-200 p-4 md:p-6">
+                      <CalculatorFormEnhanced
+                        calculatorName={selectedCalculator.name}
+                        calculatorDescription={selectedCalculator.description}
+                        inputs={selectedCalculator.inputs}
+                        onSubmit={handleCalculate}
+                        isLoading={isLoading}
+                      />
+                    </div>
+
+                    {/* Results */}
+                    {calculationResult && (
+                      <div className="bg-white rounded-lg border border-gray-200 p-4 md:p-6 lg:sticky lg:top-24">
+                        <ResultsDisplayEnhanced
+                          result={calculationResult}
+                          calculatorName={selectedCalculator.name}
+                        />
+                        <Button
+                          onClick={() => setShowFeedback(true)}
+                          variant="outline"
+                          className="w-full mt-4"
+                        >
+                          Provide Feedback
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </TabsContent>
+
+            {/* Medications Tab */}
+            <TabsContent value="medications">
+              <div className="bg-white rounded-lg border border-gray-200 p-4 md:p-6">
+                <MedicationDosing />
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </main>
 
       {/* Feedback Modal */}
-      {showFeedback && calculationResult && selectedCalculator && (
+      {showFeedback && selectedCalculator && (
         <FeedbackModal
           open={showFeedback}
           onOpenChange={setShowFeedback}
