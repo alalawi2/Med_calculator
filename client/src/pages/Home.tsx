@@ -4,6 +4,7 @@ import { CalculatorFormEnhanced } from "@/components/CalculatorFormEnhanced";
 import { ResultsDisplayEnhanced } from "@/components/ResultsDisplayEnhanced";
 import { MedicationDosing } from "@/components/MedicationDosing";
 import { SearchBar } from "@/components/SearchBar";
+import WelcomeScreen from "@/components/WelcomeScreen";
 import { calculators, medications } from "@/lib/calculators";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { executeCalculator } from "@/lib/calculator-wrapper";
@@ -14,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function Home() {
-  const [selectedCalculatorId, setSelectedCalculatorId] = useState("qsofa");
+  const [selectedCalculatorId, setSelectedCalculatorId] = useState<string | null>(null);
   const [recentlyUsed, setRecentlyUsed] = useState<string[]>(() => {
     const stored = localStorage.getItem("medresearch_recent");
     return stored ? JSON.parse(stored) : [];
@@ -43,11 +44,13 @@ export default function Home() {
 
   // Update recently used when calculator is selected
   useEffect(() => {
-    setRecentlyUsed((prev) => {
-      const updated = [selectedCalculatorId, ...prev.filter((id) => id !== selectedCalculatorId)].slice(0, 5);
-      localStorage.setItem("medresearch_recent", JSON.stringify(updated));
-      return updated;
-    });
+    if (selectedCalculatorId) {
+      setRecentlyUsed((prev) => {
+        const updated = [selectedCalculatorId, ...prev.filter((id) => id !== selectedCalculatorId)].slice(0, 5);
+        localStorage.setItem("medresearch_recent", JSON.stringify(updated));
+        return updated;
+      });
+    }
   }, [selectedCalculatorId]);
 
   const toggleFavorite = (id: string) => {
@@ -164,17 +167,20 @@ export default function Home() {
           </Alert>
         </div>
 
-        {/* Tabs */}
-        <div className="p-4 md:p-6">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="calculators">Clinical Calculators</TabsTrigger>
-              <TabsTrigger value="medications">Medication Dosing</TabsTrigger>
-            </TabsList>
+        {/* Welcome Screen or Tabs */}
+        {!selectedCalculatorId ? (
+          <WelcomeScreen calculators={calculators} onSelectCalculator={handleSelectCalculator} />
+        ) : (
+          <div className="p-4 md:p-6">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="calculators">Clinical Calculators</TabsTrigger>
+                <TabsTrigger value="medications">Medication Dosing</TabsTrigger>
+              </TabsList>
 
-            {/* Calculators Tab */}
-            <TabsContent value="calculators" className="space-y-6">
-              {selectedCalculator && (
+              {/* Calculators Tab */}
+              <TabsContent value="calculators" className="space-y-6">
+                {selectedCalculator && (
                 <div className="space-y-6">
                   <div>
                     <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">{selectedCalculator.name}</h2>
@@ -212,16 +218,17 @@ export default function Home() {
                   </div>
                 </div>
               )}
-            </TabsContent>
+              </TabsContent>
 
-            {/* Medications Tab */}
-            <TabsContent value="medications">
-              <div className="bg-white rounded-lg border border-gray-200 p-3 md:p-6 shadow-sm">
-                <MedicationDosing />
-              </div>
-            </TabsContent>
-          </Tabs>
-        </div>
+              {/* Medications Tab */}
+              <TabsContent value="medications">
+                <div className="bg-white rounded-lg border border-gray-200 p-3 md:p-6 shadow-sm">
+                  <MedicationDosing />
+                </div>
+              </TabsContent>
+            </Tabs>
+          </div>
+        )}
       </main>
 
       {/* Feedback Modal */}
