@@ -602,6 +602,508 @@ export function calculateMELD(inputs: {
   };
 }
 
+// ============================================================================
+// PERIOPERATIVE & ANESTHESIOLOGY
+// ============================================================================
+
+export function calculateASA(inputs: { asa_class: string; emergency: boolean }): CalculationResult {
+  const classMap: Record<string, number> = {
+    "I - Healthy patient": 1,
+    "II - Mild systemic disease": 2,
+    "III - Severe systemic disease": 3,
+    "IV - Severe disease that is constant threat to life": 4,
+    "V - Moribund patient not expected to survive without surgery": 5,
+    "VI - Brain-dead patient for organ donation": 6,
+  };
+
+  const score = classMap[inputs.asa_class] || 1;
+  const emergency = inputs.emergency;
+
+  const mortalityRates: Record<number, number> = {
+    1: 0.05,
+    2: 0.3,
+    3: 1.8,
+    4: 7.8,
+    5: 9.4,
+    6: 0,
+  };
+
+  const riskLevel: "low" | "medium" | "high" | "critical" =
+    score === 1 ? "low" : score === 2 ? "low" : score === 3 ? "medium" : "high";
+
+  return {
+    score,
+    maxScore: 6,
+    riskLevel,
+    riskPercentage: mortalityRates[score] * (emergency ? 2 : 1),
+    interpretation: `ASA Class ${score}${emergency ? "E" : ""} - ${
+      score === 1
+        ? "Normal healthy patient"
+        : score === 2
+          ? "Mild systemic disease"
+          : score === 3
+            ? "Severe systemic disease"
+            : score === 4
+              ? "Constant threat to life"
+              : score === 5
+                ? "Moribund patient"
+                : "Brain death"
+    }`,
+    recommendations: [
+      score >= 4
+        ? "✓ High-risk surgery - intensive monitoring required"
+        : score >= 3
+          ? "✓ Consider ICU postoperatively"
+          : "✓ Standard perioperative care",
+      emergency ? "✓ Emergency procedure increases risk 2-fold" : "✓ Elective procedure",
+      "✓ Optimize medical conditions preoperatively if time permits",
+      score >= 3 ? "✓ Cardiology/medicine consultation recommended" : "✓ Standard surgical clearance",
+    ],
+    managementPathway: [
+      {
+        priority: score >= 4 ? "immediate" : "urgent",
+        action: `ASA ${score}${emergency ? "E" : ""} perioperative management`,
+        rationale: `Mortality risk ${(mortalityRates[score] * (emergency ? 2 : 1)).toFixed(1)}%`,
+      },
+    ],
+  };
+}
+
+export function calculateRCRI(inputs: Record<string, boolean>): CalculationResult {
+  let score = 0;
+  if (inputs.high_risk_surgery) score += 1;
+  if (inputs.ischemic_heart_disease) score += 1;
+  if (inputs.heart_failure) score += 1;
+  if (inputs.cerebrovascular_disease) score += 1;
+  if (inputs.diabetes_insulin) score += 1;
+  if (inputs.renal_insufficiency) score += 1;
+
+  const cardiacRiskRates: Record<number, number> = {
+    0: 0.4,
+    1: 0.9,
+    2: 6.6,
+    3: 11.0,
+  };
+
+  const riskPercentage = score >= 3 ? 11.0 : cardiacRiskRates[score];
+  const riskLevel: "low" | "medium" | "high" =
+    score === 0 ? "low" : score === 1 ? "low" : score === 2 ? "medium" : "high";
+
+  return {
+    score,
+    maxScore: 6,
+    riskLevel,
+    riskPercentage,
+    interpretation: `RCRI Score: ${score} - ${riskPercentage}% risk of major cardiac complications (MI, cardiac arrest, death)`,
+    recommendations: [
+      score === 0
+        ? "✓ Very low risk - proceed with surgery"
+        : score === 1
+          ? "✓ Low risk - routine perioperative care"
+          : score === 2
+            ? "✓ Intermediate risk - consider stress testing or cardiology consultation"
+            : "✓ High risk - cardiology evaluation recommended",
+      score >= 2 ? "✓ Consider beta-blocker therapy if indicated" : "✓ Standard perioperative medications",
+      score >= 2 ? "✓ Intensive cardiac monitoring postoperatively" : "✓ Routine monitoring",
+      "✓ Optimize medical management before elective surgery",
+    ],
+    managementPathway: [
+      {
+        priority: score >= 3 ? "urgent" : "routine",
+        action: score >= 2 ? "Cardiology consultation" : "Standard perioperative care",
+        rationale: `${riskPercentage}% cardiac complication risk`,
+      },
+    ],
+  };
+}
+
+export function calculateCaprini(inputs: Record<string, any>): CalculationResult {
+  let score = 0;
+
+  // Age scoring
+  const ageMap: Record<string, number> = {
+    "<41 years": 0,
+    "41-60 years": 1,
+    "61-74 years": 2,
+    "≥75 years": 3,
+  };
+  score += ageMap[inputs.age] || 0;
+
+  // Surgery scoring
+  if (inputs.minor_surgery) score += 1;
+  if (inputs.major_surgery) score += 2;
+
+  // Other risk factors (1 point each)
+  if (inputs.bmi) score += 1;
+  if (inputs.varicose_veins) score += 1;
+  if (inputs.immobility) score += 2;
+
+  // Major risk factors
+  if (inputs.current_cancer) score += 2;
+  if (inputs.previous_vte) score += 3;
+  if (inputs.thrombophilia) score += 3;
+
+  const riskLevel: "low" | "medium" | "high" | "critical" =
+    score <= 2 ? "low" : score <= 4 ? "medium" : score <= 6 ? "high" : "critical";
+
+  const vteRiskRates: Record<string, number> = {
+    low: 0.5,
+    medium: 1.5,
+    high: 3.0,
+    critical: 10.7,
+  };
+
+  return {
+    score,
+    maxScore: 20,
+    riskLevel,
+    riskPercentage: vteRiskRates[riskLevel],
+    interpretation: `Caprini Score: ${score} - ${riskLevel.toUpperCase()} VTE RISK (${vteRiskRates[riskLevel]}% risk)`,
+    recommendations: [
+      score <= 2
+        ? "✓ Early ambulation recommended"
+        : score <= 4
+          ? "✓ Mechanical prophylaxis (compression devices)"
+          : score <= 6
+            ? "✓ Mechanical + pharmacologic prophylaxis (LMWH/heparin)"
+            : "✓ Aggressive prophylaxis - LMWH + mechanical devices + extended duration",
+      "✓ Risk reassessment daily",
+      score >= 5 ? "✓ Consider extended prophylaxis (30 days post-op)" : "✓ Standard duration prophylaxis",
+      "✓ Early mobilization when safe",
+    ],
+    managementPathway: [
+      {
+        priority: score >= 7 ? "immediate" : "routine",
+        action:
+          score <= 2
+            ? "Ambulation only"
+            : score <= 4
+              ? "Mechanical prophylaxis"
+              : "Pharmacologic + mechanical prophylaxis",
+        rationale: `${vteRiskRates[riskLevel]}% VTE risk - Caprini ${score}`,
+      },
+    ],
+  };
+}
+
+export function calculatePESI(inputs: Record<string, any>): CalculationResult {
+  let score = inputs.age; // Age in years
+  if (inputs.male) score += 10;
+  if (inputs.cancer) score += 30;
+  if (inputs.heart_failure) score += 10;
+  if (inputs.chronic_lung_disease) score += 10;
+  if (inputs.pulse) score += 20;
+  if (inputs.systolic_bp) score += 30;
+  if (inputs.respiratory_rate) score += 20;
+  if (inputs.temperature) score += 20;
+  if (inputs.altered_mental) score += 60;
+  if (inputs.oxygen_sat) score += 20;
+
+  const riskClass =
+    score < 66
+      ? "I (Very Low)"
+      : score < 86
+        ? "II (Low)"
+        : score < 106
+          ? "III (Moderate)"
+          : score < 126
+            ? "IV (High)"
+            : "V (Very High)";
+
+  const mortalityRates: Record<string, number> = {
+    "I (Very Low)": 0.0,
+    "II (Low)": 1.6,
+    "III (Moderate)": 3.5,
+    "IV (High)": 10.4,
+    "V (Very High)": 24.5,
+  };
+
+  const riskLevel: "low" | "medium" | "high" | "critical" =
+    score < 86 ? "low" : score < 106 ? "medium" : score < 126 ? "high" : "critical";
+
+  return {
+    score,
+    maxScore: 300,
+    riskLevel,
+    riskPercentage: mortalityRates[riskClass],
+    interpretation: `PESI Class ${riskClass} - ${mortalityRates[riskClass]}% 30-day mortality`,
+    recommendations: [
+      score < 86
+        ? "✓ Low risk - consider outpatient management if stable"
+        : score < 106
+          ? "✓ Moderate risk - hospital admission recommended"
+          : "✓ High risk - ICU admission strongly recommended",
+      score < 86 ? "✓ Anticoagulation and close outpatient follow-up" : "✓ Inpatient anticoagulation",
+      score >= 106 ? "✓ Consider thrombolysis if hemodynamically unstable" : "✓ Anticoagulation alone",
+      "✓ Risk stratification for recurrent VTE",
+    ],
+    managementPathway: [
+      {
+        priority: score >= 126 ? "immediate" : score >= 86 ? "urgent" : "routine",
+        action: score < 86 ? "Outpatient management possible" : score < 106 ? "Hospital admission" : "ICU admission",
+        rationale: `PESI Class ${riskClass} - ${mortalityRates[riskClass]}% mortality`,
+      },
+    ],
+  };
+}
+
+export function calculateSMARTCOP(inputs: Record<string, boolean>): CalculationResult {
+  let score = 0;
+  if (inputs.systolic_bp) score += 2; // S
+  if (inputs.multilobar) score += 1; // M
+  if (inputs.albumin) score += 1; // A
+  if (inputs.respiratory_rate) score += 1; // R
+  if (inputs.tachycardia) score += 1; // T
+  if (inputs.confusion) score += 1; // C
+  if (inputs.oxygen) score += 2; // O
+  if (inputs.ph) score += 2; // P
+
+  const irvs_risk = score >= 5 ? 92 : score >= 3 ? 62 : 8;
+  const riskLevel: "low" | "medium" | "high" = score <= 2 ? "low" : score <= 4 ? "medium" : "high";
+
+  return {
+    score,
+    maxScore: 11,
+    riskLevel,
+    riskPercentage: irvs_risk,
+    interpretation: `SMART-COP: ${score} - ${irvs_risk}% risk of needing IRVS (intensive respiratory or vasopressor support)`,
+    recommendations: [
+      score <= 2
+        ? "✓ Low risk - medical floor appropriate"
+        : score <= 4
+          ? "✓ Intermediate risk - high-dependency unit or close monitoring"
+          : "✓ High risk - ICU admission recommended",
+      "✓ Empiric antibiotics within 4 hours",
+      score >= 3 ? "✓ Early ICU consultation" : "✓ Standard ward care",
+      "✓ Reassess at 24-48 hours",
+    ],
+    managementPathway: [
+      {
+        priority: score >= 5 ? "immediate" : "urgent",
+        action: score <= 2 ? "Ward admission" : score <= 4 ? "High-dependency unit" : "ICU admission",
+        rationale: `${irvs_risk}% risk of requiring intensive support`,
+      },
+    ],
+  };
+}
+
+// ============================================================================
+// HEPATOLOGY (EXPANDED)
+// ============================================================================
+
+export function calculateChildPugh(inputs: Record<string, any>): CalculationResult {
+  let score = 0;
+
+  // Bilirubin
+  if (inputs.bilirubin < 2) score += 1;
+  else if (inputs.bilirubin <= 3) score += 2;
+  else score += 3;
+
+  // Albumin
+  if (inputs.albumin > 3.5) score += 1;
+  else if (inputs.albumin >= 2.8) score += 2;
+  else score += 3;
+
+  // INR
+  if (inputs.inr < 1.7) score += 1;
+  else if (inputs.inr <= 2.3) score += 2;
+  else score += 3;
+
+  // Ascites
+  const ascitesMap: Record<string, number> = {
+    None: 1,
+    "Mild (controlled with diuretics)": 2,
+    "Moderate to severe (despite diuretics)": 3,
+  };
+  score += ascitesMap[inputs.ascites] || 1;
+
+  // Encephalopathy
+  const encephalopathyMap: Record<string, number> = {
+    None: 1,
+    "Grade I-II (mild)": 2,
+    "Grade III-IV (severe)": 3,
+  };
+  score += encephalopathyMap[inputs.encephalopathy] || 1;
+
+  const childClass = score <= 6 ? "A" : score <= 9 ? "B" : "C";
+  const oneYearSurvival = score <= 6 ? 100 : score <= 9 ? 80 : 45;
+  const twoYearSurvival = score <= 6 ? 85 : score <= 9 ? 60 : 35;
+  const perioperativeMortality = score <= 6 ? 10 : score <= 9 ? 30 : 82;
+
+  const riskLevel: "low" | "medium" | "high" = score <= 6 ? "low" : score <= 9 ? "medium" : "high";
+
+  return {
+    score,
+    maxScore: 15,
+    riskLevel,
+    riskPercentage: 100 - oneYearSurvival,
+    interpretation: `Child-Pugh Class ${childClass} (Score ${score}) - ${oneYearSurvival}% 1-year survival`,
+    recommendations: [
+      `✓ Child-Pugh Class ${childClass}`,
+      `✓ 1-year survival: ${oneYearSurvival}%`,
+      `✓ 2-year survival: ${twoYearSurvival}%`,
+      `✓ Perioperative mortality: ${perioperativeMortality}%`,
+      childClass === "C"
+        ? "✓ Consider liver transplant evaluation"
+        : childClass === "B"
+          ? "✓ Medical management, monitor for decompensation"
+          : "✓ Routine follow-up, prevent progression",
+      childClass !== "A" ? "✓ High surgical risk - consider alternatives" : "✓ Surgery generally well-tolerated",
+    ],
+    managementPathway: [
+      {
+        priority: childClass === "C" ? "urgent" : "routine",
+        action:
+          childClass === "C"
+            ? "Transplant evaluation"
+            : childClass === "B"
+              ? "Optimize medical management"
+              : "Routine hepatology follow-up",
+        rationale: `Child-Pugh ${childClass} - ${100 - oneYearSurvival}% 1-year mortality`,
+      },
+    ],
+  };
+}
+
+export function calculateFIB4(inputs: { age: number; ast: number; alt: number; platelets: number }): CalculationResult {
+  const fib4 = (inputs.age * inputs.ast) / (inputs.platelets * Math.sqrt(inputs.alt));
+  const score = Math.round(fib4 * 100) / 100;
+
+  const interpretation =
+    score < 1.3
+      ? "Low probability of advanced fibrosis (F0-F1)"
+      : score <= 2.67
+        ? "Indeterminate - further evaluation recommended"
+        : "High probability of advanced fibrosis (F3-F4)";
+
+  const riskLevel: "low" | "medium" | "high" = score < 1.3 ? "low" : score <= 2.67 ? "medium" : "high";
+
+  return {
+    score: Math.round(score * 100) / 100,
+    maxScore: 12,
+    riskLevel,
+    riskPercentage: score >= 2.67 ? 80 : score >= 1.3 ? 50 : 5,
+    interpretation: `FIB-4 Index: ${score.toFixed(2)} - ${interpretation}`,
+    recommendations: [
+      score < 1.3
+        ? "✓ Low risk - routine monitoring"
+        : score <= 2.67
+          ? "✓ Indeterminate - consider elastography or liver biopsy"
+          : "✓ High risk - hepatology referral recommended",
+      score >= 2.67 ? "✓ Screen for varices (EGD)" : "✓ Standard care",
+      score >= 1.3 ? "✓ Consider advanced imaging (fibroscan/MR elastography)" : "✓ Repeat FIB-4 annually",
+      "✓ Manage underlying liver disease",
+    ],
+    managementPathway: [
+      {
+        priority: score >= 2.67 ? "urgent" : "routine",
+        action:
+          score >= 2.67 ? "Hepatology referral + elastography" : score >= 1.3 ? "Further fibrosis assessment" : "Routine monitoring",
+        rationale: `FIB-4 ${score.toFixed(2)} - ${interpretation}`,
+      },
+    ],
+  };
+}
+
+export function calculateMELDNa(inputs: {
+  creatinine: number;
+  bilirubin: number;
+  inr: number;
+  sodium: number;
+  dialysis: boolean;
+}): CalculationResult {
+  // Standard MELD calculation
+  let meld =
+    3.78 * Math.log(Math.max(inputs.bilirubin, 1.0)) +
+    11.2 * Math.log(Math.max(inputs.inr, 1.0)) +
+    9.57 * Math.log(Math.max(inputs.creatinine, 1.0)) +
+    6.43;
+
+  // If on dialysis, set creatinine to 4.0
+  if (inputs.dialysis) {
+    meld = 3.78 * Math.log(Math.max(inputs.bilirubin, 1.0)) + 11.2 * Math.log(Math.max(inputs.inr, 1.0)) + 9.57 * Math.log(4.0) + 6.43;
+  }
+
+  meld = Math.min(Math.max(Math.round(meld), 6), 40);
+
+  // Add sodium component
+  const sodiumAdjusted = Math.max(125, Math.min(inputs.sodium, 137));
+  const meldNa = meld + 1.32 * (137 - sodiumAdjusted) - (0.033 * meld * (137 - sodiumAdjusted));
+  const score = Math.min(Math.max(Math.round(meldNa), 6), 40);
+
+  const riskLevel: "low" | "medium" | "high" | "critical" =
+    score < 10 ? "low" : score < 20 ? "medium" : score < 30 ? "high" : "critical";
+
+  const mortalityRates: Record<string, number> = {
+    low: 2,
+    medium: 10,
+    high: 40,
+    critical: 80,
+  };
+
+  return {
+    score,
+    maxScore: 40,
+    riskLevel,
+    riskPercentage: mortalityRates[riskLevel],
+    interpretation: `MELD-Na: ${score} (MELD ${meld}) - ${mortalityRates[riskLevel]}% 3-month mortality`,
+    recommendations: [
+      `✓ MELD-Na: ${score}, MELD: ${meld}`,
+      score >= 20 ? "✓ Liver transplant evaluation indicated" : "✓ Medical management",
+      score >= 15 ? "✓ Monitor for hepatic decompensation" : "✓ Routine hepatology follow-up",
+      inputs.sodium < 130 ? "✓ Hyponatremia management - fluid restriction" : "✓ Sodium within acceptable range",
+    ],
+    managementPathway: [
+      {
+        priority: score >= 30 ? "immediate" : score >= 20 ? "urgent" : "routine",
+        action: score >= 20 ? "Transplant evaluation" : "Medical optimization",
+        rationale: `MELD-Na ${score} - ${mortalityRates[riskLevel]}% 3-month mortality`,
+      },
+    ],
+  };
+}
+
+export function calculateAPRI(inputs: { ast: number; ast_upper_limit: number; platelets: number }): CalculationResult {
+  const apri = ((inputs.ast / inputs.ast_upper_limit) * 100) / inputs.platelets;
+  const score = Math.round(apri * 100) / 100;
+
+  const interpretation =
+    score < 0.5
+      ? "Low probability of significant fibrosis"
+      : score <= 1.5
+        ? "Indeterminate"
+        : score > 2.0
+          ? "High probability of cirrhosis"
+          : "High probability of significant fibrosis";
+
+  const riskLevel: "low" | "medium" | "high" = score < 0.5 ? "low" : score <= 1.5 ? "medium" : "high";
+
+  return {
+    score: Math.round(score * 100) / 100,
+    maxScore: 10,
+    riskLevel,
+    riskPercentage: score > 1.5 ? 75 : score >= 0.5 ? 40 : 10,
+    interpretation: `APRI Score: ${score.toFixed(2)} - ${interpretation}`,
+    recommendations: [
+      score < 0.5
+        ? "✓ Low risk of fibrosis - routine monitoring"
+        : score <= 1.5
+          ? "✓ Indeterminate - consider additional testing (FIB-4, elastography)"
+          : "✓ High risk - hepatology referral recommended",
+      score > 2.0 ? "✓ High probability of cirrhosis - screen for varices" : "✓ Monitor for progression",
+      score >= 1.5 ? "✓ Consider liver biopsy or elastography" : "✓ Repeat APRI in 6-12 months",
+      "✓ Address underlying liver disease",
+    ],
+    managementPathway: [
+      {
+        priority: score > 1.5 ? "urgent" : "routine",
+        action: score > 1.5 ? "Hepatology referral" : score >= 0.5 ? "Further assessment" : "Routine follow-up",
+        rationale: `APRI ${score.toFixed(2)} - ${interpretation}`,
+      },
+    ],
+  };
+}
+
 // Generic calculator for simple scoring
 export function calculateGenericScore(inputs: Record<string, boolean | number>): CalculationResult {
   const score: number = Object.values(inputs).reduce((sum: number, val: boolean | number) => {

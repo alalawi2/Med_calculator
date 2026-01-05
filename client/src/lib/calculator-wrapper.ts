@@ -13,6 +13,15 @@ import {
   calculateCURB65,
   calculateCrCl,
   calculateMELD,
+  calculateASA,
+  calculateRCRI,
+  calculateCaprini,
+  calculatePESI,
+  calculateSMARTCOP,
+  calculateChildPugh,
+  calculateFIB4,
+  calculateMELDNa,
+  calculateAPRI,
   calculateGenericScore,
   type CalculationResult,
 } from "./calculator-engine";
@@ -103,6 +112,97 @@ export function executeCalculator(
           inr: parseFloat(inputs.inr) || 1,
           bilirubin_meld: parseFloat(inputs.bilirubin_meld) || 1,
           creatinine_meld: parseFloat(inputs.creatinine_meld) || 1,
+        });
+
+      // Perioperative Medicine
+      case "asa_physical_status":
+        return calculateASA({
+          asa_class: inputs.asa_class || "I - Healthy patient",
+          emergency: inputs.emergency || false,
+        });
+
+      case "rcri":
+        return calculateRCRI({
+          high_risk_surgery: inputs.high_risk_surgery || false,
+          ischemic_heart_disease: inputs.ischemic_heart_disease || false,
+          heart_failure: inputs.heart_failure || false,
+          cerebrovascular_disease: inputs.cerebrovascular_disease || false,
+          diabetes_insulin: inputs.diabetes_insulin || false,
+          renal_insufficiency: inputs.renal_insufficiency || false,
+        });
+
+      case "caprini_vte":
+        return calculateCaprini({
+          age: inputs.age || "<41 years",
+          minor_surgery: inputs.minor_surgery || false,
+          major_surgery: inputs.major_surgery || false,
+          bmi: inputs.bmi || false,
+          varicose_veins: inputs.varicose_veins || false,
+          current_cancer: inputs.current_cancer || false,
+          previous_vte: inputs.previous_vte || false,
+          thrombophilia: inputs.thrombophilia || false,
+          immobility: inputs.immobility || false,
+        });
+
+      case "pesi":
+        return calculatePESI({
+          age: parseFloat(inputs.age) || 50,
+          male: inputs.male || false,
+          cancer: inputs.cancer || false,
+          heart_failure: inputs.heart_failure || false,
+          chronic_lung_disease: inputs.chronic_lung_disease || false,
+          pulse: inputs.pulse || false,
+          systolic_bp: inputs.systolic_bp || false,
+          respiratory_rate: inputs.respiratory_rate || false,
+          temperature: inputs.temperature || false,
+          altered_mental: inputs.altered_mental || false,
+          oxygen_sat: inputs.oxygen_sat || false,
+        });
+
+      case "smart_cop":
+        return calculateSMARTCOP({
+          systolic_bp: inputs.systolic_bp || false,
+          multilobar: inputs.multilobar || false,
+          albumin: inputs.albumin || false,
+          respiratory_rate: inputs.respiratory_rate || false,
+          tachycardia: inputs.tachycardia || false,
+          confusion: inputs.confusion || false,
+          oxygen: inputs.oxygen || false,
+          ph: inputs.ph || false,
+        });
+
+      // Hepatology
+      case "child_pugh":
+        return calculateChildPugh({
+          bilirubin: parseFloat(inputs.bilirubin) || 1.0,
+          albumin: parseFloat(inputs.albumin) || 3.5,
+          inr: parseFloat(inputs.inr) || 1.0,
+          ascites: inputs.ascites || "None",
+          encephalopathy: inputs.encephalopathy || "None",
+        });
+
+      case "fib4":
+        return calculateFIB4({
+          age: parseFloat(inputs.age) || 50,
+          ast: parseFloat(inputs.ast) || 30,
+          alt: parseFloat(inputs.alt) || 30,
+          platelets: parseFloat(inputs.platelets) || 200,
+        });
+
+      case "meld_na":
+        return calculateMELDNa({
+          creatinine: parseFloat(inputs.creatinine) || 1.0,
+          bilirubin: parseFloat(inputs.bilirubin) || 1.0,
+          inr: parseFloat(inputs.inr) || 1.0,
+          sodium: parseFloat(inputs.sodium) || 140,
+          dialysis: inputs.dialysis || false,
+        });
+
+      case "apri":
+        return calculateAPRI({
+          ast: parseFloat(inputs.ast) || 30,
+          ast_upper_limit: parseFloat(inputs.ast_upper_limit) || 40,
+          platelets: parseFloat(inputs.platelets) || 200,
         });
 
       default:
