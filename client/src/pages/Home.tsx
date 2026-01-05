@@ -84,6 +84,13 @@ export default function Home() {
       setSidebarOpen(false);
     }
     setCalculationResult(null);
+    // Scroll to top of main content
+    setTimeout(() => {
+      const mainContent = document.querySelector('main');
+      if (mainContent) {
+        mainContent.scrollTop = 0;
+      }
+    }, 0);
   };
 
   const handleSelectMedication = (medicationId: string) => {
@@ -189,63 +196,58 @@ export default function Home() {
           </Alert>
         </div>
 
-        {/* Welcome Screen or Tabs */}
+        {/* Welcome Screen or Calculator View */}
         {!selectedCalculatorId ? (
           <WelcomeScreen calculators={calculators} onSelectCalculator={handleSelectCalculator} />
-        ) : (
+        ) : selectedCalculator ? (
           <div className="p-4 md:p-6">
-            {/* Calculators Content */}
             <div className="space-y-6">
-                {selectedCalculator && (
-                <div className="space-y-6">
-                  <div>
-                    <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">{selectedCalculator.name}</h2>
-                    <p className="text-sm md:text-base text-gray-600">{selectedCalculator.description}</p>
-                  </div>
+              <div>
+                <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">{selectedCalculator.name}</h2>
+                <p className="text-sm md:text-base text-gray-600">{selectedCalculator.description}</p>
+              </div>
 
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-                    {/* Form */}
-                    <div className="lg:col-span-1 bg-white rounded-lg border border-gray-200 p-3 md:p-6 shadow-sm">
-                      <CalculatorFormEnhanced
-                        calculatorName={selectedCalculator.name}
-                        calculatorDescription={selectedCalculator.description}
-                        inputs={selectedCalculator.inputs}
-                        onSubmit={handleCalculate}
-                        isLoading={isLoading}
-                      />
-                    </div>
-
-                    {/* Results */}
-                    {calculationResult && (
-                      <div className="lg:col-span-2 bg-white rounded-lg border border-gray-200 p-3 md:p-6 shadow-sm lg:sticky lg:top-24">
-                        <ResultsDisplayEnhanced
-                          result={calculationResult}
-                          calculatorName={selectedCalculator.name}
-                        />
-                        <div className="flex flex-col gap-2 mt-4">
-                          <Button
-                            onClick={() => setShowFeedback(true)}
-                            variant="outline"
-                            className="w-full"
-                          >
-                            Provide Feedback
-                          </Button>
-                          <Button
-                            onClick={() => setShowMedications(true)}
-                            variant="outline"
-                            className="w-full"
-                          >
-                            View Medication Dosing
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+                {/* Form */}
+                <div className="lg:col-span-1 bg-white rounded-lg border border-gray-200 p-3 md:p-6 shadow-sm">
+                  <CalculatorFormEnhanced
+                    calculatorName={selectedCalculator.name}
+                    calculatorDescription={selectedCalculator.description}
+                    inputs={selectedCalculator.inputs}
+                    onSubmit={handleCalculate}
+                    isLoading={isLoading}
+                  />
                 </div>
-              )}
+
+                {/* Results */}
+                {calculationResult && (
+                  <div className="lg:col-span-2 bg-white rounded-lg border border-gray-200 p-3 md:p-6 shadow-sm lg:sticky lg:top-24">
+                    <ResultsDisplayEnhanced
+                      result={calculationResult}
+                      calculatorName={selectedCalculator.name}
+                    />
+                    <div className="flex flex-col gap-2 mt-4">
+                      <Button
+                        onClick={() => setShowFeedback(true)}
+                        variant="outline"
+                        className="w-full"
+                      >
+                        Provide Feedback
+                      </Button>
+                      <Button
+                        onClick={() => setShowMedications(true)}
+                        variant="outline"
+                        className="w-full"
+                      >
+                        View Medication Dosing
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        )}
+        ) : null}
         </main>
 
         {/* Medication Dosing Modal */}
