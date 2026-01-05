@@ -94,7 +94,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-white md:flex-row">
+    <div className="flex flex-col h-screen bg-white">
       {/* Mobile Header */}
       <header className="sticky top-0 z-50 bg-gradient-to-r from-blue-50 to-white border-b border-gray-200 md:hidden">
         <div className="flex items-center justify-between px-4 py-2">
@@ -135,26 +135,40 @@ export default function Home() {
         />
       </header>
 
-      {/* Sidebar */}
-      {(sidebarOpen || !isMobile) && (
-        <aside className="fixed inset-y-0 left-0 z-40 w-64 bg-gray-50 border-r border-gray-200 overflow-y-auto pt-14 md:pt-0 md:sticky md:top-16 md:h-[calc(100vh-64px)]">
-        <Sidebar
-          selectedCalculatorId={selectedCalculatorId}
-          onSelectCalculator={handleSelectCalculator}
-          favorites={favorites}
-          onToggleFavorite={toggleFavorite}
-          recentlyUsed={recentlyUsed}
-        />
-        </aside>
-      )}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar */}
+        {(sidebarOpen || !isMobile) && (
+          <aside className="hidden md:block w-64 bg-gray-50 border-r border-gray-200 overflow-y-auto">
+          <Sidebar
+            selectedCalculatorId={selectedCalculatorId}
+            onSelectCalculator={handleSelectCalculator}
+            favorites={favorites}
+            onToggleFavorite={toggleFavorite}
+            recentlyUsed={recentlyUsed}
+          />
+          </aside>
+        )}
+        
+        {/* Mobile Sidebar */}
+        {sidebarOpen && isMobile && (
+          <>
+            <aside className="fixed inset-y-0 left-0 z-40 w-64 bg-gray-50 border-r border-gray-200 overflow-y-auto pt-14">
+            <Sidebar
+              selectedCalculatorId={selectedCalculatorId}
+              onSelectCalculator={handleSelectCalculator}
+              favorites={favorites}
+              onToggleFavorite={toggleFavorite}
+              recentlyUsed={recentlyUsed}
+            />
+            </aside>
+            <div className="fixed inset-0 z-30 bg-black/50" onClick={() => setSidebarOpen(false)} />
+          </>
+        )}
       
-      {/* Mobile Overlay */}
-      {sidebarOpen && isMobile && (
-        <div className="fixed inset-0 z-30 bg-black/50" onClick={() => setSidebarOpen(false)} />
-      )}
+        {/* Main Content */}
+        <main className="flex-1 overflow-y-auto flex flex-col">
 
-      {/* Main Content */}
-      <main className="flex-1 overflow-y-auto md:mt-16 mt-0 w-full">
+
         {/* Mobile Search */}
         <div className="md:hidden px-4 py-3 border-b border-gray-200">
           <SearchBar
@@ -236,7 +250,8 @@ export default function Home() {
             </Tabs>
           </div>
         )}
-      </main>
+        </main>
+      </div>
 
       {/* Feedback Modal */}
       {showFeedback && selectedCalculator && (

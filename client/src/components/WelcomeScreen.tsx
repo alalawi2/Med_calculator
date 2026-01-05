@@ -33,10 +33,10 @@ export default function WelcomeScreen({ calculators, onSelectCalculator }: Welco
     .slice(0, 8);
 
   return (
-    <div className="flex-1 overflow-auto bg-white">
+    <div className="flex-1 overflow-auto bg-white w-full">
       {/* Hero Section - Full Width */}
-      <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 text-white px-6 md:px-12 py-16 md:py-20">
-        <div className="max-w-7xl mx-auto">
+      <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 text-white w-full py-16 md:py-20">
+        <div className="w-full px-6 md:px-12 lg:px-16">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             {/* Left: Text Content */}
             <div>
@@ -91,12 +91,12 @@ export default function WelcomeScreen({ calculators, onSelectCalculator }: Welco
       </div>
 
       {/* Featured Calculators - Full Width */}
-      <div className="max-w-7xl mx-auto px-6 md:px-12 py-16">
-        <div className="mb-4">
+      <div className="w-full py-16 px-6 md:px-12 lg:px-16 bg-white">
+        <div className="mb-8">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Featured Calculators</h2>
           <p className="text-gray-600">Start with our most commonly used clinical tools</p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {featuredCalculators.map((calc) => (
             <Card
               key={calc.id}
@@ -135,55 +135,53 @@ export default function WelcomeScreen({ calculators, onSelectCalculator }: Welco
       </div>
 
       {/* Getting Started Guide - Full Width */}
-      <div className="bg-gradient-to-b from-gray-50 to-white py-16">
-        <div className="max-w-7xl mx-auto px-6 md:px-12">
-          <div className="mb-4">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">How It Works</h2>
-            <p className="text-gray-600">Three simple steps to clinical insights</p>
+      <div className="bg-gradient-to-b from-gray-50 to-white py-16 w-full px-6 md:px-12 lg:px-16">
+        <div className="mb-8">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">How It Works</h2>
+          <p className="text-gray-600">Three simple steps to clinical insights</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Step 1 */}
+          <div className="relative">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0">
+                <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-blue-600 text-white font-bold text-lg">1</div>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Browse & Select</h3>
+                <p className="text-gray-600">
+                  Use the sidebar to browse calculators by specialty or search by name. Each calculator is tagged with relevant medical categories for easy discovery.
+                </p>
+              </div>
+            </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-            {/* Step 1 */}
-            <div className="relative">
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0">
-                  <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-blue-600 text-white font-bold text-lg">1</div>
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Browse & Select</h3>
-                  <p className="text-gray-600">
-                    Use the sidebar to browse calculators by specialty or search by name. Each calculator is tagged with relevant medical categories for easy discovery.
-                  </p>
-                </div>
+
+          {/* Step 2 */}
+          <div className="relative">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0">
+                <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-blue-600 text-white font-bold text-lg">2</div>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Enter Data</h3>
+                <p className="text-gray-600">
+                  Fill in the clinical parameters for your patient. All inputs are validated in real-time with helpful descriptions and normal ranges.
+                </p>
               </div>
             </div>
+          </div>
 
-            {/* Step 2 */}
-            <div className="relative">
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0">
-                  <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-blue-600 text-white font-bold text-lg">2</div>
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Enter Data</h3>
-                  <p className="text-gray-600">
-                    Fill in the clinical parameters for your patient. All inputs are validated in real-time with helpful descriptions and normal ranges.
-                  </p>
-                </div>
+          {/* Step 3 */}
+          <div className="relative">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0">
+                <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-blue-600 text-white font-bold text-lg">3</div>
               </div>
-            </div>
-
-            {/* Step 3 */}
-            <div className="relative">
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0">
-                  <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-blue-600 text-white font-bold text-lg">3</div>
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Get Results</h3>
-                  <p className="text-gray-600">
-                    Receive instant risk stratification with clinical recommendations and evidence-based references to support your decision-making.
-                  </p>
-                </div>
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Get Results</h3>
+                <p className="text-gray-600">
+                  Receive instant risk stratification with clinical recommendations and evidence-based references to support your decision-making.
+                </p>
               </div>
             </div>
           </div>
@@ -191,17 +189,17 @@ export default function WelcomeScreen({ calculators, onSelectCalculator }: Welco
       </div>
 
       {/* Browse by Specialty - Full Width */}
-      <div className="max-w-7xl mx-auto px-6 md:px-12 py-16">
+      <div className="w-full py-16 px-6 md:px-12 lg:px-16 bg-white">
         <div className="mb-8">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Browse by Specialty</h2>
           <p className="text-gray-600">Explore calculators across all medical disciplines</p>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
           {categories.map((cat) => (
             <Card key={cat.name} className="border-0 shadow-sm hover:shadow-md transition-shadow cursor-pointer hover:bg-blue-50">
               <CardContent className="pt-6">
-                <p className="font-semibold text-gray-900 mb-1">{cat.name}</p>
-                <p className="text-sm text-gray-600">{cat.count} calculators</p>
+                <p className="font-semibold text-gray-900 mb-1 text-sm">{cat.name}</p>
+                <p className="text-xs text-gray-600">{cat.count} calculators</p>
               </CardContent>
             </Card>
           ))}
@@ -209,39 +207,37 @@ export default function WelcomeScreen({ calculators, onSelectCalculator }: Welco
       </div>
 
       {/* Key Features - Full Width */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 py-16">
-        <div className="max-w-7xl mx-auto px-6 md:px-12">
-          <div className="mb-8">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Why Choose MedResearch Academy</h2>
-            <p className="text-gray-600">Trusted tools for clinical excellence</p>
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 py-16 w-full px-6 md:px-12 lg:px-16">
+        <div className="mb-8">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Why Choose MedResearch Academy</h2>
+          <p className="text-gray-600">Trusted tools for clinical excellence</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+            <Zap className="w-8 h-8 text-blue-600 mb-4" />
+            <h3 className="font-bold text-gray-900 mb-2">Instant Calculations</h3>
+            <p className="text-sm text-gray-600">Real-time scoring with immediate risk stratification</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-              <Zap className="w-8 h-8 text-blue-600 mb-4" />
-              <h3 className="font-bold text-gray-900 mb-2">Instant Calculations</h3>
-              <p className="text-sm text-gray-600">Real-time scoring with immediate risk stratification</p>
-            </div>
-            <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-              <BookOpen className="w-8 h-8 text-blue-600 mb-4" />
-              <h3 className="font-bold text-gray-900 mb-2">Evidence-Based</h3>
-              <p className="text-sm text-gray-600">All calculators backed by peer-reviewed research</p>
-            </div>
-            <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-              <CheckCircle className="w-8 h-8 text-blue-600 mb-4" />
-              <h3 className="font-bold text-gray-900 mb-2">Clinical References</h3>
-              <p className="text-sm text-gray-600">Access original studies and clinical guidelines</p>
-            </div>
-            <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-              <Calculator className="w-8 h-8 text-blue-600 mb-4" />
-              <h3 className="font-bold text-gray-900 mb-2">Comprehensive</h3>
-              <p className="text-sm text-gray-600">32+ calculators across all medical specialties</p>
-            </div>
+          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+            <BookOpen className="w-8 h-8 text-blue-600 mb-4" />
+            <h3 className="font-bold text-gray-900 mb-2">Evidence-Based</h3>
+            <p className="text-sm text-gray-600">All calculators backed by peer-reviewed research</p>
+          </div>
+          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+            <CheckCircle className="w-8 h-8 text-blue-600 mb-4" />
+            <h3 className="font-bold text-gray-900 mb-2">Clinical References</h3>
+            <p className="text-sm text-gray-600">Access original studies and clinical guidelines</p>
+          </div>
+          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+            <Calculator className="w-8 h-8 text-blue-600 mb-4" />
+            <h3 className="font-bold text-gray-900 mb-2">Comprehensive</h3>
+            <p className="text-sm text-gray-600">32+ calculators across all medical specialties</p>
           </div>
         </div>
       </div>
 
       {/* Clinical Disclaimer - Full Width */}
-      <div className="max-w-7xl mx-auto px-6 md:px-12 py-16">
+      <div className="w-full py-16 px-6 md:px-12 lg:px-16 bg-white">
         <div className="bg-yellow-50 border-l-4 border-yellow-400 p-6 rounded">
           <p className="text-sm text-yellow-900">
             <strong>Clinical Disclaimer:</strong> These calculators are clinical decision support tools only and should NOT replace professional medical judgment, clinical expertise, or consultation with qualified healthcare providers. Always verify results with current clinical guidelines and patient-specific factors. MedResearch Academy and its calculators are provided for educational and informational purposes.
