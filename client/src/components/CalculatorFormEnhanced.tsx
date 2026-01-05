@@ -146,7 +146,7 @@ export function CalculatorFormEnhanced({
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {inputs.map((input) => {
             const hasError = errors[input.id];
             const isTouched = touched[input.id];
@@ -209,7 +209,7 @@ export function CalculatorFormEnhanced({
                     onChange={(e) => handleInputChange(input.id, e.target.value)}
                     onBlur={() => handleBlur(input.id)}
                     placeholder={`${input.min || 0} - ${input.max || "∞"}`}
-                    className={`h-10 ${
+                    className={`h-10 w-full ${
                       hasError && isTouched
                         ? "border-red-500 focus:ring-red-500"
                         : isValid
@@ -224,7 +224,7 @@ export function CalculatorFormEnhanced({
                     value={value || ""}
                     onChange={(e) => handleInputChange(input.id, e.target.value)}
                     onBlur={() => handleBlur(input.id)}
-                    className={`w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 ${
+                    className={`w-full h-10 px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 ${
                       hasError && isTouched
                         ? "border-red-500 focus:ring-red-500"
                         : isValid
@@ -253,7 +253,7 @@ export function CalculatorFormEnhanced({
         </div>
 
         {/* Submit Button */}
-        <div className="pt-4">
+        <div className="pt-4 col-span-full">
           <Button
             type="submit"
             disabled={isLoading || filledCount !== inputs.length}
