@@ -1,0 +1,29 @@
+{
+  "name": "MedResearch Academy - Clinical Calculator",
+  "short_name": "MedCalc",
+  "description": "Evidence-based clinical decision support calculators for healthcare professionals. 32+ medical calculators for rapid risk assessment and clinical decision-making.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
+  "categories": ["medical", "health", "productivity"],
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/medresearch-academy-logo.jpg",
+      "sizes": "200x200",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}
