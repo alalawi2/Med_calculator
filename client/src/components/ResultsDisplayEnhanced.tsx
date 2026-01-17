@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, AlertCircle, CheckCircle, TrendingUp, Download, Share2 } from "lucide-react";
+import { AlertTriangle, AlertCircle, CheckCircle, TrendingUp, Download, Copy, Check, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 interface CalculationResult {
   score: number;
@@ -15,53 +17,378 @@ interface CalculationResult {
 interface ResultsDisplayEnhancedProps {
   result: CalculationResult;
   calculatorName: string;
-  onPrint?: () => void;
-  onShare?: () => void;
 }
 
 export function ResultsDisplayEnhanced({
   result,
   calculatorName,
-  onPrint,
-  onShare,
 }: ResultsDisplayEnhancedProps) {
+  const [copied, setCopied] = useState(false);
+
+  // Color scheme with patterns for color-blind accessibility
   const getRiskColor = (level: string) => {
     switch (level) {
       case "low":
-        return { bg: "bg-green-50", border: "border-green-200", text: "text-green-900", badge: "bg-green-100 text-green-800" };
+        return {
+          bg: "bg-green-50",
+          border: "border-green-200",
+          text: "text-green-900",
+          badge: "bg-green-100 text-green-800",
+          pattern: "●", // Solid circle for low
+          ariaLabel: "Low risk - safe",
+        };
       case "moderate":
-        return { bg: "bg-yellow-50", border: "border-yellow-200", text: "text-yellow-900", badge: "bg-yellow-100 text-yellow-800" };
+        return {
+          bg: "bg-yellow-50",
+          border: "border-yellow-200",
+          text: "text-yellow-900",
+          badge: "bg-yellow-100 text-yellow-800",
+          pattern: "◐", // Half circle for moderate
+          ariaLabel: "Moderate risk - caution advised",
+        };
       case "high":
-        return { bg: "bg-orange-50", border: "border-orange-200", text: "text-orange-900", badge: "bg-orange-100 text-orange-800" };
+        return {
+          bg: "bg-orange-50",
+          border: "border-orange-200",
+          text: "text-orange-900",
+          badge: "bg-orange-100 text-orange-800",
+          pattern: "◑", // Three-quarter for high
+          ariaLabel: "High risk - intervention recommended",
+        };
       case "critical":
-        return { bg: "bg-red-50", border: "border-red-200", text: "text-red-900", badge: "bg-red-100 text-red-800" };
+        return {
+          bg: "bg-red-50",
+          border: "border-red-200",
+          text: "text-red-900",
+          badge: "bg-red-100 text-red-800",
+          pattern: "◉", // Target for critical
+          ariaLabel: "Critical risk - immediate action required",
+        };
       default:
-        return { bg: "bg-slate-50", border: "border-slate-200", text: "text-slate-900", badge: "bg-slate-100 text-slate-800" };
+        return {
+          bg: "bg-slate-50",
+          border: "border-slate-200",
+          text: "text-slate-900",
+          badge: "bg-slate-100 text-slate-800",
+          pattern: "○",
+          ariaLabel: "Risk level unknown",
+        };
     }
   };
 
   const getRiskIcon = (level: string) => {
+    const iconProps = {
+      className: "w-8 h-8",
+      "aria-hidden": "true" as const,
+    };
+
     switch (level) {
       case "low":
-        return <CheckCircle className="w-8 h-8 text-green-600" />;
+        return <CheckCircle {...iconProps} className={`${iconProps.className} text-green-600`} />;
       case "moderate":
-        return <AlertCircle className="w-8 h-8 text-yellow-600" />;
+        return <AlertCircle {...iconProps} className={`${iconProps.className} text-yellow-600`} />;
       case "high":
-        return <AlertTriangle className="w-8 h-8 text-orange-600" />;
+        return <AlertTriangle {...iconProps} className={`${iconProps.className} text-orange-600`} />;
       case "critical":
-        return <AlertTriangle className="w-8 h-8 text-red-600" />;
+        return <AlertTriangle {...iconProps} className={`${iconProps.className} text-red-600`} />;
       default:
-        return <CheckCircle className="w-8 h-8 text-slate-600" />;
+        return <CheckCircle {...iconProps} className={`${iconProps.className} text-slate-600`} />;
     }
   };
 
   const colors = getRiskColor(result.riskLevel);
 
+  // Generate plain text for clipboard/EMR
+  const generatePlainText = () => {
+    const timestamp = new Date().toLocaleString();
+    const managementSteps = Array.isArray(result.managementPathway)
+      ? result.managementPathway.map((step: any, idx: number) => `  ${idx + 1}. ${step.action} - ${step.rationale}`).join("\n")
+      : result.managementPathway;
+
+    return `
+=== CLINICAL CALCULATOR RESULT ===
+Calculator: ${calculatorName}
+Date/Time: ${timestamp}
+
+SCORE: ${result.score}
+RISK LEVEL: ${result.riskLevel.toUpperCase()} (${result.riskPercentage}%)
+
+CLINICAL INTERPRETATION:
+${result.interpretation}
+
+MANAGEMENT PATHWAY:
+${managementSteps}
+
+RECOMMENDATIONS:
+${result.recommendations.map((rec) => `  ${rec}`).join("\n")}
+
+---
+Generated by MedResearch Academy Clinical Decision Support
+Disclaimer: This is for clinical decision support only. Always verify with current guidelines.
+`.trim();
+  };
+
+  // Copy to clipboard for EMR integration
+  const handleCopyToClipboard = async () => {
+    const text = generatePlainText();
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      toast.success("Copied to clipboard", {
+        description: "Result copied for EMR documentation",
+      });
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      toast.error("Failed to copy", {
+        description: "Please try again or use manual selection",
+      });
+    }
+  };
+
+  // Print functionality
+  const handlePrint = () => {
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>${calculatorName} - Clinical Calculator Result</title>
+        <style>
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #1a1a1a;
+          }
+          .header {
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+          }
+          .header h1 {
+            margin: 0;
+            color: #1e40af;
+            font-size: 24px;
+          }
+          .header p {
+            margin: 5px 0 0;
+            color: #6b7280;
+            font-size: 12px;
+          }
+          .result-box {
+            background: ${result.riskLevel === "low" ? "#f0fdf4" : result.riskLevel === "moderate" ? "#fefce8" : result.riskLevel === "high" ? "#fff7ed" : "#fef2f2"};
+            border: 2px solid ${result.riskLevel === "low" ? "#86efac" : result.riskLevel === "moderate" ? "#fde047" : result.riskLevel === "high" ? "#fdba74" : "#fca5a5"};
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+          }
+          .score-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+          }
+          .score-item {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 12px;
+          }
+          .score-label {
+            font-size: 11px;
+            color: #6b7280;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 5px;
+          }
+          .score-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1a1a1a;
+          }
+          .risk-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            background: ${result.riskLevel === "low" ? "#dcfce7" : result.riskLevel === "moderate" ? "#fef9c3" : result.riskLevel === "high" ? "#fed7aa" : "#fecaca"};
+            color: ${result.riskLevel === "low" ? "#166534" : result.riskLevel === "moderate" ? "#854d0e" : result.riskLevel === "high" ? "#c2410c" : "#b91c1c"};
+          }
+          .section {
+            margin-bottom: 20px;
+          }
+          .section-title {
+            font-size: 11px;
+            color: #6b7280;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 5px;
+          }
+          .interpretation {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 15px;
+          }
+          .recommendation {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            margin-bottom: 8px;
+          }
+          .recommendation-check {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3b82f6;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            flex-shrink: 0;
+          }
+          .management-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 10px;
+          }
+          .step-number {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #dbeafe;
+            color: #2563eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            flex-shrink: 0;
+          }
+          .disclaimer {
+            margin-top: 30px;
+            padding: 15px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 11px;
+            color: #64748b;
+          }
+          .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 11px;
+            color: #9ca3af;
+          }
+          @media print {
+            body { padding: 0; }
+            .no-print { display: none; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>${calculatorName}</h1>
+          <p>Generated: ${new Date().toLocaleString()} | MedResearch Academy Clinical Decision Support</p>
+        </div>
+
+        <div class="result-box">
+          <div class="score-grid">
+            <div class="score-item">
+              <div class="score-label">Score</div>
+              <div class="score-value">${result.score}</div>
+            </div>
+            <div class="score-item">
+              <div class="score-label">Risk Percentage</div>
+              <div class="score-value">${result.riskPercentage}%</div>
+            </div>
+            <div class="score-item">
+              <div class="score-label">Risk Level</div>
+              <div><span class="risk-badge">${result.riskLevel}</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Clinical Interpretation</div>
+          <div class="interpretation">${result.interpretation}</div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Management Pathway</div>
+          ${Array.isArray(result.managementPathway)
+            ? result.managementPathway
+                .map(
+                  (step: any, idx: number) => `
+            <div class="management-step">
+              <div class="step-number">${idx + 1}</div>
+              <div>
+                <strong>${step.action}</strong>
+                <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">${step.rationale}</div>
+              </div>
+            </div>
+          `
+                )
+                .join("")
+            : `<p>${result.managementPathway}</p>`
+          }
+        </div>
+
+        <div class="section">
+          <div class="section-title">Clinical Recommendations</div>
+          ${result.recommendations
+            .map(
+              (rec: string) => `
+            <div class="recommendation">
+              <div class="recommendation-check">✓</div>
+              <div>${rec}</div>
+            </div>
+          `
+            )
+            .join("")}
+        </div>
+
+        <div class="disclaimer">
+          <strong>Disclaimer:</strong> This calculator is for clinical decision support only. It should not replace clinical judgment or professional medical advice. Always consult with appropriate specialists for definitive diagnosis and treatment decisions.
+        </div>
+
+        <div class="footer">
+          MedResearch Academy | Clinical Decision Support Tool
+        </div>
+      </body>
+      </html>
+    `;
+
+    const printWindow = window.open("", "_blank");
+    if (printWindow) {
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => {
+        printWindow.print();
+      }, 250);
+    }
+  };
+
   const renderManagementPathway = () => {
     if (typeof result.managementPathway === "string") {
       return result.managementPathway.split("\n").map((line: string, idx: number) => (
-        <div key={idx} className="flex items-start gap-3">
-          <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+        <div key={idx} className="flex items-start gap-3" role="listitem">
+          <div
+            className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5"
+            aria-hidden="true"
+          >
             {idx + 1}
           </div>
           <p className={`text-sm ${colors.text}`}>{line}</p>
@@ -69,8 +396,11 @@ export function ResultsDisplayEnhanced({
       ));
     } else if (Array.isArray(result.managementPathway)) {
       return result.managementPathway.map((step: any, idx: number) => (
-        <div key={idx} className="flex items-start gap-3">
-          <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+        <div key={idx} className="flex items-start gap-3" role="listitem">
+          <div
+            className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5"
+            aria-hidden="true"
+          >
             {idx + 1}
           </div>
           <div>
@@ -84,58 +414,85 @@ export function ResultsDisplayEnhanced({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" role="region" aria-label="Calculator Results">
       {/* Main Result Card */}
-      <Card className={`${colors.bg} border-2 ${colors.border}`}>
+      <Card
+        className={`${colors.bg} border-2 ${colors.border}`}
+        role="article"
+        aria-labelledby="result-title"
+        aria-describedby="result-interpretation"
+      >
         <CardHeader>
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-4">
-              {getRiskIcon(result.riskLevel)}
+              <div aria-label={colors.ariaLabel} role="img">
+                {getRiskIcon(result.riskLevel)}
+              </div>
               <div>
-                <CardTitle className={`text-2xl ${colors.text}`}>
+                <CardTitle id="result-title" className={`text-2xl ${colors.text}`}>
                   Risk Assessment Result
                 </CardTitle>
-                <CardDescription className={colors.text}>
-                  {calculatorName}
-                </CardDescription>
+                <CardDescription className={colors.text}>{calculatorName}</CardDescription>
               </div>
             </div>
-            <Badge className={colors.badge}>{result.riskLevel.toUpperCase()}</Badge>
+            <Badge className={colors.badge} aria-label={`Risk level: ${result.riskLevel}`}>
+              <span aria-hidden="true" className="mr-1">
+                {colors.pattern}
+              </span>
+              {result.riskLevel.toUpperCase()}
+            </Badge>
           </div>
         </CardHeader>
 
         <CardContent className="space-y-6">
           {/* Score Display */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4" role="group" aria-label="Score summary">
             <div className="p-4 bg-white rounded-lg border border-slate-200">
-              <p className="text-xs font-semibold text-slate-600 uppercase mb-2">Score</p>
-              <p className={`text-3xl font-bold ${colors.text}`}>{result.score}</p>
+              <p className="text-xs font-semibold text-slate-600 uppercase mb-2" id="score-label">
+                Score
+              </p>
+              <p className={`text-3xl font-bold ${colors.text}`} aria-labelledby="score-label">
+                {result.score}
+              </p>
             </div>
 
             <div className="p-4 bg-white rounded-lg border border-slate-200">
-              <p className="text-xs font-semibold text-slate-600 uppercase mb-2">Risk Percentage</p>
+              <p className="text-xs font-semibold text-slate-600 uppercase mb-2" id="risk-pct-label">
+                Risk Percentage
+              </p>
               <div className="flex items-center gap-2">
-                <p className={`text-3xl font-bold ${colors.text}`}>{result.riskPercentage}%</p>
-                <TrendingUp className={`w-6 h-6 ${colors.text}`} />
+                <p className={`text-3xl font-bold ${colors.text}`} aria-labelledby="risk-pct-label">
+                  {result.riskPercentage}%
+                </p>
+                <TrendingUp className={`w-6 h-6 ${colors.text}`} aria-hidden="true" />
               </div>
             </div>
 
             <div className="p-4 bg-white rounded-lg border border-slate-200">
-              <p className="text-xs font-semibold text-slate-600 uppercase mb-2">Risk Level</p>
-              <p className={`text-xl font-bold capitalize ${colors.text}`}>{result.riskLevel}</p>
+              <p className="text-xs font-semibold text-slate-600 uppercase mb-2" id="risk-level-label">
+                Risk Level
+              </p>
+              <p className={`text-xl font-bold capitalize ${colors.text}`} aria-labelledby="risk-level-label">
+                <span aria-hidden="true" className="mr-2">
+                  {colors.pattern}
+                </span>
+                {result.riskLevel}
+              </p>
             </div>
           </div>
 
           {/* Interpretation */}
           <div className="p-4 bg-white rounded-lg border border-slate-200">
             <p className="text-xs font-semibold text-slate-600 uppercase mb-2">Clinical Interpretation</p>
-            <p className={`text-sm leading-relaxed ${colors.text}`}>{result.interpretation}</p>
+            <p id="result-interpretation" className={`text-sm leading-relaxed ${colors.text}`}>
+              {result.interpretation}
+            </p>
           </div>
 
           {/* Management Pathway */}
           <div className="p-4 bg-white rounded-lg border border-slate-200">
             <p className="text-xs font-semibold text-slate-600 uppercase mb-3">Recommended Management Pathway</p>
-            <div className="space-y-2">
+            <div className="space-y-2" role="list" aria-label="Management steps">
               {renderManagementPathway()}
             </div>
           </div>
@@ -143,10 +500,17 @@ export function ResultsDisplayEnhanced({
           {/* Recommendations */}
           <div className="space-y-3">
             <p className="text-xs font-semibold text-slate-600 uppercase">Clinical Recommendations</p>
-            <div className="space-y-2">
+            <div className="space-y-2" role="list" aria-label="Clinical recommendations">
               {result.recommendations.map((rec: string, idx: number) => (
-                <div key={idx} className="p-3 bg-white rounded-lg border border-slate-200 flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mt-0.5">
+                <div
+                  key={idx}
+                  className="p-3 bg-white rounded-lg border border-slate-200 flex items-start gap-3"
+                  role="listitem"
+                >
+                  <div
+                    className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mt-0.5"
+                    aria-hidden="true"
+                  >
                     ✓
                   </div>
                   <p className="text-sm text-slate-700">{rec}</p>
@@ -158,29 +522,37 @@ export function ResultsDisplayEnhanced({
       </Card>
 
       {/* Action Buttons */}
-      <div className="flex gap-3">
+      <div className="flex flex-wrap gap-3" role="group" aria-label="Result actions">
         <Button
-          onClick={onPrint}
+          onClick={handlePrint}
           variant="outline"
-          className="flex-1 h-10 gap-2"
+          className="flex-1 min-w-[140px] h-10 gap-2"
+          aria-label="Print or save as PDF"
         >
-          <Download className="w-4 h-4" />
-          Export PDF
+          <Printer className="w-4 h-4" aria-hidden="true" />
+          Print / PDF
         </Button>
         <Button
-          onClick={onShare}
+          onClick={handleCopyToClipboard}
           variant="outline"
-          className="flex-1 h-10 gap-2"
+          className="flex-1 min-w-[140px] h-10 gap-2"
+          aria-label={copied ? "Copied to clipboard" : "Copy result to clipboard for EMR"}
         >
-          <Share2 className="w-4 h-4" />
-          Share Result
+          {copied ? (
+            <Check className="w-4 h-4 text-green-600" aria-hidden="true" />
+          ) : (
+            <Copy className="w-4 h-4" aria-hidden="true" />
+          )}
+          {copied ? "Copied!" : "Copy for EMR"}
         </Button>
       </div>
 
       {/* Disclaimer */}
-      <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+      <div className="p-4 bg-slate-50 rounded-lg border border-slate-200" role="note" aria-label="Important disclaimer">
         <p className="text-xs text-slate-600">
-          <strong>Disclaimer:</strong> This calculator is for clinical decision support only. It should not replace clinical judgment or professional medical advice. Always consult with appropriate specialists for definitive diagnosis and treatment decisions.
+          <strong>Disclaimer:</strong> This calculator is for clinical decision support only. It should not replace
+          clinical judgment or professional medical advice. Always consult with appropriate specialists for definitive
+          diagnosis and treatment decisions.
         </p>
       </div>
     </div>

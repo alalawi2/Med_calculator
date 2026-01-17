@@ -315,7 +315,7 @@ export function calculateCHA2DS2VASc(inputs: Record<string, boolean>): Calculati
     9: 17.4,
   };
 
-  const riskPercentage = strokeRiskRates[Math.min(score, 9)] || 17.4;
+  const riskPercentage = strokeRiskRates[Math.min(score, 9)] ?? 17.4;
   const riskLevel = score >= 5 ? "high" : score >= 2 ? "moderate" : "low";
 
   return {

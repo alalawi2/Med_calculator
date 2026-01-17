@@ -1,8 +1,6 @@
-import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useId } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Calculator, AlertCircle, CheckCircle2, Info } from "lucide-react";
 
 interface CalculatorInput {
@@ -31,6 +29,7 @@ export function CalculatorFormEnhanced({
   onSubmit,
   isLoading = false,
 }: CalculatorFormProps) {
+  const formId = useId();
   const [formValues, setFormValues] = useState<Record<string, any>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
@@ -110,20 +109,39 @@ export function CalculatorFormEnhanced({
     }
   };
 
-  const filledCount = Object.keys(formValues).filter((key) => formValues[key] !== undefined && formValues[key] !== null && formValues[key] !== "").length;
+  // Handle keyboard navigation for boolean buttons
+  const handleBooleanKeyDown = (
+    e: React.KeyboardEvent,
+    id: string,
+    currentValue: boolean | undefined
+  ) => {
+    if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+      e.preventDefault();
+      // Toggle between true and false
+      handleInputChange(id, currentValue === true ? false : true);
+    }
+  };
+
+  const filledCount = Object.keys(formValues).filter(
+    (key) => formValues[key] !== undefined && formValues[key] !== null && formValues[key] !== ""
+  ).length;
   const progressPercent = (filledCount / inputs.length) * 100;
 
   return (
-    <div className="space-y-8 max-w-4xl">
+    <div className="space-y-8 max-w-4xl" role="region" aria-label={`${calculatorName} input form`}>
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-8 rounded-lg border border-blue-200">
         <div className="flex items-start gap-6">
-          <div className="p-3 bg-blue-100 rounded-lg flex-shrink-0">
+          <div className="p-3 bg-blue-100 rounded-lg flex-shrink-0" aria-hidden="true">
             <Calculator className="w-7 h-7 text-blue-600" />
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-3xl font-bold text-slate-900 mb-2">{calculatorName}</h2>
-            <p className="text-slate-600 text-base leading-relaxed">{calculatorDescription}</p>
+            <h2 id={`${formId}-title`} className="text-3xl font-bold text-slate-900 mb-2">
+              {calculatorName}
+            </h2>
+            <p id={`${formId}-description`} className="text-slate-600 text-base leading-relaxed">
+              {calculatorDescription}
+            </p>
           </div>
         </div>
       </div>
@@ -131,12 +149,21 @@ export function CalculatorFormEnhanced({
       {/* Progress Bar */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-slate-700">Patient Information</span>
-          <span className="text-sm text-slate-500">
-            {filledCount} of {inputs.length} fields
+          <span id={`${formId}-progress-label`} className="text-sm font-medium text-slate-700">
+            Patient Information
+          </span>
+          <span className="text-sm text-slate-500" aria-live="polite">
+            {filledCount} of {inputs.length} fields completed
           </span>
         </div>
-        <div className="w-full bg-slate-200 rounded-full h-2">
+        <div
+          className="w-full bg-slate-200 rounded-full h-2"
+          role="progressbar"
+          aria-valuenow={filledCount}
+          aria-valuemin={0}
+          aria-valuemax={inputs.length}
+          aria-labelledby={`${formId}-progress-label`}
+        >
           <div
             className="bg-gradient-to-r from-blue-500 to-indigo-600 h-2 rounded-full transition-all duration-300"
             style={{ width: `${progressPercent}%` }}
@@ -145,22 +172,37 @@ export function CalculatorFormEnhanced({
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-8">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-8"
+        aria-labelledby={`${formId}-title`}
+        aria-describedby={`${formId}-description`}
+        noValidate
+      >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {inputs.map((input) => {
+          {inputs.map((input, index) => {
             const hasError = errors[input.id];
             const isTouched = touched[input.id];
             const value = formValues[input.id];
             const isValid = value !== undefined && value !== null && value !== "" && !hasError;
 
+            const inputId = `${formId}-${input.id}`;
+            const descriptionId = `${inputId}-description`;
+            const errorId = `${inputId}-error`;
+
             return (
-              <div key={input.id} className="space-y-3">
+              <div key={input.id} className="space-y-3" role="group" aria-labelledby={`${inputId}-label`}>
                 <div className="flex items-center justify-between gap-2">
-                  <label className="block text-base font-semibold text-slate-900">
+                  <label
+                    id={`${inputId}-label`}
+                    htmlFor={inputId}
+                    className="block text-base font-semibold text-slate-900"
+                  >
                     {input.label}
+                    <span className="sr-only"> (required)</span>
                   </label>
                   {isTouched && (
-                    <div className="flex-shrink-0">
+                    <div className="flex-shrink-0" aria-hidden="true">
                       {isValid ? (
                         <CheckCircle2 className="w-5 h-5 text-green-500" />
                       ) : hasError ? (
@@ -171,29 +213,44 @@ export function CalculatorFormEnhanced({
                 </div>
 
                 {input.description && (
-                  <p className="text-sm text-slate-600 flex items-start gap-2">
-                    <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                  <p id={descriptionId} className="text-sm text-slate-600 flex items-start gap-2">
+                    <Info className="w-4 h-4 flex-shrink-0 mt-0.5" aria-hidden="true" />
                     <span>{input.description}</span>
                   </p>
                 )}
 
                 {input.type === "boolean" && (
-                  <div className="flex gap-3">
+                  <div
+                    className="flex gap-3"
+                    role="radiogroup"
+                    aria-labelledby={`${inputId}-label`}
+                    aria-describedby={input.description ? descriptionId : undefined}
+                  >
                     <Button
                       type="button"
+                      id={`${inputId}-yes`}
+                      role="radio"
+                      aria-checked={value === true}
                       onClick={() => handleInputChange(input.id, true)}
                       onBlur={() => handleBlur(input.id)}
+                      onKeyDown={(e) => handleBooleanKeyDown(e, input.id, value)}
                       variant={value === true ? "default" : "outline"}
                       className="flex-1 h-10 text-base"
+                      tabIndex={value === true || value === undefined ? 0 : -1}
                     >
                       Yes
                     </Button>
                     <Button
                       type="button"
+                      id={`${inputId}-no`}
+                      role="radio"
+                      aria-checked={value === false}
                       onClick={() => handleInputChange(input.id, false)}
                       onBlur={() => handleBlur(input.id)}
+                      onKeyDown={(e) => handleBooleanKeyDown(e, input.id, value)}
                       variant={value === false ? "default" : "outline"}
                       className="flex-1 h-10 text-base"
+                      tabIndex={value === false ? 0 : -1}
                     >
                       No
                     </Button>
@@ -203,12 +260,20 @@ export function CalculatorFormEnhanced({
                 {input.type === "number" && (
                   <Input
                     type="number"
+                    id={inputId}
                     min={input.min}
                     max={input.max}
                     value={value || ""}
                     onChange={(e) => handleInputChange(input.id, e.target.value)}
                     onBlur={() => handleBlur(input.id)}
                     placeholder={`${input.min || 0} - ${input.max || "∞"}`}
+                    aria-describedby={
+                      [input.description ? descriptionId : null, hasError && isTouched ? errorId : null]
+                        .filter(Boolean)
+                        .join(" ") || undefined
+                    }
+                    aria-invalid={hasError && isTouched ? "true" : undefined}
+                    aria-required="true"
                     className={`h-11 w-full text-base ${
                       hasError && isTouched
                         ? "border-red-500 focus:ring-red-500"
@@ -221,9 +286,17 @@ export function CalculatorFormEnhanced({
 
                 {input.type === "select" && (
                   <select
+                    id={inputId}
                     value={value || ""}
                     onChange={(e) => handleInputChange(input.id, e.target.value)}
                     onBlur={() => handleBlur(input.id)}
+                    aria-describedby={
+                      [input.description ? descriptionId : null, hasError && isTouched ? errorId : null]
+                        .filter(Boolean)
+                        .join(" ") || undefined
+                    }
+                    aria-invalid={hasError && isTouched ? "true" : undefined}
+                    aria-required="true"
                     className={`w-full h-11 px-3 py-2 border rounded-md text-base focus:outline-none focus:ring-2 ${
                       hasError && isTouched
                         ? "border-red-500 focus:ring-red-500"
@@ -242,8 +315,8 @@ export function CalculatorFormEnhanced({
                 )}
 
                 {hasError && isTouched && (
-                  <p className="text-sm text-red-600 flex items-start gap-2 mt-2">
-                    <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                  <p id={errorId} className="text-sm text-red-600 flex items-start gap-2 mt-2" role="alert">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" aria-hidden="true" />
                     <span>{hasError}</span>
                   </p>
                 )}
@@ -257,10 +330,24 @@ export function CalculatorFormEnhanced({
           <Button
             type="submit"
             disabled={isLoading || filledCount !== inputs.length}
-            className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-lg transition-all duration-200"
+            aria-disabled={isLoading || filledCount !== inputs.length}
+            className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? "Calculating..." : "Calculate Risk Score"}
+            {isLoading ? (
+              <>
+                <span className="sr-only">Calculating risk score</span>
+                <span aria-hidden="true">Calculating...</span>
+              </>
+            ) : (
+              "Calculate Risk Score"
+            )}
           </Button>
+          {filledCount !== inputs.length && (
+            <p className="text-sm text-slate-500 text-center mt-2" aria-live="polite">
+              Please complete all {inputs.length - filledCount} remaining field
+              {inputs.length - filledCount !== 1 ? "s" : ""} to calculate
+            </p>
+          )}
         </div>
       </form>
     </div>
