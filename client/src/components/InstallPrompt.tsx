@@ -11,6 +11,7 @@ export function InstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
+  const [isAndroid, setIsAndroid] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
 
   useEffect(() => {
@@ -18,9 +19,13 @@ export function InstallPrompt() {
     const standalone = window.matchMedia("(display-mode: standalone)").matches;
     setIsStandalone(standalone);
 
-    // Check if iOS
-    const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    // Check device type
+    const userAgent = navigator.userAgent;
+    const iOS = /iPad|iPhone|iPod/.test(userAgent);
+    const Android = /Android/.test(userAgent);
+    
     setIsIOS(iOS);
+    setIsAndroid(Android);
 
     // Check if user dismissed the prompt recently
     const dismissed = localStorage.getItem("pwa-install-dismissed");
@@ -42,9 +47,13 @@ export function InstallPrompt() {
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
 
-    // For iOS, show manual instructions immediately
-    if (iOS && !standalone) {
-      setShowPrompt(true);
+    // Show prompt for iOS or Android (even without beforeinstallprompt event)
+    if ((iOS || Android) && !standalone) {
+      // Show after a short delay to ensure page is fully loaded
+      const timer = setTimeout(() => {
+        setShowPrompt(true);
+      }, 500);
+      return () => clearTimeout(timer);
     }
 
     return () => {
@@ -53,7 +62,13 @@ export function InstallPrompt() {
   }, []);
 
   const handleInstall = async () => {
-    if (!deferredPrompt) return;
+    if (!deferredPrompt) {
+      // Fallback for Android without beforeinstallprompt event
+      if (isAndroid) {
+        alert("To install this app:\n\n1. Tap the menu (⋮) in your browser\n2. Select 'Install app' or 'Add to Home Screen'\n3. Confirm the installation");
+      }
+      return;
+    }
 
     try {
       await deferredPrompt.prompt();
@@ -73,7 +88,7 @@ export function InstallPrompt() {
     localStorage.setItem("pwa-install-dismissed", Date.now().toString());
   };
 
-  // Don't show if already installed or prompt not available (and not iOS)
+  // Don't show if already installed
   if (isStandalone || !showPrompt) {
     return null;
   }
@@ -115,14 +130,16 @@ export function InstallPrompt() {
         </div>
 
         <div className="flex items-center gap-2">
-          {!isIOS && deferredPrompt && (
+          {/* Show install button for Android (with or without beforeinstallprompt) and iOS */}
+          {(isAndroid || isIOS) && (
             <Button
               onClick={handleInstall}
               size="sm"
               className="bg-white text-blue-600 hover:bg-blue-50 font-semibold"
+              aria-label={isIOS ? "Manual installation instructions" : "Install app"}
             >
               <Download className="w-4 h-4 mr-1" aria-hidden="true" />
-              Install
+              {isIOS ? "How to Install" : "Install"}
             </Button>
           )}
           <Button
