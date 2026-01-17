@@ -36,15 +36,15 @@ export function InstallPrompt() {
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
-      // Show prompt after a short delay (let user see the app first)
-      setTimeout(() => setShowPrompt(true), 3000);
+      // Show prompt immediately
+      setShowPrompt(true);
     };
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
 
-    // For iOS, show manual instructions after delay
+    // For iOS, show manual instructions immediately
     if (iOS && !standalone) {
-      setTimeout(() => setShowPrompt(true), 5000);
+      setShowPrompt(true);
     }
 
     return () => {
