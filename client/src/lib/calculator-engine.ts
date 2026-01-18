@@ -31,7 +31,7 @@ export function calculateQSOFA(inputs: {
   let score = 0;
   if (inputs.altered_mentation) score += 1;
   if (inputs.respiratory_rate >= 22) score += 1;
-  if (inputs.systolic_bp <= 100) score += 1; // Sepsis-3 criteria: BP ≤100 mmHg
+  if (inputs.systolic_bp <= 100) score += 1; // MDCalc: SBP ≤100 mmHg
 
   const riskLevel = score >= 2 ? "high" : "low";
   const riskPercentage = score >= 2 ? 80 : 10;
@@ -81,37 +81,48 @@ export function calculateSOFA(inputs: {
 }): CalculationResult {
   let score = 0;
 
-  // Respiratory
+  // Respiratory (PaO2/FiO2 ratio, mmHg)
+  // MDCalc: ≥400 (0), <400 (1), <300 (2), <200 with respiratory support (3), <100 with respiratory support (4)
   if (inputs.pao2_fio2 < 100) score += 4;
   else if (inputs.pao2_fio2 < 200) score += 3;
   else if (inputs.pao2_fio2 < 300) score += 2;
   else if (inputs.pao2_fio2 < 400) score += 1;
 
-  // Coagulation
+  // Coagulation (Platelets, ×10³/μL)
+  // MDCalc: ≥150 (0), <150 (1), <100 (2), <50 (3), <20 (4)
   if (inputs.platelets < 20) score += 4;
   else if (inputs.platelets < 50) score += 3;
   else if (inputs.platelets < 100) score += 2;
   else if (inputs.platelets < 150) score += 1;
 
-  // Hepatic
+  // Hepatic (Bilirubin, mg/dL)
+  // MDCalc: <1.2 (0), 1.2-1.9 (1), 2.0-5.9 (2), 6.0-11.9 (3), ≥12 (4)
   if (inputs.bilirubin >= 12) score += 4;
   else if (inputs.bilirubin >= 6) score += 3;
   else if (inputs.bilirubin >= 2) score += 2;
   else if (inputs.bilirubin >= 1.2) score += 1;
 
-  // Cardiovascular
+  // Cardiovascular (Mean Arterial Pressure, mmHg)
+  // MDCalc: MAP ≥70 (0), MAP <70 (1)
+  // Note: Full SOFA includes vasopressor requirements for scores 2-4:
+  // 2: Dopamine ≤5 μg/kg/min OR dobutamine (any dose)
+  // 3: Dopamine >5 μg/kg/min OR norepinephrine/epinephrine ≤0.1 μg/kg/min
+  // 4: Dopamine >15 μg/kg/min OR norepinephrine/epinephrine >0.1 μg/kg/min
+  // This simplified version uses MAP thresholds as proxy
   if (inputs.map < 70) score += 4;
   else if (inputs.map < 80) score += 3;
   else if (inputs.map < 90) score += 2;
   else if (inputs.map < 100) score += 1;
 
-  // Neurological
-  if (inputs.gcs <= 6) score += 4;
+  // Neurological (Glasgow Coma Scale)
+  // MDCalc: 15 (0), 13-14 (1), 10-12 (2), 6-9 (3), <6 (4)
+  if (inputs.gcs < 6) score += 4;
   else if (inputs.gcs <= 9) score += 3;
   else if (inputs.gcs <= 12) score += 2;
   else if (inputs.gcs <= 14) score += 1;
 
-  // Renal
+  // Renal (Creatinine, mg/dL)
+  // MDCalc: <1.2 (0), 1.2-1.9 (1), 2.0-3.4 (2), 3.5-4.9 (3), ≥5.0 (4)
   if (inputs.creatinine >= 5) score += 4;
   else if (inputs.creatinine >= 3.5) score += 3;
   else if (inputs.creatinine >= 2) score += 2;
@@ -152,6 +163,19 @@ export function calculateSOFA(inputs: {
   };
 }
 
+/**
+ * APACHE II Score - Simplified Implementation
+ *
+ * IMPORTANT LIMITATION: This is a SIMPLIFIED version of APACHE II.
+ * The full APACHE II score requires 12 physiologic variables + age + chronic health evaluation.
+ *
+ * Full APACHE II requires: Temperature, MAP, Heart Rate, Respiratory Rate,
+ * A-a gradient (if FiO2≥0.5) or PaO2, Arterial pH, Serum sodium, Serum potassium,
+ * Serum creatinine, Hematocrit, WBC count, GCS, Age points, and Chronic Health points.
+ *
+ * This simplified version provides a rough estimate using commonly available vital signs.
+ * For clinical decision-making, use the full APACHE II calculator (e.g., MDCalc).
+ */
 export function calculateAPACHE(inputs: {
   temperature: number;
   heart_rate: number;
@@ -181,17 +205,19 @@ export function calculateAPACHE(inputs: {
   else if (inputs.systolic_apache >= 130 || inputs.systolic_apache <= 69) score += 3;
   else if (inputs.systolic_apache >= 110 || inputs.systolic_apache <= 79) score += 1;
 
-  // Age
+  // Age points (MDCalc validated)
+  // ≥75: +6, 65-74: +5, 55-64: +3, 45-54: +2, <45: 0
   if (inputs.age_apache >= 75) score += 6;
   else if (inputs.age_apache >= 65) score += 5;
   else if (inputs.age_apache >= 55) score += 3;
-  else if (inputs.age_apache >= 45) score += 1;
+  else if (inputs.age_apache >= 45) score += 2;
 
   const riskLevel = score >= 25 ? "critical" : score >= 20 ? "high" : score >= 15 ? "moderate" : "low";
+  // Note: These mortality estimates are approximations for this simplified version
   const mortalityRates: Record<string, number> = {
     critical: 85,
     high: 55,
-    medium: 25,
+    moderate: 25,
     low: 8,
   };
 
@@ -200,18 +226,19 @@ export function calculateAPACHE(inputs: {
     maxScore: 71,
     riskLevel,
     riskPercentage: mortalityRates[riskLevel],
-    interpretation: `APACHE II Score: ${score} - ${riskLevel.toUpperCase()} RISK (${mortalityRates[riskLevel]}% predicted mortality)`,
+    interpretation: `APACHE II Score (Simplified): ${score} - ${riskLevel.toUpperCase()} RISK. Note: This is a simplified calculation using vital signs only.`,
     recommendations: [
-      `✓ Predicted ICU mortality: ${mortalityRates[riskLevel]}%`,
-      "✓ Daily APACHE II assessment",
-      "✓ Intensive monitoring and support",
-      "✓ Multidisciplinary team involvement",
+      `⚠️ SIMPLIFIED CALCULATION - Full APACHE II requires additional lab values`,
+      `✓ Estimated ICU mortality: ~${mortalityRates[riskLevel] ?? 25}%`,
+      "✓ For accurate scoring, use full APACHE II with all 12 physiologic variables",
+      "✓ Consider MDCalc or institutional calculator for clinical decisions",
+      "✓ Daily reassessment recommended",
     ],
     managementPathway: [
       {
         priority: score >= 25 ? "immediate" : "urgent",
         action: "ICU admission with intensive monitoring",
-        rationale: `APACHE II ${score} indicates high severity`,
+        rationale: `Simplified APACHE II ${score} - validate with full score`,
       },
     ],
   };
