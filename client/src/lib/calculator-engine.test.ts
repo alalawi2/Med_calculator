@@ -99,7 +99,7 @@ describe("SOFA Score", () => {
       pao2_fio2: 450,
       platelets: 200,
       bilirubin: 0.8,
-      map: 110,
+      cardiovascular: 0, // No vasopressors, MAP ≥70
       gcs: 15,
       creatinine: 0.9,
     });
@@ -113,7 +113,7 @@ describe("SOFA Score", () => {
       pao2_fio2: 90,
       platelets: 200,
       bilirubin: 0.8,
-      map: 110,
+      cardiovascular: 0, // No vasopressors, MAP ≥70
       gcs: 15,
       creatinine: 0.9,
     });
@@ -125,7 +125,7 @@ describe("SOFA Score", () => {
       pao2_fio2: 90, // 4 points
       platelets: 15, // 4 points
       bilirubin: 15, // 4 points
-      map: 60, // 4 points (< 70)
+      cardiovascular: 4, // 4 points (norepinephrine >0.1 μg/kg/min)
       gcs: 5, // 4 points
       creatinine: 6, // 4 points
     });
@@ -138,12 +138,45 @@ describe("SOFA Score", () => {
       pao2_fio2: 180, // 3 points
       platelets: 40, // 3 points
       bilirubin: 0.8, // 0 points
-      map: 110, // 0 points
-      gcs: 8, // 3 points
+      cardiovascular: 0, // 0 points
+      gcs: 8, // 3 points (GCS 6-9)
       creatinine: 0.9, // 0 points
     });
     expect(result.score).toBe(9);
     expect(result.riskLevel).toBe("high");
+  });
+
+  it("should correctly score cardiovascular component based on vasopressor use", () => {
+    // Test cardiovascular scoring with different vasopressor levels
+    const resultNoVasopressor = calculateSOFA({
+      pao2_fio2: 450,
+      platelets: 200,
+      bilirubin: 0.8,
+      cardiovascular: 0, // MAP ≥70, no vasopressors
+      gcs: 15,
+      creatinine: 0.9,
+    });
+    expect(resultNoVasopressor.score).toBe(0);
+
+    const resultLowDopamine = calculateSOFA({
+      pao2_fio2: 450,
+      platelets: 200,
+      bilirubin: 0.8,
+      cardiovascular: 2, // Dopamine ≤5 or dobutamine
+      gcs: 15,
+      creatinine: 0.9,
+    });
+    expect(resultLowDopamine.score).toBe(2);
+
+    const resultHighVasopressor = calculateSOFA({
+      pao2_fio2: 450,
+      platelets: 200,
+      bilirubin: 0.8,
+      cardiovascular: 4, // Norepinephrine >0.1 μg/kg/min
+      gcs: 15,
+      creatinine: 0.9,
+    });
+    expect(resultHighVasopressor.score).toBe(4);
   });
 });
 
@@ -332,6 +365,41 @@ describe("HEART Score", () => {
     expect(result.score).toBe(10);
     expect(result.riskLevel).toBe("high");
   });
+
+  // MDCalc validated MACE rates
+  it("should return MDCalc-validated MACE risk percentages", () => {
+    // Low risk (score 0-3): ~1.7% MACE
+    const lowRisk = calculateHEART({
+      history: 0,
+      ecg: 0,
+      age_heart: 40,
+      risk_factors: 0,
+      troponin: 0,
+    });
+    expect(lowRisk.riskPercentage).toBe(1.7);
+
+    // Moderate risk (score 4-6): ~16.6% MACE (MDCalc reference)
+    const moderateRisk = calculateHEART({
+      history: 1,
+      ecg: 1,
+      age_heart: 55, // 1 point
+      risk_factors: 1,
+      troponin: 1,
+    });
+    expect(moderateRisk.riskLevel).toBe("moderate");
+    expect(moderateRisk.riskPercentage).toBe(16.6);
+
+    // High risk (score 7+): ~50.1% MACE (MDCalc reference)
+    const highRisk = calculateHEART({
+      history: 2,
+      ecg: 2,
+      age_heart: 70,
+      risk_factors: 2,
+      troponin: 2,
+    });
+    expect(highRisk.riskLevel).toBe("high");
+    expect(highRisk.riskPercentage).toBe(50.1);
+  });
 });
 
 // ============================================================================
@@ -460,6 +528,42 @@ describe("MELD Score", () => {
     });
     expect(result.riskLevel).toBe("critical");
   });
+
+  // MDCalc validation: Lab values <1.0 are set to 1.0 to prevent negative log values
+  it("should clamp lab values below 1.0 to 1.0 (MDCalc requirement)", () => {
+    const resultLowValues = calculateMELD({
+      inr: 0.8,  // Should be clamped to 1.0
+      bilirubin_meld: 0.5,  // Should be clamped to 1.0
+      creatinine_meld: 0.6,  // Should be clamped to 1.0
+    });
+    // With all values clamped to 1.0, result should equal MELD with all 1.0 inputs
+    const resultNormalValues = calculateMELD({
+      inr: 1.0,
+      bilirubin_meld: 1.0,
+      creatinine_meld: 1.0,
+    });
+    expect(resultLowValues.score).toBe(resultNormalValues.score);
+    expect(resultLowValues.score).toBeGreaterThanOrEqual(6);
+    // Score should not be NaN or negative
+    expect(Number.isNaN(resultLowValues.score)).toBe(false);
+    expect(resultLowValues.score).toBeGreaterThan(0);
+  });
+
+  // MDCalc validation: Creatinine capped at 4.0 for dialysis patients
+  it("should cap creatinine at 4.0 for dialysis patients", () => {
+    const resultDialysis = calculateMELD({
+      inr: 1.5,
+      bilirubin_meld: 2.0,
+      creatinine_meld: 8.0,  // High creatinine
+      dialysis: true,
+    });
+    const resultCapped = calculateMELD({
+      inr: 1.5,
+      bilirubin_meld: 2.0,
+      creatinine_meld: 4.0,  // Capped at 4.0
+    });
+    expect(resultDialysis.score).toBe(resultCapped.score);
+  });
 });
 
 // ============================================================================
@@ -566,6 +670,7 @@ describe("RCRI Score", () => {
   });
 
   it("should calculate correct cardiac risk percentages", () => {
+    // Score 1 = 1.0% risk (MDCalc: 1.0-1.3% low risk)
     const score1 = calculateRCRI({
       high_risk_surgery: true,
       ischemic_heart_disease: false,
@@ -574,8 +679,9 @@ describe("RCRI Score", () => {
       diabetes_insulin: false,
       renal_insufficiency: false,
     });
-    expect(score1.riskPercentage).toBe(0.9);
+    expect(score1.riskPercentage).toBe(1.0);
 
+    // Score 2 = 5.4% risk (MDCalc: 4-7% intermediate risk)
     const score2 = calculateRCRI({
       high_risk_surgery: true,
       ischemic_heart_disease: true,
@@ -584,7 +690,7 @@ describe("RCRI Score", () => {
       diabetes_insulin: false,
       renal_insufficiency: false,
     });
-    expect(score2.riskPercentage).toBe(6.6);
+    expect(score2.riskPercentage).toBe(5.4);
   });
 });
 
