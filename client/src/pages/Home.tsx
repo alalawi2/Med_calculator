@@ -14,6 +14,7 @@ import { FeedbackModal } from "@/components/FeedbackModal";
 import { Menu, X, Stethoscope, AlertCircle, Pill } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { UnitToggle } from "@/components/UnitToggle";
 
 export default function Home() {
   // The userAuth hooks provides authentication state
@@ -121,14 +122,17 @@ export default function Home() {
               <span className="text-xs text-gray-500">Clinical Support</span>
             </div>
           </button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="md:hidden"
-          >
-            {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </Button>
+          <div className="flex items-center gap-2">
+            <UnitToggle />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="md:hidden"
+            >
+              {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -141,11 +145,14 @@ export default function Home() {
             <p className="text-xs text-gray-500">Clinical Decision Support</p>
           </div>
         </button>
-        <SearchBar
-          calculators={calculators}
-          medications={medications}
-          onSelectCalculator={handleSelectCalculator}
-        />
+        <div className="flex items-center gap-4">
+          <SearchBar
+            calculators={calculators}
+            medications={medications}
+            onSelectCalculator={handleSelectCalculator}
+          />
+          <UnitToggle />
+        </div>
       </header>
 
       <div className="flex flex-1 overflow-hidden">

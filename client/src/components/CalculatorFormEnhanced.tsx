@@ -2,6 +2,7 @@ import { useState, useId } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Calculator, AlertCircle, CheckCircle2, Info } from "lucide-react";
+import { UnitInput } from "@/components/UnitInput";
 
 interface CalculatorInput {
   id: string;
@@ -258,29 +259,22 @@ export function CalculatorFormEnhanced({
                 )}
 
                 {input.type === "number" && (
-                  <Input
-                    type="number"
-                    id={inputId}
+                  <UnitInput
+                    id={input.id}
+                    label={input.label}
+                    description={input.description}
                     min={input.min}
                     max={input.max}
                     value={value || ""}
-                    onChange={(e) => handleInputChange(input.id, e.target.value)}
+                    onChange={(val) => handleInputChange(input.id, val)}
                     onBlur={() => handleBlur(input.id)}
-                    placeholder={`${input.min || 0} - ${input.max || "∞"}`}
-                    aria-describedby={
-                      [input.description ? descriptionId : null, hasError && isTouched ? errorId : null]
-                        .filter(Boolean)
-                        .join(" ") || undefined
-                    }
-                    aria-invalid={hasError && isTouched ? "true" : undefined}
-                    aria-required="true"
-                    className={`h-11 w-full text-base ${
-                      hasError && isTouched
-                        ? "border-red-500 focus:ring-red-500"
-                        : isValid
-                          ? "border-green-500 focus:ring-green-500"
-                          : ""
-                    }`}
+                    hasError={!!hasError}
+                    isTouched={!!isTouched}
+                    isValid={isValid}
+                    inputId={inputId}
+                    descriptionId={descriptionId}
+                    errorId={errorId}
+                    parameter={input.id.replace(/_.*$/, '')} // Extract parameter name (e.g., "creatinine" from "creatinine_crcl")
                   />
                 )}
 
