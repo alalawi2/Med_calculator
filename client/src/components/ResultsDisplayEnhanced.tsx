@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, AlertCircle, CheckCircle, TrendingUp, Download, Copy, Check, Printer } from "lucide-react";
@@ -24,6 +24,18 @@ export function ResultsDisplayEnhanced({
   calculatorName,
 }: ResultsDisplayEnhancedProps) {
   const [copied, setCopied] = useState(false);
+
+  // Trigger install prompt after results are displayed
+  useEffect(() => {
+    // Check if this is the first calculation
+    const hasCalculated = localStorage.getItem('first-calculation-done');
+    if (!hasCalculated) {
+      localStorage.setItem('first-calculation-done', 'true');
+      // Dispatch custom event to show result install prompt
+      const event = new CustomEvent('show-result-install-prompt');
+      window.dispatchEvent(event);
+    }
+  }, []);
 
   // Color scheme with patterns for color-blind accessibility
   const getRiskColor = (level: string) => {
@@ -97,6 +109,15 @@ export function ResultsDisplayEnhanced({
   };
 
   const colors = getRiskColor(result.riskLevel);
+
+  // Listen for custom event to show result install prompt
+  useEffect(() => {
+    const handleShowPrompt = () => {
+      // This will be handled by EnhancedInstallPrompt component
+    };
+    window.addEventListener('show-result-install-prompt', handleShowPrompt);
+    return () => window.removeEventListener('show-result-install-prompt', handleShowPrompt);
+  }, []);
 
   // Generate plain text for clipboard/EMR
   const generatePlainText = () => {

@@ -1,4 +1,4 @@
-import { Calculator, ArrowRight, CheckCircle, BookOpen, Zap, Stethoscope } from "lucide-react";
+import { Calculator, ArrowRight, CheckCircle, BookOpen, Zap, Stethoscope, Smartphone, Lock, Users, TrendingUp, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Calculator as CalculatorType } from "@/lib/calculators-extended";
@@ -188,7 +188,79 @@ export default function WelcomeScreen({ calculators, onSelectCalculator }: Welco
         </div>
       </div>
 
+      {/* Benefits Section - Full Width */}
+      <div className="w-full py-16 px-6 md:px-12 lg:px-16 bg-gradient-to-br from-blue-50 to-indigo-50">
+        <div className="mb-8">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Why Install the App?</h2>
+          <p className="text-gray-600">Get the best experience with offline access and native app performance</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="bg-white rounded-lg p-6 border border-blue-100 shadow-sm">
+            <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-blue-600 text-white mb-4">
+              <Smartphone className="h-6 w-6" />
+            </div>
+            <h3 className="font-semibold text-gray-900 mb-2">App-Like Experience</h3>
+            <p className="text-sm text-gray-600">Fast, responsive interface that feels like a native app</p>
+          </div>
+          <div className="bg-white rounded-lg p-6 border border-blue-100 shadow-sm">
+            <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-blue-600 text-white mb-4">
+              <Zap className="h-6 w-6" />
+            </div>
+            <h3 className="font-semibold text-gray-900 mb-2">Offline Access</h3>
+            <p className="text-sm text-gray-600">Access all 32+ calculators even without internet</p>
+          </div>
+          <div className="bg-white rounded-lg p-6 border border-blue-100 shadow-sm">
+            <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-blue-600 text-white mb-4">
+              <Lock className="h-6 w-6" />
+            </div>
+            <h3 className="font-semibold text-gray-900 mb-2">Privacy First</h3>
+            <p className="text-sm text-gray-600">Your data stays on your device - no tracking</p>
+          </div>
+          <div className="bg-white rounded-lg p-6 border border-blue-100 shadow-sm">
+            <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-blue-600 text-white mb-4">
+              <Users className="h-6 w-6" />
+            </div>
+            <h3 className="font-semibold text-gray-900 mb-2">Trusted by Pros</h3>
+            <p className="text-sm text-gray-600">Used by healthcare professionals worldwide</p>
+          </div>
+        </div>
+      </div>
 
+      {/* Social Proof Section - Full Width */}
+      <div className="w-full py-16 px-6 md:px-12 lg:px-16 bg-white">
+        <div className="mb-8">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2 text-center">Trusted by Healthcare Professionals</h2>
+        </div>
+        <div className="grid grid-cols-3 gap-4 md:gap-8">
+          <div className="text-center">
+            <div className="flex justify-center mb-4">
+              <div className="p-4 bg-blue-100 rounded-lg">
+                <Users className="h-8 w-8 text-blue-600" />
+              </div>
+            </div>
+            <div className="text-3xl md:text-4xl font-bold text-gray-900">5000+</div>
+            <div className="text-sm text-gray-600 mt-2">Healthcare Professionals</div>
+          </div>
+          <div className="text-center">
+            <div className="flex justify-center mb-4">
+              <div className="p-4 bg-blue-100 rounded-lg">
+                <Star className="h-8 w-8 text-blue-600" />
+              </div>
+            </div>
+            <div className="text-3xl md:text-4xl font-bold text-gray-900">4.8/5</div>
+            <div className="text-sm text-gray-600 mt-2">Average Rating</div>
+          </div>
+          <div className="text-center">
+            <div className="flex justify-center mb-4">
+              <div className="p-4 bg-blue-100 rounded-lg">
+                <TrendingUp className="h-8 w-8 text-blue-600" />
+              </div>
+            </div>
+            <div className="text-3xl md:text-4xl font-bold text-gray-900">32+</div>
+            <div className="text-sm text-gray-600 mt-2">Clinical Calculators</div>
+          </div>
+        </div>
+      </div>
 
       {/* Clinical Disclaimer - Full Width */}
       <div className="w-full py-16 px-6 md:px-12 lg:px-16 bg-white">

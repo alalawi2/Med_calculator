@@ -4,7 +4,7 @@ import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import { InstallPrompt } from "./components/InstallPrompt";
+import { EnhancedInstallPrompt } from '@/components/EnhancedInstallPrompt';
 import Home from "./pages/Home";
 
 
@@ -34,7 +34,7 @@ function App() {
         <TooltipProvider>
           <Toaster />
           <Router />
-          <InstallPrompt />
+          <EnhancedInstallPrompt />
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>
