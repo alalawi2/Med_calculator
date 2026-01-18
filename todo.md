@@ -54,3 +54,63 @@
 - [ ] Update SOFA scoring logic for cardiovascular component
 - [ ] Create comprehensive tests for all fixes
 - [ ] Update validation report with 100% completion status
+
+## Implement All 32 Calculators
+
+**STATUS:** Complete implementation blueprint created (see CALCULATOR_IMPLEMENTATION_BLUEPRINT.md)
+**ESTIMATED EFFORT:** 40-55 hours total
+**RECOMMENDATION:** Implement in 3 phases over 8 weeks
+
+### Currently Functional (5/32)
+- [x] qSOFA Score
+- [x] HEART Score
+- [x] Wells' DVT Score
+- [x] Wells' PE Score
+- [x] CURB-65
+
+### Cardiovascular Calculators (5)
+- [ ] CHA₂DS₂-VASc Score - Stroke risk in atrial fibrillation
+- [ ] HAS-BLED Score - Bleeding risk in atrial fibrillation
+- [ ] TIMI Risk Score - Acute Coronary Syndrome risk
+- [ ] Framingham Risk Score - 10-year cardiovascular disease risk
+- [ ] ASCVD Risk Calculator - Atherosclerotic cardiovascular disease risk
+
+### Critical Care Calculators (3)
+- [ ] SOFA Score - Sequential Organ Failure Assessment (fix cardiovascular component)
+- [ ] APACHE II Score - ICU mortality prediction (complete implementation)
+- [ ] NEWS2 Score - National Early Warning Score
+
+### Neurology Calculators (3)
+- [ ] NIHSS (NIH Stroke Scale) - Acute stroke severity
+- [ ] ABCD2 Score - TIA/Stroke risk after TIA
+- [ ] Glasgow Coma Scale - Consciousness assessment (fix syntax errors)
+
+### Respiratory & Infectious Disease Calculators (3)
+- [ ] PSI/PORT Score - Pneumonia Severity Index
+- [ ] Centor Score - Strep throat risk
+- [ ] SMART-COP Score - Pneumonia severity
+
+### Nephrology Calculators (2)
+- [ ] CKD-EPI GFR - Estimated Glomerular Filtration Rate
+- [ ] Creatinine Clearance - Cockcroft-Gault equation
+
+### Hepatology & GI Calculators (7)
+- [ ] MELD Score - Model for End-Stage Liver Disease (fix formula sign)
+- [ ] Child-Pugh Score - Liver disease severity
+- [ ] FIB-4 Index - Liver fibrosis assessment
+- [ ] MELD-Na Score - Enhanced MELD with sodium
+- [ ] APRI Score - AST to Platelet Ratio Index
+- [ ] Glasgow-Blatchford Score - Upper GI bleed risk
+- [ ] BISAP Score - Acute pancreatitis severity
+
+### Perioperative Medicine Calculators (3)
+- [ ] ASA Physical Status - Perioperative risk assessment
+- [ ] RCRI (Revised Cardiac Risk Index) - Cardiac complications after non-cardiac surgery
+- [ ] Caprini Score - VTE risk in surgical patients
+- [ ] PESI (Pulmonary Embolism Severity Index) - PE mortality prediction
+
+### Testing & Validation
+- [ ] Add comprehensive test cases for all 32 calculators
+- [ ] Validate all formulas against MDCalc and original publications
+- [ ] Test unit conversions for all calculators
+- [ ] Create validation report for all 32 calculators
