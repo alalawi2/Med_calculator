@@ -280,14 +280,14 @@ describe("CHA₂DS₂-VASc Score", () => {
     const result = calculateCHA2DS2VASc({
       chf: true, // 1
       hypertension: true, // 1
-      age_75: true, // 2
+      age_75: true, // 2 (age ≥75)
       diabetes: true, // 1
       stroke_tia: true, // 2
       vascular_disease: true, // 1
-      age_65_74: true, // 1
+      age_65_74: false, // 0 (can't be both 65-74 AND ≥75)
       female: true, // 1
     });
-    expect(result.score).toBe(10); // Note: Can exceed 9 with overlapping age criteria
+    expect(result.score).toBe(9); // Maximum possible score
     expect(result.riskLevel).toBe("high");
   });
 

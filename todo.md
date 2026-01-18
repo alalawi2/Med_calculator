@@ -160,3 +160,10 @@
 - [x] Import additional test cases from branch
 - [x] Update all SOFA tests to use cardiovascular input
 - [x] Verify all 96+ tests pass (101 tests passing!)
+
+
+## URGENT BUG FIX
+
+- [x] Fix CHA₂DS₂-VASc calculator - user reports completely wrong results
+- [x] Validate CHA₂DS₂-VASc against MDCalc
+- [x] Test with multiple clinical scenarios
