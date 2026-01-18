@@ -114,3 +114,35 @@
 - [ ] Validate all formulas against MDCalc and original publications
 - [ ] Test unit conversions for all calculators
 - [ ] Create validation report for all 32 calculators
+
+## Active Implementation: All 27 Remaining Calculators
+
+### Phase 1: Priority 1 Cardiovascular (In Progress)
+- [x] Implement CHA₂DS₂-VASc Score calculator
+- [x] Implement HAS-BLED Score calculator
+- [ ] Add unit conversion support for new lab values
+- [ ] Create test cases for CHA₂DS₂-VASc
+- [ ] Create test cases for HAS-BLED
+
+### Phase 2: Priority 1 Neurology
+- [ ] Fix GCS syntax errors
+- [ ] Implement NIHSS calculator
+- [ ] Create test cases for NIHSS
+
+### Phase 3: Priority 1 Nephrology & Hepatology
+- [ ] Implement CKD-EPI GFR calculator
+- [ ] Verify Child-Pugh (already correct)
+- [ ] Fix MELD formula sign error
+- [ ] Implement Centor Score calculator
+- [ ] Create test cases for all
+
+### Phases 4-5: Priority 2 & 3 Calculators
+- [ ] Implement remaining 19 calculators per blueprint
+- [ ] Add comprehensive test coverage
+- [ ] Validate all formulas against sources
+
+### Final Phase: Testing & Validation
+- [ ] Test all 32 calculators with clinical examples
+- [ ] Verify unit conversions work correctly
+- [ ] Update validation report
+- [ ] Deploy to production

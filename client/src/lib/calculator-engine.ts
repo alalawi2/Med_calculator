@@ -344,6 +344,60 @@ export function calculateCHA2DS2VASc(inputs: Record<string, boolean>): Calculati
   };
 }
 
+export function calculateHASBLED(inputs: Record<string, boolean>): CalculationResult {
+  let score = 0;
+  if (inputs.hypertension) score += 1;
+  if (inputs.renal_disease) score += 1;
+  if (inputs.liver_disease) score += 1;
+  if (inputs.stroke_history) score += 1;
+  if (inputs.prior_bleeding) score += 1;
+  if (inputs.labile_inr) score += 1;
+  if (inputs.age_over_65) score += 1;
+  if (inputs.medication_usage) score += 1;
+  if (inputs.alcohol_use) score += 1;
+
+  const bleedingRiskRates: Record<number, number> = {
+    0: 1.13,
+    1: 1.02,
+    2: 1.88,
+    3: 3.74,
+    4: 8.70,
+    5: 12.50,
+    6: 12.50,
+    7: 12.50,
+    8: 12.50,
+    9: 12.50,
+  };
+
+  const riskPercentage = bleedingRiskRates[Math.min(score, 9)] ?? 12.5;
+  const riskLevel = score >= 3 ? "high" : score >= 2 ? "moderate" : "low";
+
+  return {
+    score,
+    maxScore: 9,
+    riskLevel,
+    riskPercentage,
+    interpretation: `HAS-BLED Score: ${score} - Annual major bleeding risk: ${riskPercentage}%`,
+    recommendations: [
+      riskLevel === "high"
+        ? "✓ High bleeding risk - Consider alternatives to anticoagulation or closer monitoring"
+        : riskLevel === "moderate"
+          ? "✓ Moderate bleeding risk - Anticoagulation with caution and regular review"
+          : "✓ Low bleeding risk - Anticoagulation appropriate if indicated",
+      "✓ Address modifiable risk factors (hypertension, alcohol, medications)",
+      "✓ Regular INR monitoring if on warfarin",
+      "✓ Patient education on bleeding signs",
+    ],
+    managementPathway: [
+      {
+        priority: riskLevel === "high" ? "urgent" : "routine",
+        action: `Bleeding risk assessment (${riskPercentage}% annual risk)`,
+        rationale: "HAS-BLED predicts major bleeding risk in AF patients on anticoagulation",
+      },
+    ],
+  };
+}
+
 export function calculateGCS(inputs: {
   eye_opening: number;
   verbal_response: number;

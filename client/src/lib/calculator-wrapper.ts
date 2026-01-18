@@ -8,6 +8,7 @@ import {
   calculateAPACHE,
   calculateNIHSS,
   calculateCHA2DS2VASc,
+  calculateHASBLED,
   calculateGCS,
   calculateHEART,
   calculateCURB65,
@@ -64,14 +65,27 @@ export function executeCalculator(
 
       case "cha2ds2vasc":
         return calculateCHA2DS2VASc({
-          chf: inputs.chf || false,
+          chf: inputs.chf_history || false,
           hypertension: inputs.hypertension || false,
-          age_75: inputs.age_75 || false,
+          age_75: inputs.age === "≥75",
           diabetes: inputs.diabetes || false,
-          stroke_tia: inputs.stroke_tia || false,
+          stroke_tia: inputs.stroke_tia_history || false,
           vascular_disease: inputs.vascular_disease || false,
-          age_65_74: inputs.age_65_74 || false,
-          female: inputs.female || false,
+          age_65_74: inputs.age === "65-74",
+          female: inputs.sex === "Female",
+        });
+
+      case "hasbled":
+        return calculateHASBLED({
+          hypertension: inputs.hypertension || false,
+          renal_disease: inputs.renal_disease || false,
+          liver_disease: inputs.liver_disease || false,
+          stroke_history: inputs.stroke_history || false,
+          prior_bleeding: inputs.prior_bleeding || false,
+          labile_inr: inputs.labile_inr || false,
+          age_over_65: inputs.age_over_65 || false,
+          medication_usage: inputs.medication_usage || false,
+          alcohol_use: inputs.alcohol_use || false,
         });
 
       case "gcs":
