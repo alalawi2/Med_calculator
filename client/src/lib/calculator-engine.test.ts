@@ -86,7 +86,7 @@ describe("qSOFA Score", () => {
       respiratory_rate: 18,
       systolic_bp: 100,
     });
-    expect(result.score).toBe(0); // SBP must be < 100, not <= 100
+    expect(result.score).toBe(1); // SBP ≤100 gets 1 point (corrected from < to ≤)
   });
 });
 

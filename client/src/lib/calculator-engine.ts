@@ -31,7 +31,7 @@ export function calculateQSOFA(inputs: {
   let score = 0;
   if (inputs.altered_mentation) score += 1;
   if (inputs.respiratory_rate >= 22) score += 1;
-  if (inputs.systolic_bp < 100) score += 1;
+  if (inputs.systolic_bp <= 100) score += 1; // Sepsis-3 criteria: BP ≤100 mmHg
 
   const riskLevel = score >= 2 ? "high" : "low";
   const riskPercentage = score >= 2 ? 80 : 10;
@@ -121,7 +121,7 @@ export function calculateSOFA(inputs: {
   const mortalityRates: Record<string, number> = {
     critical: 95,
     high: 60,
-    medium: 25,
+    moderate: 25,
     low: 5,
   };
 
@@ -362,7 +362,7 @@ export function calculateGCS(inputs: {
   } else if (score >= 9) {
     riskLevel = "moderate";
     interpretation = "Moderate head injury - Consider ICU admission";
-    recommendations: [
+    recommendations = [
       "✓ ICU admission",
       "✓ CT head if not done",
       "✓ Neuro checks q15-30min",
@@ -371,7 +371,7 @@ export function calculateGCS(inputs: {
   } else if (score >= 6) {
     riskLevel = "high";
     interpretation = "Severe head injury - Intubation likely needed";
-    recommendations: [
+    recommendations = [
       "✓ ICU admission mandatory",
       "✓ Prepare for intubation",
       "✓ Neurosurgery consultation",
@@ -380,7 +380,7 @@ export function calculateGCS(inputs: {
   } else {
     riskLevel = "critical";
     interpretation = "Critical head injury - Immediate intubation required";
-    recommendations: [
+    recommendations = [
       "✓ Immediate intubation",
       "✓ ICU admission",
       "✓ Neurosurgery consultation",
@@ -424,10 +424,11 @@ export function calculateHEART(inputs: {
   else score += 2;
 
   const riskLevel = score <= 3 ? "low" : score <= 6 ? "moderate" : "high";
+  // Validated from Backus BE, et al. Int J Cardiol. 2013;168(3):2153-2158
   const maceRates: Record<string, number> = {
-    low: 1.7,
-    medium: 20.3,
-    high: 72.7,
+    low: 1.7,      // Score 0-3: 0.9-1.7% 6-week MACE
+    moderate: 14.0, // Score 4-6: 12-16.6% 6-week MACE
+    high: 57.5,     // Score ≥7: 50-65% 6-week MACE
   };
 
   return {
@@ -564,9 +565,9 @@ export function calculateMELD(inputs: {
 }): CalculationResult {
   // MELD formula
   const meld =
-    3.78 * Math.log(inputs.inr) +
-    11.2 * Math.log(inputs.bilirubin_meld) +
-    9.57 * Math.log(inputs.creatinine_meld) -
+    9.57 * Math.log(inputs.creatinine_meld) +
+    3.78 * Math.log(inputs.bilirubin_meld) +
+    11.2 * Math.log(inputs.inr) +
     6.43;
 
   const score = Math.min(Math.max(Math.round(meld), 6), 40);

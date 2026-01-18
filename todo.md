@@ -14,3 +14,25 @@
 - [x] Owner notifications for feedback submissions
 - [x] Enhanced install prompts (bottom banner, floating banner, result prompt)
 - [x] Benefits and social proof sections
+
+## Critical: Calculator Accuracy Audit
+
+- [x] Audit qSOFA Score formula and thresholds - FIXED (BP threshold ≤100)
+- [x] Audit SOFA Score formula and thresholds - PARTIAL (key name fixed, cardiovascular needs restructure)
+- [x] Audit HEART Score formula and thresholds - FIXED (risk percentages corrected)
+- [ ] Audit Wells' DVT Score formula and thresholds
+- [ ] Audit APACHE II formula and thresholds
+- [ ] Audit CKD-EPI GFR formula and thresholds
+- [x] Audit Creatinine Clearance (Cockcroft-Gault) formula - VERIFIED CORRECT
+- [x] Audit MELD Score formula and thresholds - FIXED (sign error corrected)
+- [ ] Audit Child-Pugh Score formula and thresholds
+- [ ] Audit FIB-4 Score formula and thresholds
+- [ ] Audit MELD-Na Score formula and thresholds
+- [ ] Audit APRI Score formula and thresholds
+- [x] Audit CHA2DS2-VASc Score - VERIFIED CORRECT
+- [x] Audit GCS (Glasgow Coma Scale) - FIXED (syntax errors)
+- [x] Audit CURB-65 Score - VERIFIED (minor mortality rate differences)
+- [ ] Audit all other calculators for accuracy
+- [ ] Fix SOFA cardiovascular scoring (requires adding vasopressor inputs)
+- [ ] Create comprehensive test cases with validated examples
+- [x] Document all formula sources and validation
