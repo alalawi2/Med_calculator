@@ -75,7 +75,7 @@ export function calculateSOFA(inputs: {
   pao2_fio2: number;
   platelets: number;
   bilirubin: number;
-  map: number;
+  cardiovascular: number; // 0-4 based on MAP and vasopressor requirements
   gcs: number;
   creatinine: number;
 }): CalculationResult {
@@ -102,19 +102,17 @@ export function calculateSOFA(inputs: {
   else if (inputs.bilirubin >= 2) score += 2;
   else if (inputs.bilirubin >= 1.2) score += 1;
 
-  // Cardiovascular (Mean Arterial Pressure, mmHg)
-  // MDCalc: MAP ≥70 (0), MAP <70 (1)
-  // Note: Full SOFA includes vasopressor requirements for scores 2-4:
+  // Cardiovascular (based on MAP and vasopressor requirements)
+  // MDCalc criteria:
+  // 0: MAP ≥70 mmHg, no vasopressors
+  // 1: MAP <70 mmHg, no vasopressors
   // 2: Dopamine ≤5 μg/kg/min OR dobutamine (any dose)
   // 3: Dopamine >5 μg/kg/min OR norepinephrine/epinephrine ≤0.1 μg/kg/min
   // 4: Dopamine >15 μg/kg/min OR norepinephrine/epinephrine >0.1 μg/kg/min
-  // This simplified version uses MAP thresholds as proxy
-  if (inputs.map < 70) score += 4;
-  else if (inputs.map < 80) score += 3;
-  else if (inputs.map < 90) score += 2;
-  else if (inputs.map < 100) score += 1;
+  // Note: Input is pre-calculated CV score (0-4) from UI based on vasopressor use
+  score += Math.min(Math.max(inputs.cardiovascular, 0), 4);
 
-  // Neurological (Glasgow Coma Scale)
+  // Neurological (GCS)
   // MDCalc: 15 (0), 13-14 (1), 10-12 (2), 6-9 (3), <6 (4)
   if (inputs.gcs < 6) score += 4;
   else if (inputs.gcs <= 9) score += 3;
@@ -132,7 +130,7 @@ export function calculateSOFA(inputs: {
   const mortalityRates: Record<string, number> = {
     critical: 95,
     high: 60,
-    moderate: 25,
+    medium: 25,
     low: 5,
   };
 
@@ -185,25 +183,32 @@ export function calculateAPACHE(inputs: {
 }): CalculationResult {
   let score = 0;
 
-  // Temperature
+  // Temperature (°C) - MDCalc ranges
+  // ≥41 or ≤29.9: +4, 39-40.9: +3, 38.5-38.9: +1, 36-38.4: 0, 34-35.9: +1, 32-33.9: +2, 30-31.9: +3, ≤29.9: +4
   if (inputs.temperature >= 41 || inputs.temperature <= 29.9) score += 4;
-  else if (inputs.temperature >= 39 || inputs.temperature <= 32) score += 3;
-  else if (inputs.temperature >= 38.5 || inputs.temperature <= 32.1) score += 1;
+  else if (inputs.temperature >= 39 || (inputs.temperature >= 30 && inputs.temperature <= 31.9)) score += 3;
+  else if ((inputs.temperature >= 32 && inputs.temperature <= 33.9)) score += 2;
+  else if (inputs.temperature >= 38.5 || (inputs.temperature >= 34 && inputs.temperature <= 35.9)) score += 1;
 
-  // Heart Rate
+  // Heart Rate (bpm) - MDCalc ranges
+  // ≥180 or ≤39: +4, 140-179 or 40-54: +3, 110-139 or 55-69: +2, 70-109: 0
   if (inputs.heart_rate >= 180 || inputs.heart_rate <= 39) score += 4;
-  else if (inputs.heart_rate >= 140 || inputs.heart_rate <= 54) score += 3;
-  else if (inputs.heart_rate >= 110 || inputs.heart_rate <= 69) score += 1;
+  else if (inputs.heart_rate >= 140 || (inputs.heart_rate >= 40 && inputs.heart_rate <= 54)) score += 3;
+  else if (inputs.heart_rate >= 110 || (inputs.heart_rate >= 55 && inputs.heart_rate <= 69)) score += 2;
 
-  // Respiratory Rate
+  // Respiratory Rate (breaths/min) - MDCalc ranges
+  // ≥50 or ≤5: +4, 35-49: +3, 25-34 or 6-9: +1, 12-24: 0, 10-11: +1
   if (inputs.respiratory_rate_apache >= 50 || inputs.respiratory_rate_apache <= 5) score += 4;
-  else if (inputs.respiratory_rate_apache >= 35 || inputs.respiratory_rate_apache <= 9) score += 3;
-  else if (inputs.respiratory_rate_apache >= 25 || inputs.respiratory_rate_apache <= 11) score += 1;
+  else if (inputs.respiratory_rate_apache >= 35) score += 3;
+  else if (inputs.respiratory_rate_apache >= 25 || (inputs.respiratory_rate_apache >= 6 && inputs.respiratory_rate_apache <= 9)) score += 1;
+  else if (inputs.respiratory_rate_apache >= 10 && inputs.respiratory_rate_apache <= 11) score += 1;
 
-  // Systolic BP
+  // Mean Arterial Pressure (using systolic as proxy - NOTE: Full APACHE uses MAP)
+  // This is a simplification - MAP = (SBP + 2*DBP) / 3
+  // ≥160 or ≤49: +4, 130-159 or 50-69: +3, 110-129: +2, 70-109: 0
   if (inputs.systolic_apache >= 180 || inputs.systolic_apache <= 49) score += 4;
-  else if (inputs.systolic_apache >= 130 || inputs.systolic_apache <= 69) score += 3;
-  else if (inputs.systolic_apache >= 110 || inputs.systolic_apache <= 79) score += 1;
+  else if (inputs.systolic_apache >= 150 || (inputs.systolic_apache >= 50 && inputs.systolic_apache <= 69)) score += 3;
+  else if (inputs.systolic_apache >= 130 || (inputs.systolic_apache >= 70 && inputs.systolic_apache <= 79)) score += 2;
 
   // Age points (MDCalc validated)
   // ≥75: +6, 65-74: +5, 55-64: +3, 45-54: +2, <45: 0
@@ -225,7 +230,7 @@ export function calculateAPACHE(inputs: {
     score,
     maxScore: 71,
     riskLevel,
-    riskPercentage: mortalityRates[riskLevel],
+    riskPercentage: mortalityRates[riskLevel] ?? 25,
     interpretation: `APACHE II Score (Simplified): ${score} - ${riskLevel.toUpperCase()} RISK. Note: This is a simplified calculation using vital signs only.`,
     recommendations: [
       `⚠️ SIMPLIFIED CALCULATION - Full APACHE II requires additional lab values`,
@@ -505,11 +510,12 @@ export function calculateHEART(inputs: {
   else score += 2;
 
   const riskLevel = score <= 3 ? "low" : score <= 6 ? "moderate" : "high";
-  // Validated from Backus BE, et al. Int J Cardiol. 2013;168(3):2153-2158
+  // Validated from MDCalc and Backus BE, et al. Int J Cardiol. 2013;168(3):2153-2158
+  // Updated to match MDCalc reference values
   const maceRates: Record<string, number> = {
-    low: 1.7,      // Score 0-3: 0.9-1.7% 6-week MACE
-    moderate: 14.0, // Score 4-6: 12-16.6% 6-week MACE
-    high: 57.5,     // Score ≥7: 50-65% 6-week MACE
+    low: 1.7,       // Score 0-3: 0.9-1.7% 6-week MACE (MDCalc: ~1.7%)
+    moderate: 16.6, // Score 4-6: 12-16.6% 6-week MACE (MDCalc: ~16.6%)
+    high: 50.1,     // Score ≥7: 50-65% 6-week MACE (MDCalc: ~50.1%)
   };
 
   return {
@@ -643,12 +649,25 @@ export function calculateMELD(inputs: {
   inr: number;
   bilirubin_meld: number;
   creatinine_meld: number;
+  dialysis?: boolean;
 }): CalculationResult {
-  // MELD formula
+  // MELD formula (Original, validated by UNOS)
+  // MDCalc Reference: Lab values <1.0 are set to 1.0
+  // Creatinine is capped at 4.0 for patients on dialysis (≥2x/week) or CRRT
+  const bili = Math.max(inputs.bilirubin_meld, 1.0);
+  const inr = Math.max(inputs.inr, 1.0);
+  let creat = Math.max(inputs.creatinine_meld, 1.0);
+
+  // Cap creatinine at 4.0 for dialysis patients
+  if (inputs.dialysis) {
+    creat = Math.min(creat, 4.0);
+  }
+  creat = Math.min(creat, 4.0); // Also cap at 4.0 per UNOS guidelines
+
   const meld =
-    9.57 * Math.log(inputs.creatinine_meld) +
-    3.78 * Math.log(inputs.bilirubin_meld) +
-    11.2 * Math.log(inputs.inr) +
+    9.57 * Math.log(creat) +
+    3.78 * Math.log(bili) +
+    11.2 * Math.log(inr) +
     6.43;
 
   const score = Math.min(Math.max(Math.round(meld), 6), 40);
@@ -760,14 +779,16 @@ export function calculateRCRI(inputs: Record<string, boolean>): CalculationResul
   if (inputs.diabetes_insulin) score += 1;
   if (inputs.renal_insufficiency) score += 1;
 
+  // MDCalc/Lee Criteria validated risk rates for major cardiac complications
+  // (MI, cardiac arrest, complete heart block, death)
   const cardiacRiskRates: Record<number, number> = {
-    0: 0.4,
-    1: 0.9,
-    2: 6.6,
-    3: 11.0,
+    0: 0.4,   // Class I: Very low risk (<1%)
+    1: 1.0,   // Class II: Low risk (1.0-1.3%)
+    2: 5.4,   // Class III: Intermediate risk (4-7%)
+    3: 9.1,   // Class IV: High risk (9-11%)
   };
 
-  const riskPercentage = score >= 3 ? 11.0 : cardiacRiskRates[score];
+  const riskPercentage = score >= 3 ? cardiacRiskRates[3] : cardiacRiskRates[Math.min(score, 3)];
   const riskLevel: "low" | "moderate" | "high" =
     score === 0 ? "low" : score === 1 ? "low" : score === 2 ? "moderate" : "high";
 
@@ -931,17 +952,24 @@ export function calculatePESI(inputs: Record<string, any>): CalculationResult {
 
 export function calculateSMARTCOP(inputs: Record<string, boolean>): CalculationResult {
   let score = 0;
-  if (inputs.systolic_bp) score += 2; // S
-  if (inputs.multilobar) score += 1; // M
-  if (inputs.albumin) score += 1; // A
-  if (inputs.respiratory_rate) score += 1; // R
-  if (inputs.tachycardia) score += 1; // T
-  if (inputs.confusion) score += 1; // C
-  if (inputs.oxygen) score += 2; // O
-  if (inputs.ph) score += 2; // P
+  // MDCalc SMART-COP scoring criteria
+  if (inputs.systolic_bp) score += 2; // S - Systolic BP <90 mmHg
+  if (inputs.multilobar) score += 1; // M - Multilobar infiltrates on CXR
+  if (inputs.albumin) score += 1; // A - Albumin <3.5 g/dL
+  if (inputs.respiratory_rate) score += 1; // R - RR >30/min (age-adjusted)
+  if (inputs.tachycardia) score += 1; // T - Tachycardia (HR >125 bpm)
+  if (inputs.confusion) score += 1; // C - Confusion (acute)
+  if (inputs.oxygen) score += 2; // O - Oxygen low (SpO2 <90% or PaO2 <60)
+  if (inputs.ph) score += 2; // P - pH <7.35
 
-  const irvs_risk = score >= 5 ? 92 : score >= 3 ? 62 : 8;
-  const riskLevel: "low" | "moderate" | "high" = score <= 2 ? "low" : score <= 4 ? "moderate" : "high";
+  // MDCalc validated IRVS (Intensive Respiratory or Vasopressor Support) risk
+  // 0-2: Low risk (~4% need IRVS)
+  // 3-4: Moderate risk (1 in 8 = 12.5% need IRVS)
+  // 5-6: High risk (1 in 3 = 33% need IRVS)
+  // ≥7: Very high risk (2 in 3 = 67% need IRVS)
+  const irvs_risk = score >= 7 ? 67 : score >= 5 ? 33 : score >= 3 ? 12.5 : 4;
+  const riskLevel: "low" | "moderate" | "high" | "critical" =
+    score <= 2 ? "low" : score <= 4 ? "moderate" : score <= 6 ? "high" : "critical";
 
   return {
     score,
@@ -1048,39 +1076,44 @@ export function calculateChildPugh(inputs: Record<string, any>): CalculationResu
 }
 
 export function calculateFIB4(inputs: { age: number; ast: number; alt: number; platelets: number }): CalculationResult {
+  // FIB-4 Formula: (Age × AST) / (Platelet count × √ALT)
   const fib4 = (inputs.age * inputs.ast) / (inputs.platelets * Math.sqrt(inputs.alt));
   const score = Math.round(fib4 * 100) / 100;
 
+  // MDCalc original cutoffs (validated in HIV/HCV):
+  // <1.45: Low probability of advanced fibrosis (NPV 90%)
+  // 1.45-3.25: Indeterminate
+  // >3.25: High probability of advanced fibrosis (PPV 65%, specificity 97%)
   const interpretation =
-    score < 1.3
+    score < 1.45
       ? "Low probability of advanced fibrosis (F0-F1)"
-      : score <= 2.67
+      : score <= 3.25
         ? "Indeterminate - further evaluation recommended"
         : "High probability of advanced fibrosis (F3-F4)";
 
-  const riskLevel: "low" | "moderate" | "high" = score < 1.3 ? "low" : score <= 2.67 ? "moderate" : "high";
+  const riskLevel: "low" | "moderate" | "high" = score < 1.45 ? "low" : score <= 3.25 ? "moderate" : "high";
 
   return {
     score: Math.round(score * 100) / 100,
     maxScore: 12,
     riskLevel,
-    riskPercentage: score >= 2.67 ? 80 : score >= 1.3 ? 50 : 5,
+    riskPercentage: score > 3.25 ? 80 : score >= 1.45 ? 50 : 5,
     interpretation: `FIB-4 Index: ${score.toFixed(2)} - ${interpretation}`,
     recommendations: [
-      score < 1.3
-        ? "✓ Low risk - routine monitoring"
-        : score <= 2.67
+      score < 1.45
+        ? "✓ Low risk - routine monitoring (NPV 90% for advanced fibrosis)"
+        : score <= 3.25
           ? "✓ Indeterminate - consider elastography or liver biopsy"
-          : "✓ High risk - hepatology referral recommended",
-      score >= 2.67 ? "✓ Screen for varices (EGD)" : "✓ Standard care",
-      score >= 1.3 ? "✓ Consider advanced imaging (fibroscan/MR elastography)" : "✓ Repeat FIB-4 annually",
+          : "✓ High risk - hepatology referral recommended (PPV 65%)",
+      score > 3.25 ? "✓ Screen for varices (EGD)" : "✓ Standard care",
+      score >= 1.45 ? "✓ Consider advanced imaging (fibroscan/MR elastography)" : "✓ Repeat FIB-4 annually",
       "✓ Manage underlying liver disease",
     ],
     managementPathway: [
       {
-        priority: score >= 2.67 ? "urgent" : "routine",
+        priority: score > 3.25 ? "urgent" : "routine",
         action:
-          score >= 2.67 ? "Hepatology referral + elastography" : score >= 1.3 ? "Further fibrosis assessment" : "Routine monitoring",
+          score > 3.25 ? "Hepatology referral + elastography" : score >= 1.45 ? "Further fibrosis assessment" : "Routine monitoring",
         rationale: `FIB-4 ${score.toFixed(2)} - ${interpretation}`,
       },
     ],

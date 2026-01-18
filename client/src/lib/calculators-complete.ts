@@ -1064,6 +1064,12 @@ export const completeCalculators: Calculator[] = [
         min: 0.1,
         max: 30,
       },
+      {
+        id: "dialysis",
+        label: "On Dialysis",
+        description: "Patient on dialysis (≥2x/week) or CRRT",
+        type: "checkbox",
+      },
     ],
     references: [
       {
