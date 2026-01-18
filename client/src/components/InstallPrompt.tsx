@@ -74,7 +74,7 @@ export function InstallPrompt() {
   };
 
   // Don't show if already installed or prompt not available (and not iOS)
-  if (isStandalone || (!showPrompt)) {
+  if (isStandalone || !showPrompt) {
     return null;
   }
 
@@ -90,18 +90,25 @@ export function InstallPrompt() {
             <Smartphone className="w-6 h-6" />
           </div>
           <div>
-            <p className="font-semibold text-sm md:text-base">Install MedCalc App</p>
+            <p className="font-semibold text-sm md:text-base">Install MedResearch Academy</p>
             {isIOS ? (
               <p className="text-xs md:text-sm text-blue-100">
-                Tap <span className="inline-flex items-center px-1 bg-white/20 rounded">
+                Tap{" "}
+                <span className="inline-flex items-center px-1 bg-white/20 rounded">
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2L12 14M12 2L8 6M12 2L16 6M4 14V20C4 21.1046 4.89543 22 6 22H18C19.1046 22 20 21.1046 20 20V14" stroke="currentColor" strokeWidth="2" fill="none"/>
+                    <path
+                      d="M12 2L12 14M12 2L8 6M12 2L16 6M4 14V20C4 21.1046 4.89543 22 6 22H18C19.1046 22 20 21.1046 20 20V14"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      fill="none"
+                    />
                   </svg>
-                </span> then "Add to Home Screen"
+                </span>{" "}
+                then "Add to Home Screen"
               </p>
             ) : (
               <p className="text-xs md:text-sm text-blue-100">
-                Access calculators offline, anytime
+                Access 32+ clinical calculators offline, anytime
               </p>
             )}
           </div>
