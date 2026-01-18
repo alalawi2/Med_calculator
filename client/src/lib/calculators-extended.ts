@@ -268,18 +268,18 @@ export const allCalculators: Calculator[] = [
         value: 1,
       },
       {
-        id: "clinical_signs_dvt_alt",
-        label: "Clinical Signs of DVT (Alternative)",
-        description: "Leg swelling and pain",
-        type: "boolean",
-        value: 1,
-      },
-      {
-        id: "syncope",
-        label: "Syncope",
-        description: "Loss of consciousness",
+        id: "previous_pe_dvt",
+        label: "Previous PE or DVT",
+        description: "Objectively diagnosed",
         type: "boolean",
         value: 1.5,
+      },
+      {
+        id: "active_cancer",
+        label: "Malignancy",
+        description: "Treatment within 6 months or palliative",
+        type: "boolean",
+        value: 1,
       },
     ],
     scoring: {

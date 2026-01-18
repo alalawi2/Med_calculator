@@ -20,11 +20,12 @@
 - [x] Audit qSOFA Score formula and thresholds - FIXED (BP threshold ≤100)
 - [x] Audit SOFA Score formula and thresholds - PARTIAL (key name fixed, cardiovascular needs restructure)
 - [x] Audit HEART Score formula and thresholds - FIXED (risk percentages corrected)
-- [ ] Audit Wells' DVT Score formula and thresholds
-- [ ] Audit APACHE II formula and thresholds
-- [ ] Audit NIHSS (NIH Stroke Scale) formula and thresholds
-- [ ] Audit PESI (Pulmonary Embolism Severity Index) formula
-- [ ] Audit SMART-COP formula and thresholds
+- [x] Audit Wells' DVT Score formula and thresholds - VERIFIED CORRECT
+- [ ] Audit APACHE II formula and thresholds - NOT IN UI (errors found in engine)
+- [ ] Audit NIHSS (NIH Stroke Scale) formula and thresholds - NOT IN UI
+- [ ] Audit PESI (Pulmonary Embolism Severity Index) formula - NOT IN UI
+- [ ] Audit SMART-COP formula and thresholds - NOT IN UI
+- [x] Audit Wells' PE Score formula and thresholds - FIXED (wrong inputs)
 - [x] Audit Creatinine Clearance (Cockcroft-Gault) formula - VERIFIED CORRECT
 - [x] Audit MELD Score formula and thresholds - FIXED (sign error corrected)
 - [x] Audit Child-Pugh Score formula and thresholds - VERIFIED CORRECT
@@ -40,3 +41,16 @@
 - [ ] Fix SOFA cardiovascular scoring (requires adding vasopressor inputs)
 - [x] Create comprehensive test cases with validated examples
 - [x] Document all formula sources and validation - See CALCULATOR_VALIDATION_REPORT.md
+
+## Phase 2: Complete Remaining Calculator Validations
+- [ ] Validate APACHE II against original Knaus publication
+- [ ] Validate NIHSS against NIH stroke scale guidelines
+- [ ] Validate PESI against Aujesky publication
+- [ ] Validate SMART-COP against pneumonia severity criteria
+- [ ] Validate Wells DVT against original Wells criteria
+- [ ] Fix any errors found in above calculators
+- [ ] Restructure SOFA cardiovascular with vasopressor inputs (dopamine, dobutamine, epinephrine, norepinephrine)
+- [ ] Add vasopressor dose inputs (mcg/kg/min)
+- [ ] Update SOFA scoring logic for cardiovascular component
+- [ ] Create comprehensive tests for all fixes
+- [ ] Update validation report with 100% completion status
