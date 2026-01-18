@@ -10,6 +10,7 @@ import {
   calculateAPACHE,
   calculateNIHSS,
   calculateCHA2DS2VASc,
+  calculateHASBLED,
   calculateGCS,
   calculateHEART,
   calculateCURB65,
@@ -309,6 +310,63 @@ describe("CHA₂DS₂-VASc Score", () => {
 });
 
 // ============================================================================
+// HAS-BLED Score Tests (MDCalc validated)
+// ============================================================================
+describe("HAS-BLED Score", () => {
+  it("should return score 0 for no risk factors", () => {
+    const result = calculateHASBLED({
+      hypertension: false,
+      renal_disease: false,
+      liver_disease: false,
+      stroke_history: false,
+      prior_bleeding: false,
+      labile_inr: false,
+      age_over_65: false,
+      medication_usage: false,
+      alcohol_use: false,
+    });
+    expect(result.score).toBe(0);
+    expect(result.riskLevel).toBe("low");
+    // MDCalc: Score 0 = 1.1% annual major bleeding risk
+    expect(result.riskPercentage).toBe(1.1);
+  });
+
+  it("should calculate maximum score of 9", () => {
+    const result = calculateHASBLED({
+      hypertension: true,
+      renal_disease: true,
+      liver_disease: true,
+      stroke_history: true,
+      prior_bleeding: true,
+      labile_inr: true,
+      age_over_65: true,
+      medication_usage: true,
+      alcohol_use: true,
+    });
+    expect(result.score).toBe(9);
+    expect(result.riskLevel).toBe("high");
+  });
+
+  it("should return high risk for score >= 3", () => {
+    const result = calculateHASBLED({
+      hypertension: true,
+      renal_disease: true,
+      liver_disease: false,
+      stroke_history: true,
+      prior_bleeding: false,
+      labile_inr: false,
+      age_over_65: false,
+      medication_usage: false,
+      alcohol_use: false,
+    });
+    expect(result.score).toBe(3);
+    expect(result.riskLevel).toBe("high");
+    // MDCalc: Score 3 = 3.7% annual major bleeding risk
+    expect(result.riskPercentage).toBe(3.7);
+  });
+});
+
+// ============================================================================
 // HEART Score Tests
 // ============================================================================
 describe("HEART Score", () => {
@@ -418,7 +476,8 @@ describe("CURB-65 Score", () => {
     });
     expect(result.score).toBe(0);
     expect(result.riskLevel).toBe("low");
-    expect(result.riskPercentage).toBe(0.7);
+    // MDCalc validated: Score 0 = 0.6% 30-day mortality
+    expect(result.riskPercentage).toBe(0.6);
   });
 
   it("should return maximum score of 5", () => {
@@ -431,7 +490,8 @@ describe("CURB-65 Score", () => {
     });
     expect(result.score).toBe(5);
     expect(result.riskLevel).toBe("high");
-    expect(result.riskPercentage).toBe(57.0);
+    // MDCalc validated: Score 4-5 = 27.8% 30-day mortality
+    expect(result.riskPercentage).toBe(27.8);
   });
 
   it("should return correct mortality rates for each score", () => {
@@ -442,7 +502,8 @@ describe("CURB-65 Score", () => {
       blood_pressure_curb: false,
       age_65_curb: false,
     });
-    expect(score2.riskPercentage).toBe(13.0);
+    // MDCalc validated: Score 2 = 6.8% 30-day mortality
+    expect(score2.riskPercentage).toBe(6.8);
   });
 });
 
