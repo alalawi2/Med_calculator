@@ -235,13 +235,6 @@ export function CalculatorViewEnhanced({
         open={feedbackOpen}
         onOpenChange={setFeedbackOpen}
         calculatorName={calculator.name}
-        onSubmit={(feedback) => {
-          submitFeedback({
-            calculatorId: calculator.id,
-            ...feedback,
-          });
-          setFeedbackOpen(false);
-        }}
       />
     </div>
   );

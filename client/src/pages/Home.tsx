@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { Sidebar } from "@/components/Sidebar";
 import { CalculatorFormEnhanced } from "@/components/CalculatorFormEnhanced";
 import { ResultsDisplayEnhanced } from "@/components/ResultsDisplayEnhanced";
@@ -15,6 +16,10 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function Home() {
+  // The userAuth hooks provides authentication state
+  // To implement login/logout functionality, simply call logout() or redirect to getLoginUrl()
+  let { user, loading, error, isAuthenticated, logout } = useAuth();
+
   const [selectedCalculatorId, setSelectedCalculatorId] = useState<string | null>(null);
   const [recentlyUsed, setRecentlyUsed] = useState<string[]>(() => {
     const stored = localStorage.getItem("medresearch_recent");
@@ -279,10 +284,6 @@ export default function Home() {
           open={showFeedback}
           onOpenChange={setShowFeedback}
           calculatorName={selectedCalculator.name}
-          onSubmit={(data) => {
-            console.log("Feedback submitted:", data);
-            setShowFeedback(false);
-          }}
         />
       )}
     </div>
