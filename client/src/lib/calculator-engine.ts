@@ -334,14 +334,15 @@ export function calculateCHA2DS2VASc(inputs: Record<string, boolean>): Calculati
   if (inputs.age_65_74) score += 1;
   if (inputs.female) score += 1;
 
+  // MDCalc: Stroke/TIA/Systemic Embolism Risk (%) - Lip 2010 validation study
   const strokeRiskRates: Record<number, number> = {
-    0: 0,
-    1: 1.3,
-    2: 2.2,
-    3: 3.2,
-    4: 4.0,
-    5: 6.7,
-    6: 9.6,
+    0: 0.3,
+    1: 0.9,
+    2: 2.9,
+    3: 4.6,
+    4: 6.7,
+    5: 10.0,
+    6: 13.6,
     7: 15.7,
     8: 15.2,
     9: 17.4,

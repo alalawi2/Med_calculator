@@ -244,8 +244,8 @@ describe("CHA₂DS₂-VASc Score", () => {
     });
     expect(result.score).toBe(0);
     expect(result.riskLevel).toBe("low");
-    // Score 0 = 0% annual stroke risk (fixed bug: was using || instead of ??)
-    expect(result.riskPercentage).toBe(0);
+    // Score 0 = 0.3% annual stroke risk per MDCalc (Lip 2010 validation study)
+    expect(result.riskPercentage).toBe(0.3);
   });
 
   it("should add 2 points for age >= 75", () => {
@@ -303,7 +303,8 @@ describe("CHA₂DS₂-VASc Score", () => {
       female: false,
     });
     expect(result1.score).toBe(1);
-    expect(result1.riskPercentage).toBe(1.3);
+    // Score 1 = 0.9% annual stroke risk per MDCalc (Lip 2010 validation study)
+    expect(result1.riskPercentage).toBe(0.9);
   });
 });
 
