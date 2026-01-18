@@ -80,13 +80,14 @@ describe("qSOFA Score", () => {
     expect(result.score).toBe(1);
   });
 
+  // MDCalc/Sepsis-3 criteria: SBP ≤100 mmHg (less than or equal to)
   it("should handle boundary values correctly (SBP = 100)", () => {
     const result = calculateQSOFA({
       altered_mentation: false,
       respiratory_rate: 18,
       systolic_bp: 100,
     });
-    expect(result.score).toBe(0); // SBP must be < 100, not <= 100
+    expect(result.score).toBe(1); // SBP ≤100 scores 1 point per MDCalc
   });
 });
 
@@ -629,24 +630,27 @@ describe("FIB-4 Index", () => {
     expect(result.score).toBeCloseTo(1.67, 1);
   });
 
-  it("should return low risk for FIB-4 < 1.3", () => {
+  // MDCalc cutoff: <1.45 = low risk (90% NPV for advanced fibrosis)
+  it("should return low risk for FIB-4 < 1.45", () => {
     const result = calculateFIB4({
       age: 30,
       ast: 25,
       alt: 25,
       platelets: 250,
     });
+    expect(result.score).toBeLessThan(1.45);
     expect(result.riskLevel).toBe("low");
   });
 
-  it("should return high risk for FIB-4 > 2.67", () => {
+  // MDCalc cutoff: >3.25 = high risk (65% PPV, 97% specificity)
+  it("should return high risk for FIB-4 > 3.25", () => {
     const result = calculateFIB4({
       age: 70,
       ast: 100,
       alt: 50,
       platelets: 100,
     });
-    expect(result.score).toBeGreaterThan(2.67);
+    expect(result.score).toBeGreaterThan(3.25);
     expect(result.riskLevel).toBe("high");
   });
 });
@@ -870,6 +874,7 @@ describe("PESI Score", () => {
 // SMART-COP Tests
 // ============================================================================
 describe("SMART-COP Score", () => {
+  // MDCalc: 0-2 points = Low risk (~4% need IRVS)
   it("should return low risk for score 0-2", () => {
     const result = calculateSMARTCOP({
       systolic_bp: false,
@@ -883,7 +888,7 @@ describe("SMART-COP Score", () => {
     });
     expect(result.score).toBe(0);
     expect(result.riskLevel).toBe("low");
-    expect(result.riskPercentage).toBe(8);
+    expect(result.riskPercentage).toBe(4); // MDCalc: ~4% IRVS risk for low scores
   });
 
   it("should give 2 points for SBP, oxygen, and pH", () => {
@@ -897,7 +902,8 @@ describe("SMART-COP Score", () => {
     expect(withPH.score).toBe(2);
   });
 
-  it("should return high risk for score >= 5", () => {
+  // MDCalc: 5-6 points = High risk (1 in 3 = 33% need IRVS)
+  it("should return high risk for score 5-6", () => {
     const result = calculateSMARTCOP({
       systolic_bp: true, // 2
       oxygen: true, // 2
@@ -905,7 +911,20 @@ describe("SMART-COP Score", () => {
     });
     expect(result.score).toBe(5);
     expect(result.riskLevel).toBe("high");
-    expect(result.riskPercentage).toBe(92);
+    expect(result.riskPercentage).toBe(33); // MDCalc: 1 in 3 = 33% IRVS risk
+  });
+
+  // MDCalc: ≥7 points = Very high risk (2 in 3 = 67% need IRVS)
+  it("should return critical risk for score >= 7", () => {
+    const result = calculateSMARTCOP({
+      systolic_bp: true, // 2
+      oxygen: true, // 2
+      ph: true, // 2
+      confusion: true, // 1
+    });
+    expect(result.score).toBe(7);
+    expect(result.riskLevel).toBe("critical");
+    expect(result.riskPercentage).toBe(67); // MDCalc: 2 in 3 = 67% IRVS risk
   });
 });
 

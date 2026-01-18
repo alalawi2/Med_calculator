@@ -31,7 +31,7 @@ export function calculateQSOFA(inputs: {
   let score = 0;
   if (inputs.altered_mentation) score += 1;
   if (inputs.respiratory_rate >= 22) score += 1;
-  if (inputs.systolic_bp < 100) score += 1;
+  if (inputs.systolic_bp <= 100) score += 1; // MDCalc: SBP ≤100 mmHg
 
   const riskLevel = score >= 2 ? "high" : "low";
   const riskPercentage = score >= 2 ? 80 : 10;
@@ -394,7 +394,7 @@ export function calculateGCS(inputs: {
   } else if (score >= 9) {
     riskLevel = "moderate";
     interpretation = "Moderate head injury - Consider ICU admission";
-    recommendations: [
+    recommendations = [
       "✓ ICU admission",
       "✓ CT head if not done",
       "✓ Neuro checks q15-30min",
@@ -403,7 +403,7 @@ export function calculateGCS(inputs: {
   } else if (score >= 6) {
     riskLevel = "high";
     interpretation = "Severe head injury - Intubation likely needed";
-    recommendations: [
+    recommendations = [
       "✓ ICU admission mandatory",
       "✓ Prepare for intubation",
       "✓ Neurosurgery consultation",
@@ -412,7 +412,7 @@ export function calculateGCS(inputs: {
   } else {
     riskLevel = "critical";
     interpretation = "Critical head injury - Immediate intubation required";
-    recommendations: [
+    recommendations = [
       "✓ Immediate intubation",
       "✓ ICU admission",
       "✓ Neurosurgery consultation",
@@ -898,17 +898,24 @@ export function calculatePESI(inputs: Record<string, any>): CalculationResult {
 
 export function calculateSMARTCOP(inputs: Record<string, boolean>): CalculationResult {
   let score = 0;
-  if (inputs.systolic_bp) score += 2; // S
-  if (inputs.multilobar) score += 1; // M
-  if (inputs.albumin) score += 1; // A
-  if (inputs.respiratory_rate) score += 1; // R
-  if (inputs.tachycardia) score += 1; // T
-  if (inputs.confusion) score += 1; // C
-  if (inputs.oxygen) score += 2; // O
-  if (inputs.ph) score += 2; // P
+  // MDCalc SMART-COP scoring criteria
+  if (inputs.systolic_bp) score += 2; // S - Systolic BP <90 mmHg
+  if (inputs.multilobar) score += 1; // M - Multilobar infiltrates on CXR
+  if (inputs.albumin) score += 1; // A - Albumin <3.5 g/dL
+  if (inputs.respiratory_rate) score += 1; // R - RR >30/min (age-adjusted)
+  if (inputs.tachycardia) score += 1; // T - Tachycardia (HR >125 bpm)
+  if (inputs.confusion) score += 1; // C - Confusion (acute)
+  if (inputs.oxygen) score += 2; // O - Oxygen low (SpO2 <90% or PaO2 <60)
+  if (inputs.ph) score += 2; // P - pH <7.35
 
-  const irvs_risk = score >= 5 ? 92 : score >= 3 ? 62 : 8;
-  const riskLevel: "low" | "moderate" | "high" = score <= 2 ? "low" : score <= 4 ? "moderate" : "high";
+  // MDCalc validated IRVS (Intensive Respiratory or Vasopressor Support) risk
+  // 0-2: Low risk (~4% need IRVS)
+  // 3-4: Moderate risk (1 in 8 = 12.5% need IRVS)
+  // 5-6: High risk (1 in 3 = 33% need IRVS)
+  // ≥7: Very high risk (2 in 3 = 67% need IRVS)
+  const irvs_risk = score >= 7 ? 67 : score >= 5 ? 33 : score >= 3 ? 12.5 : 4;
+  const riskLevel: "low" | "moderate" | "high" | "critical" =
+    score <= 2 ? "low" : score <= 4 ? "moderate" : score <= 6 ? "high" : "critical";
 
   return {
     score,
@@ -1015,39 +1022,44 @@ export function calculateChildPugh(inputs: Record<string, any>): CalculationResu
 }
 
 export function calculateFIB4(inputs: { age: number; ast: number; alt: number; platelets: number }): CalculationResult {
+  // FIB-4 Formula: (Age × AST) / (Platelet count × √ALT)
   const fib4 = (inputs.age * inputs.ast) / (inputs.platelets * Math.sqrt(inputs.alt));
   const score = Math.round(fib4 * 100) / 100;
 
+  // MDCalc original cutoffs (validated in HIV/HCV):
+  // <1.45: Low probability of advanced fibrosis (NPV 90%)
+  // 1.45-3.25: Indeterminate
+  // >3.25: High probability of advanced fibrosis (PPV 65%, specificity 97%)
   const interpretation =
-    score < 1.3
+    score < 1.45
       ? "Low probability of advanced fibrosis (F0-F1)"
-      : score <= 2.67
+      : score <= 3.25
         ? "Indeterminate - further evaluation recommended"
         : "High probability of advanced fibrosis (F3-F4)";
 
-  const riskLevel: "low" | "moderate" | "high" = score < 1.3 ? "low" : score <= 2.67 ? "moderate" : "high";
+  const riskLevel: "low" | "moderate" | "high" = score < 1.45 ? "low" : score <= 3.25 ? "moderate" : "high";
 
   return {
     score: Math.round(score * 100) / 100,
     maxScore: 12,
     riskLevel,
-    riskPercentage: score >= 2.67 ? 80 : score >= 1.3 ? 50 : 5,
+    riskPercentage: score > 3.25 ? 80 : score >= 1.45 ? 50 : 5,
     interpretation: `FIB-4 Index: ${score.toFixed(2)} - ${interpretation}`,
     recommendations: [
-      score < 1.3
-        ? "✓ Low risk - routine monitoring"
-        : score <= 2.67
+      score < 1.45
+        ? "✓ Low risk - routine monitoring (NPV 90% for advanced fibrosis)"
+        : score <= 3.25
           ? "✓ Indeterminate - consider elastography or liver biopsy"
-          : "✓ High risk - hepatology referral recommended",
-      score >= 2.67 ? "✓ Screen for varices (EGD)" : "✓ Standard care",
-      score >= 1.3 ? "✓ Consider advanced imaging (fibroscan/MR elastography)" : "✓ Repeat FIB-4 annually",
+          : "✓ High risk - hepatology referral recommended (PPV 65%)",
+      score > 3.25 ? "✓ Screen for varices (EGD)" : "✓ Standard care",
+      score >= 1.45 ? "✓ Consider advanced imaging (fibroscan/MR elastography)" : "✓ Repeat FIB-4 annually",
       "✓ Manage underlying liver disease",
     ],
     managementPathway: [
       {
-        priority: score >= 2.67 ? "urgent" : "routine",
+        priority: score > 3.25 ? "urgent" : "routine",
         action:
-          score >= 2.67 ? "Hepatology referral + elastography" : score >= 1.3 ? "Further fibrosis assessment" : "Routine monitoring",
+          score > 3.25 ? "Hepatology referral + elastography" : score >= 1.45 ? "Further fibrosis assessment" : "Routine monitoring",
         rationale: `FIB-4 ${score.toFixed(2)} - ${interpretation}`,
       },
     ],
