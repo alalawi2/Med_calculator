@@ -13,6 +13,7 @@ import { describe, it, expect } from "vitest";
 import {
   calculateQSOFA,
   calculateSOFA,
+  calculateNIHSS,
   calculateCHA2DS2VASc,
   calculateHASBLED,
   calculateGCS,
@@ -108,6 +109,43 @@ describe("SOFA MDCalc Validation", () => {
       creatinine: 0.8,
     });
     expect(result.score).toBe(2);
+  });
+});
+
+// ============================================================================
+// NIHSS - NIH Stroke Scale
+// https://www.mdcalc.com/calc/715/nih-stroke-scale-score-nihss
+// ============================================================================
+describe("NIHSS MDCalc Validation", () => {
+  it("validates severity thresholds per Koton 2022 classification", () => {
+    // Score 0: No stroke symptoms
+    const score0 = calculateNIHSS({ test: 0 });
+    expect(score0.riskLevel).toBe("low");
+    expect(score0.interpretation).toContain("No stroke");
+
+    // Score 4: Minor stroke (1-4)
+    const score4 = calculateNIHSS({ a: 2, b: 2 });
+    expect(score4.score).toBe(4);
+    expect(score4.riskLevel).toBe("low");
+    expect(score4.interpretation).toContain("Minor");
+
+    // Score 15: Moderate stroke (5-15) - boundary test
+    const score15 = calculateNIHSS({ a: 5, b: 5, c: 5 });
+    expect(score15.score).toBe(15);
+    expect(score15.riskLevel).toBe("moderate");
+    expect(score15.interpretation).toContain("Moderate");
+
+    // Score 16: Moderate-to-severe (16-20)
+    const score16 = calculateNIHSS({ a: 8, b: 8 });
+    expect(score16.score).toBe(16);
+    expect(score16.riskLevel).toBe("high");
+    expect(score16.interpretation).toContain("Moderate-to-severe");
+
+    // Score 21: Severe (21-42)
+    const score21 = calculateNIHSS({ a: 7, b: 7, c: 7 });
+    expect(score21.score).toBe(21);
+    expect(score21.riskLevel).toBe("critical");
+    expect(score21.interpretation).toContain("Severe");
   });
 });
 

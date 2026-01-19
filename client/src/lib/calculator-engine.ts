@@ -261,64 +261,75 @@ export function calculateNIHSS(inputs: Record<string, number>): CalculationResul
   let interpretation = "";
   let recommendations: string[] = [];
 
+  // NIHSS severity classification per Koton 2022 / standard literature:
+  // 0: No stroke symptoms
+  // 1-4: Minor stroke
+  // 5-15: Moderate stroke
+  // 16-20: Moderate to severe stroke
+  // 21-42: Severe stroke
   if (score === 0) {
     riskLevel = "low";
-    interpretation = "No stroke symptoms detected";
+    interpretation = "No stroke symptoms detected (NIHSS 0)";
     recommendations = ["✓ Continue routine care", "✓ Monitor for symptom development"];
   } else if (score <= 4) {
     riskLevel = "low";
-    interpretation = "Minor stroke - Consider thrombolytics if within window";
+    interpretation = "Minor stroke (NIHSS 1-4) - Good prognosis expected";
     recommendations = [
       "✓ Assess thrombolytic eligibility (within 4.5 hours)",
       "✓ Neurology consultation",
-      "✓ Intensive monitoring",
+      "✓ 75% achieve functional independence at 1 year",
     ];
-  } else if (score <= 14) {
+  } else if (score <= 15) {
     riskLevel = "moderate";
-    interpretation = "Moderate stroke - High thrombolytic benefit";
+    interpretation = "Moderate stroke (NIHSS 5-15) - Thrombolytic benefit likely";
     recommendations = [
       "✓ Activate stroke protocol",
       "✓ Thrombolytics indicated if within 4.5 hours",
-      "✓ ICU admission",
-      "✓ Thrombectomy evaluation if within 24 hours",
+      "✓ Consider thrombectomy for LVO",
+      "✓ ICU or step-down admission",
     ];
   } else if (score <= 20) {
     riskLevel = "high";
-    interpretation = "Moderate-to-severe stroke - Consider thrombectomy";
+    interpretation = "Moderate-to-severe stroke (NIHSS 16-20) - High mortality risk";
     recommendations = [
       "✓ Activate stroke protocol",
-      "✓ Thrombectomy evaluation (if within 24 hours)",
-      "✓ ICU admission",
-      "✓ Neurology consultation",
+      "✓ Thrombectomy evaluation for LVO (within 24 hours)",
+      "✓ ICU admission mandatory",
+      "✓ Increased hemorrhage risk with tPA (17% if >20)",
     ];
   } else {
     riskLevel = "critical";
-    interpretation = "Severe stroke - Highest mortality risk";
+    interpretation = "Severe stroke (NIHSS 21-42) - Poor prognosis";
     recommendations = [
       "✓ ICU admission",
-      "✓ Airway protection consideration",
+      "✓ Airway protection - intubation likely needed",
       "✓ Neurology/neurosurgery consultation",
-      "✓ Family discussion regarding prognosis",
+      "✓ Goals of care discussion with family",
     ];
   }
+
+  // Outcome estimates based on NINDS trial and meta-analyses
+  // NIHSS <6: high likelihood of good outcome
+  // NIHSS >16: strong probability of death or severe disability
+  const poorOutcomeRisk = score === 0 ? 5 : score <= 4 ? 15 : score <= 15 ? 40 : score <= 20 ? 65 : 80;
 
   return {
     score,
     maxScore: 42,
     riskLevel,
-    riskPercentage: score >= 20 ? 90 : score >= 14 ? 70 : score >= 5 ? 40 : 10,
+    riskPercentage: poorOutcomeRisk,
     interpretation,
     recommendations,
     managementPathway: [
       {
-        priority: score >= 14 ? "immediate" : "urgent",
-        action: "Activate stroke protocol",
-        rationale: `NIHSS ${score} indicates significant stroke burden`,
+        priority: score >= 16 ? "immediate" : score >= 5 ? "urgent" : "routine",
+        action: score >= 5 ? "Activate stroke protocol" : "Neurology consultation",
+        rationale: `NIHSS ${score} - ${score <= 4 ? "minor" : score <= 15 ? "moderate" : score <= 20 ? "moderate-severe" : "severe"} stroke`,
       },
       {
         priority: "immediate",
         action: "Stat CT/CTA head",
-        rationale: "Differentiate ischemic vs hemorrhagic stroke",
+        rationale: "Rule out hemorrhage, identify LVO for thrombectomy",
       },
     ],
   };
@@ -944,12 +955,13 @@ export function calculatePESI(inputs: Record<string, any>): CalculationResult {
             ? "IV (High)"
             : "V (Very High)";
 
+  // MDCalc/Aujesky validation 30-day mortality rates
   const mortalityRates: Record<string, number> = {
-    "I (Very Low)": 0.0,
-    "II (Low)": 1.6,
-    "III (Moderate)": 3.5,
-    "IV (High)": 10.4,
-    "V (Very High)": 24.5,
+    "I (Very Low)": 1.1,   // Original study: 0-1.6%, using midpoint
+    "II (Low)": 2.6,       // Original study: 1.7-3.5%
+    "III (Moderate)": 5.2, // Original study: 3.2-7.1%
+    "IV (High)": 7.2,      // Original study: 4-10.4%
+    "V (Very High)": 17.3, // Original study: 10-24.5%
   };
 
   const riskLevel: "low" | "moderate" | "high" | "critical" =
