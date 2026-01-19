@@ -32,6 +32,7 @@ export default function Home() {
   });
   const [activeTab, setActiveTab] = useState("calculators");
   const [calculationResult, setCalculationResult] = useState<CalculationResult | null>(null);
+  const [lastInputs, setLastInputs] = useState<Record<string, any>>({});
   const [showFeedback, setShowFeedback] = useState(false);
   const [showMedications, setShowMedications] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -76,6 +77,7 @@ export default function Home() {
       if (selectedCalculator) {
         const result = executeCalculator(selectedCalculator, inputs);
         setCalculationResult(result);
+        setLastInputs(inputs);
       }
     } catch (error) {
       console.error("Calculation error:", error);
@@ -237,6 +239,8 @@ export default function Home() {
                     <ResultsDisplayEnhanced
                       result={calculationResult}
                       calculatorName={selectedCalculator.name}
+                      calculatorId={selectedCalculator.id}
+                      inputs={lastInputs}
                     />
                     <div className="flex flex-col gap-2 mt-4">
                       <Button

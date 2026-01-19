@@ -59,3 +59,19 @@
 - [x] Add print functionality as alternative to PDF download
 - [x] Test export on mobile and desktop (dev server running, ready for manual test)
 - [x] Ensure exported PDFs are professional and clinic-ready
+
+
+## PDF Export Testing
+- [x] Test qSOFA PDF export (score 3, high risk, 80%)
+- [x] Test CHA₂DS₂-VASc PDF export (score 4, moderate risk, 6.7%)
+- [x] Verify PDF formatting and completeness (all fields validated)
+- [x] Test Print button functionality (existing feature)
+## Calculator History Feature
+- [x] Design history storage schema (localStorage)
+- [x] Implement history save on calculation (automatic)
+- [x] Implement history retrieval functions (getHistory, deleteEntry, clearHistory)
+- [ ] Create history UI component
+- [ ] Add history button to navigation
+- [ ] Test history on mobile and desktop
+- [ ] Add clear history functionality
+- [ ] Test history on mobile and desktop

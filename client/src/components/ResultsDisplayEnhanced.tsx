@@ -5,6 +5,8 @@ import { AlertTriangle, AlertCircle, CheckCircle, TrendingUp, Download, Copy, Ch
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { jsPDF } from "jspdf";
+import { saveCalculation } from "@/lib/history-storage";
+import type { CalculationResult as EngineCalculationResult } from "@/lib/calculator-engine";
 
 interface CalculationResult {
   score: number;
@@ -18,13 +20,23 @@ interface CalculationResult {
 interface ResultsDisplayEnhancedProps {
   result: CalculationResult;
   calculatorName: string;
+  calculatorId: string;
+  inputs: Record<string, any>;
 }
 
 export function ResultsDisplayEnhanced({
   result,
   calculatorName,
+  calculatorId,
+  inputs,
 }: ResultsDisplayEnhancedProps) {
   const [copied, setCopied] = useState(false);
+
+  // Save calculation to history
+  useEffect(() => {
+    // Cast to engine type for storage
+    saveCalculation(calculatorId, calculatorName, inputs, result as unknown as EngineCalculationResult);
+  }, [calculatorId, calculatorName, inputs, result]);
 
   // Trigger install prompt after results are displayed
   useEffect(() => {
