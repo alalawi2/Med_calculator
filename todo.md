@@ -75,3 +75,11 @@
 - [ ] Test history on mobile and desktop
 - [ ] Add clear history functionality
 - [ ] Test history on mobile and desktop
+
+
+## Merge MDCalc Validation Tests from Branch
+- [x] Extract MDCalc validation test suite from claude/inspect-and-report-9kFd9
+- [x] Integrate tests into main branch (already present from commit 501ea1b)
+- [x] Resolve any conflicts with existing tests (no conflicts)
+- [x] Run full test suite to verify all tests pass (136 tests passing)
+- [x] Update test count in documentation (17 MDCalc validation tests included)
