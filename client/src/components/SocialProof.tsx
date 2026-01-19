@@ -14,7 +14,7 @@ export function SocialProof() {
     },
     {
       icon: TrendingUp,
-      value: "32+",
+      value: "20",
       label: "Clinical Calculators"
     }
   ];

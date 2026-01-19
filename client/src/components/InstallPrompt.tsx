@@ -123,7 +123,7 @@ export function InstallPrompt() {
               </p>
             ) : (
               <p className="text-xs md:text-sm text-blue-100">
-                Access 32+ clinical calculators offline, anytime
+                Access 20 clinical calculators offline, anytime
               </p>
             )}
           </div>

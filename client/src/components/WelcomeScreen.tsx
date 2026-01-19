@@ -48,7 +48,7 @@ export default function WelcomeScreen({ calculators, onSelectCalculator }: Welco
               </div>
               <p className="text-blue-100 text-lg md:text-xl mb-4 font-semibold">Clinical Decision Support</p>
               <p className="text-blue-50 text-lg md:text-base leading-relaxed mb-8">
-                Access 32+ evidence-based clinical calculators for rapid risk assessment, severity scoring, and clinical decision-making at the point of care. Trusted by healthcare professionals worldwide.
+                Access 20 evidence-based clinical calculators for rapid risk assessment, severity scoring, and clinical decision-making at the point of care. Trusted by healthcare professionals worldwide.
               </p>
               <div className="flex flex-wrap gap-4">
                 <Button
@@ -70,7 +70,7 @@ export default function WelcomeScreen({ calculators, onSelectCalculator }: Welco
             {/* Right: Stats */}
             <div className="grid grid-cols-2 gap-6">
               <div className="bg-blue-500 bg-opacity-30 rounded-lg p-6 backdrop-blur-sm border border-blue-400 border-opacity-30">
-                <p className="text-4xl font-bold mb-2">32+</p>
+                <p className="text-4xl font-bold mb-2">20</p>
                 <p className="text-blue-100">Clinical Calculators</p>
               </div>
               <div className="bg-blue-500 bg-opacity-30 rounded-lg p-6 backdrop-blur-sm border border-blue-400 border-opacity-30">
@@ -207,7 +207,7 @@ export default function WelcomeScreen({ calculators, onSelectCalculator }: Welco
               <Zap className="h-6 w-6" />
             </div>
             <h3 className="font-semibold text-gray-900 mb-2">Offline Access</h3>
-            <p className="text-sm text-gray-600">Access all 32+ calculators even without internet</p>
+            <p className="text-sm text-gray-600">Access all 20 calculators even without internet</p>
           </div>
           <div className="bg-white rounded-lg p-6 border border-blue-100 shadow-sm">
             <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-blue-600 text-white mb-4">
@@ -256,7 +256,7 @@ export default function WelcomeScreen({ calculators, onSelectCalculator }: Welco
                 <TrendingUp className="h-8 w-8 text-blue-600" />
               </div>
             </div>
-            <div className="text-3xl md:text-4xl font-bold text-gray-900">32+</div>
+            <div className="text-3xl md:text-4xl font-bold text-gray-900">20</div>
             <div className="text-sm text-gray-600 mt-2">Clinical Calculators</div>
           </div>
         </div>

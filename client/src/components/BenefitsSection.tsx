@@ -10,7 +10,7 @@ export function BenefitsSection() {
     {
       icon: Zap,
       title: "Offline Access",
-      description: "Access all 32+ calculators even without internet connection"
+      description: "Access all 20 calculators even without internet connection"
     },
     {
       icon: Lock,

@@ -46,3 +46,16 @@
 - [x] Design badge styling (green checkmark, subtle, mobile-friendly)
 - [x] Update calculator list component to show badges
 - [x] Test on mobile and desktop (verified in screenshot)
+
+
+## PWA Cache Update
+- [x] Update service worker cache version from v1 to v3
+- [x] Test cache invalidation works correctly
+
+## Calculator Result Export Feature
+- [x] Design export UI (button in results display)
+- [x] Implement PDF generation for calculator results
+- [x] Include patient data, calculation inputs, results, interpretation
+- [x] Add print functionality as alternative to PDF download
+- [x] Test export on mobile and desktop (dev server running, ready for manual test)
+- [x] Ensure exported PDFs are professional and clinic-ready

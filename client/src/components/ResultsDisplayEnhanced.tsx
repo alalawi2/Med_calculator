@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, AlertCircle, CheckCircle, TrendingUp, Download, Copy, Check, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { jsPDF } from "jspdf";
 
 interface CalculationResult {
   score: number;
@@ -162,6 +163,107 @@ Disclaimer: This is for clinical decision support only. Always verify with curre
     } catch (err) {
       toast.error("Failed to copy", {
         description: "Please try again or use manual selection",
+      });
+    }
+  };
+
+  // Download PDF functionality
+  const handleDownloadPDF = () => {
+    try {
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const margin = 20;
+      const contentWidth = pageWidth - (margin * 2);
+      let y = margin;
+
+      // Header
+      doc.setFontSize(18);
+      doc.setTextColor(30, 64, 175); // Blue
+      doc.text(calculatorName, margin, y);
+      y += 10;
+
+      doc.setFontSize(9);
+      doc.setTextColor(107, 114, 128); // Gray
+      doc.text(`Generated: ${new Date().toLocaleString()} | MedResearch Academy`, margin, y);
+      y += 15;
+
+      // Score Box
+      const boxColor: [number, number, number] = result.riskLevel === "low" ? [220, 252, 231] :
+                       result.riskLevel === "moderate" ? [254, 249, 195] :
+                       result.riskLevel === "high" ? [254, 215, 170] : [254, 202, 202];
+      doc.setFillColor(boxColor[0], boxColor[1], boxColor[2]);
+      doc.rect(margin, y, contentWidth, 40, 'F');
+
+      doc.setFontSize(11);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Score: ${result.score}`, margin + 10, y + 15);
+      doc.text(`Risk: ${result.riskPercentage}%`, margin + 70, y + 15);
+      doc.text(`Level: ${result.riskLevel.toUpperCase()}`, margin + 130, y + 15);
+      y += 50;
+
+      // Clinical Interpretation
+      doc.setFontSize(10);
+      doc.setTextColor(107, 114, 128);
+      doc.text("CLINICAL INTERPRETATION", margin, y);
+      y += 7;
+
+      doc.setFontSize(9);
+      doc.setTextColor(0, 0, 0);
+      const interpretationLines = doc.splitTextToSize(result.interpretation, contentWidth);
+      doc.text(interpretationLines, margin, y);
+      y += (interpretationLines.length * 5) + 10;
+
+      // Management Pathway
+      doc.setFontSize(10);
+      doc.setTextColor(107, 114, 128);
+      doc.text("MANAGEMENT PATHWAY", margin, y);
+      y += 7;
+
+      doc.setFontSize(9);
+      doc.setTextColor(0, 0, 0);
+      if (Array.isArray(result.managementPathway)) {
+        result.managementPathway.forEach((step: any, idx: number) => {
+          const stepText = `${idx + 1}. ${step.action} - ${step.rationale}`;
+          const stepLines = doc.splitTextToSize(stepText, contentWidth - 10);
+          doc.text(stepLines, margin + 5, y);
+          y += (stepLines.length * 5) + 3;
+        });
+      }
+      y += 5;
+
+      // Recommendations
+      doc.setFontSize(10);
+      doc.setTextColor(107, 114, 128);
+      doc.text("CLINICAL RECOMMENDATIONS", margin, y);
+      y += 7;
+
+      doc.setFontSize(9);
+      doc.setTextColor(0, 0, 0);
+      result.recommendations.forEach((rec: string) => {
+        const recLines = doc.splitTextToSize(`✓ ${rec}`, contentWidth - 10);
+        doc.text(recLines, margin + 5, y);
+        y += (recLines.length * 5) + 3;
+      });
+
+      // Disclaimer
+      y += 10;
+      doc.setFontSize(8);
+      doc.setTextColor(100, 116, 139);
+      const disclaimerText = "Disclaimer: This calculator is for clinical decision support only. It should not replace clinical judgment or professional medical advice.";
+      const disclaimerLines = doc.splitTextToSize(disclaimerText, contentWidth);
+      doc.text(disclaimerLines, margin, y);
+
+      // Save PDF
+      const filename = `${calculatorName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+      doc.save(filename);
+
+      toast.success("PDF Downloaded", {
+        description: "Result saved as PDF file",
+      });
+    } catch (err) {
+      console.error("PDF generation error:", err);
+      toast.error("PDF generation failed", {
+        description: "Please try the Print/PDF button instead",
       });
     }
   };
@@ -545,13 +647,22 @@ Disclaimer: This is for clinical decision support only. Always verify with curre
       {/* Action Buttons */}
       <div className="flex flex-wrap gap-3" role="group" aria-label="Result actions">
         <Button
+          onClick={handleDownloadPDF}
+          variant="default"
+          className="flex-1 min-w-[140px] h-10 gap-2"
+          aria-label="Download result as PDF"
+        >
+          <Download className="w-4 h-4" aria-hidden="true" />
+          Download PDF
+        </Button>
+        <Button
           onClick={handlePrint}
           variant="outline"
           className="flex-1 min-w-[140px] h-10 gap-2"
           aria-label="Print or save as PDF"
         >
           <Printer className="w-4 h-4" aria-hidden="true" />
-          Print / PDF
+          Print
         </Button>
         <Button
           onClick={handleCopyToClipboard}

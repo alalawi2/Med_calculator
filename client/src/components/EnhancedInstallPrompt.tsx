@@ -154,7 +154,7 @@ export function EnhancedInstallPrompt() {
             <Download className="w-5 h-5 flex-shrink-0" />
             <div className="flex-1">
               <div className="font-semibold text-sm">Install MedResearch Academy</div>
-              <div className="text-xs opacity-90">Access 32+ calculators offline, anytime</div>
+              <div className="text-xs opacity-90">Access 20 calculators offline, anytime</div>
             </div>
           </div>
           <div className="flex gap-2 flex-shrink-0">
