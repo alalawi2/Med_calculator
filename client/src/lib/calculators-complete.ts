@@ -6,9 +6,6 @@ import { Calculator } from "./calculators-extended";
  */
 
 export const completeCalculators: Calculator[] = [
-  // ============================================================================
-  // CRITICAL CARE & SEPSIS
-  // ============================================================================
   {
     id: "qsofa",
     name: "qSOFA Score",
@@ -62,7 +59,6 @@ export const completeCalculators: Calculator[] = [
       },
     ],
   },
-
   {
     id: "sofa",
     name: "SOFA Score",
@@ -130,7 +126,6 @@ export const completeCalculators: Calculator[] = [
       },
     ],
   },
-
   {
     id: "apache2",
     name: "APACHE II Score",
@@ -236,10 +231,6 @@ export const completeCalculators: Calculator[] = [
       },
     ],
   },
-
-  // ============================================================================
-  // CARDIOLOGY & VASCULAR
-  // ============================================================================
   {
     id: "heart",
     name: "HEART Score",
@@ -292,7 +283,6 @@ export const completeCalculators: Calculator[] = [
       },
     ],
   },
-
   {
     id: "cha2ds2vasc",
     name: "CHA₂DS₂-VASc Score",
@@ -351,7 +341,6 @@ export const completeCalculators: Calculator[] = [
       },
     ],
   },
-
   {
     id: "hasbled",
     name: "HAS-BLED Score",
@@ -408,210 +397,6 @@ export const completeCalculators: Calculator[] = [
       },
     ],
   },
-
-  {
-    id: "timi",
-    name: "TIMI Risk Score",
-    categories: ["Cardiology", "Intensive Care"],
-    description: "Acute Coronary Syndrome risk - Predicts 14-day mortality and complications",
-    clinicalUses: ["ACS risk stratification", "Mortality prediction", "Treatment decisions"],
-    inputs: [
-      {
-        id: "age",
-        label: "Age ≥65 years",
-        type: "boolean",
-      },
-      {
-        id: "risk_factors",
-        label: "≥3 CAD Risk Factors",
-        type: "boolean",
-      },
-      {
-        id: "stenosis",
-        label: "Prior Coronary Stenosis",
-        type: "boolean",
-      },
-      {
-        id: "aspirin",
-        label: "Aspirin Use in Last 7 Days",
-        type: "boolean",
-      },
-      {
-        id: "angina",
-        label: "Severe Angina (≥2 episodes in 24h)",
-        type: "boolean",
-      },
-      {
-        id: "st_changes",
-        label: "ST Segment Changes",
-        type: "boolean",
-      },
-      {
-        id: "troponin",
-        label: "Elevated Troponin",
-        type: "boolean",
-      },
-    ],
-    references: [
-      {
-        authors: "Antman EM, et al.",
-        year: 2000,
-        title: "The TIMI risk score for unstable angina/non-ST elevation MI",
-        journal: "JAMA",
-        volume: "284",
-        pages: "835-842",
-        citations: 2100,
-        impactFactor: 41.9,
-      },
-    ],
-  },
-
-  {
-    id: "framingham",
-    name: "Framingham Risk Score",
-    categories: ["Cardiology", "Intensive Care"],
-    description: "10-year cardiovascular disease risk - Guides preventive therapy",
-    clinicalUses: ["CVD risk assessment", "Prevention decisions", "Statin therapy"],
-    inputs: [
-      {
-        id: "age",
-        label: "Age (years)",
-        type: "number",
-        min: 30,
-        max: 90,
-      },
-      {
-        id: "sex",
-        label: "Sex",
-        type: "select",
-        options: ["Male", "Female"],
-      },
-      {
-        id: "total_cholesterol",
-        label: "Total Cholesterol (mg/dL)",
-        type: "number",
-        min: 100,
-        max: 400,
-      },
-      {
-        id: "hdl",
-        label: "HDL Cholesterol (mg/dL)",
-        type: "number",
-        min: 20,
-        max: 100,
-      },
-      {
-        id: "sbp",
-        label: "Systolic BP (mmHg)",
-        type: "number",
-        min: 80,
-        max: 200,
-      },
-      {
-        id: "diabetes",
-        label: "Diabetes",
-        type: "boolean",
-      },
-      {
-        id: "smoking",
-        label: "Current Smoker",
-        type: "boolean",
-      },
-    ],
-    references: [
-      {
-        authors: "Wilson PW, et al.",
-        year: 1998,
-        title: "Prediction of coronary heart disease using risk factor categories",
-        journal: "Circulation",
-        volume: "97",
-        pages: "1837-1847",
-        citations: 3500,
-        impactFactor: 24.3,
-      },
-    ],
-  },
-
-  {
-    id: "ascvd",
-    name: "ASCVD Risk Calculator",
-    categories: ["Cardiology", "Intensive Care"],
-    description: "Atherosclerotic cardiovascular disease risk - Updated Framingham model",
-    clinicalUses: ["ASCVD risk assessment", "Statin therapy decisions", "Cardiology"],
-    inputs: [
-      {
-        id: "age",
-        label: "Age (years)",
-        type: "number",
-        min: 40,
-        max: 90,
-      },
-      {
-        id: "sex",
-        label: "Sex",
-        type: "select",
-        options: ["Male", "Female"],
-      },
-      {
-        id: "race",
-        label: "Race/Ethnicity",
-        type: "select",
-        options: ["White", "African American", "Hispanic", "Asian"],
-      },
-      {
-        id: "total_cholesterol",
-        label: "Total Cholesterol (mg/dL)",
-        type: "number",
-        min: 100,
-        max: 400,
-      },
-      {
-        id: "hdl",
-        label: "HDL Cholesterol (mg/dL)",
-        type: "number",
-        min: 20,
-        max: 100,
-      },
-      {
-        id: "sbp",
-        label: "Systolic BP (mmHg)",
-        type: "number",
-        min: 80,
-        max: 200,
-      },
-      {
-        id: "diabetes",
-        label: "Diabetes",
-        type: "boolean",
-      },
-      {
-        id: "smoking",
-        label: "Current Smoker",
-        type: "boolean",
-      },
-      {
-        id: "hypertension_treatment",
-        label: "On Hypertension Treatment",
-        type: "boolean",
-      },
-    ],
-    references: [
-      {
-        authors: "Goff DC, et al.",
-        year: 2013,
-        title: "2013 ACC/AHA Guideline on the Assessment of Cardiovascular Risk",
-        journal: "Circulation",
-        volume: "129",
-        pages: "S49-S73",
-        citations: 2600,
-        impactFactor: 24.3,
-      },
-    ],
-  },
-
-  // ============================================================================
-  // NEUROLOGY & STROKE
-  // ============================================================================
   {
     id: "nihss",
     name: "NIHSS (NIH Stroke Scale)",
@@ -711,59 +496,6 @@ export const completeCalculators: Calculator[] = [
       },
     ],
   },
-
-  {
-    id: "abcd2",
-    name: "ABCD2 Score",
-    categories: ["Neurology"],
-    description: "TIA/Stroke risk after TIA - Guides urgent imaging and treatment",
-    clinicalUses: ["TIA risk assessment", "Imaging urgency", "Treatment decisions"],
-    inputs: [
-      {
-        id: "age",
-        label: "Age ≥60 years",
-        type: "boolean",
-      },
-      {
-        id: "bp",
-        label: "Blood Pressure ≥140/90 mmHg",
-        type: "boolean",
-      },
-      {
-        id: "clinical",
-        label: "Clinical Features",
-        type: "select",
-        options: ["Speech disturbance only", "Unilateral weakness"],
-      },
-      {
-        id: "duration",
-        label: "Duration of Symptoms",
-        type: "select",
-        options: ["<10 minutes", "10-59 minutes", "≥60 minutes"],
-      },
-      {
-        id: "diabetes",
-        label: "Diabetes",
-        type: "boolean",
-      },
-    ],
-    references: [
-      {
-        authors: "Johnston SC, et al.",
-        year: 2007,
-        title: "Validation and refinement of scores to predict very early stroke risk after transient ischemic attack",
-        journal: "Lancet",
-        volume: "369",
-        pages: "283-292",
-        citations: 1400,
-        impactFactor: 60.0,
-      },
-    ],
-  },
-
-  // ============================================================================
-  // RESPIRATORY
-  // ============================================================================
   {
     id: "curb65",
     name: "CURB-65 Score",
@@ -810,183 +542,6 @@ export const completeCalculators: Calculator[] = [
       },
     ],
   },
-
-  {
-    id: "psi_port",
-    name: "PSI/PORT Score",
-    categories: ["Respiratory", "Infectious Disease"],
-    description: "Pneumonia Severity Index - Comprehensive mortality prediction",
-    clinicalUses: ["Pneumonia risk stratification", "Admission decisions", "Mortality"],
-    inputs: [
-      {
-        id: "age",
-        label: "Age (years)",
-        type: "number",
-        min: 0,
-        max: 120,
-      },
-      {
-        id: "sex",
-        label: "Male Sex",
-        type: "boolean",
-      },
-      {
-        id: "nursing_home",
-        label: "Nursing Home Resident",
-        type: "boolean",
-      },
-      {
-        id: "comorbidity",
-        label: "Comorbidity",
-        type: "select",
-        options: ["None", "Malignancy", "Liver disease", "CHF", "Cerebrovascular disease", "Renal disease", "Diabetes"],
-      },
-      {
-        id: "altered_mental",
-        label: "Altered Mental Status",
-        type: "boolean",
-      },
-      {
-        id: "rr",
-        label: "Respiratory Rate (breaths/min)",
-        type: "number",
-        min: 0,
-        max: 60,
-      },
-      {
-        id: "sbp",
-        label: "Systolic BP (mmHg)",
-        type: "number",
-        min: 0,
-        max: 250,
-      },
-      {
-        id: "temp",
-        label: "Temperature (°C)",
-        type: "number",
-        min: 25,
-        max: 45,
-      },
-      {
-        id: "pulse",
-        label: "Heart Rate (bpm)",
-        type: "number",
-        min: 0,
-        max: 300,
-      },
-      {
-        id: "ph",
-        label: "Arterial pH",
-        type: "number",
-        min: 6.8,
-        max: 8.0,
-      },
-      {
-        id: "bun",
-        label: "BUN (mg/dL)",
-        type: "number",
-        min: 0,
-        max: 100,
-      },
-      {
-        id: "sodium",
-        label: "Sodium (mEq/L)",
-        type: "number",
-        min: 100,
-        max: 180,
-      },
-      {
-        id: "glucose",
-        label: "Glucose (mg/dL)",
-        type: "number",
-        min: 0,
-        max: 500,
-      },
-      {
-        id: "hematocrit",
-        label: "Hematocrit (%)",
-        type: "number",
-        min: 10,
-        max: 60,
-      },
-      {
-        id: "pao2",
-        label: "PaO2 (mmHg)",
-        type: "number",
-        min: 20,
-        max: 150,
-      },
-      {
-        id: "pleural_effusion",
-        label: "Pleural Effusion on CXR",
-        type: "boolean",
-      },
-    ],
-    references: [
-      {
-        authors: "Fine MJ, et al.",
-        year: 1997,
-        title: "A prediction rule to identify low-risk patients with community-acquired pneumonia",
-        journal: "New England Journal of Medicine",
-        volume: "336",
-        pages: "243-250",
-        citations: 2800,
-        impactFactor: 88.7,
-      },
-    ],
-  },
-
-  // ============================================================================
-  // RENAL & HEPATIC
-  // ============================================================================
-  {
-    id: "ckd_epi",
-    name: "CKD-EPI GFR",
-    categories: ["Nephrology", "Intensive Care"],
-    description: "Estimated Glomerular Filtration Rate - Kidney function assessment",
-    clinicalUses: ["Renal function assessment", "Drug dosing", "CKD staging"],
-    inputs: [
-      {
-        id: "creatinine",
-        label: "Serum Creatinine (mg/dL)",
-        type: "number",
-        min: 0.1,
-        max: 10,
-      },
-      {
-        id: "age",
-        label: "Age (years)",
-        type: "number",
-        min: 0,
-        max: 120,
-      },
-      {
-        id: "sex",
-        label: "Sex",
-        type: "select",
-        options: ["Male", "Female"],
-      },
-      {
-        id: "race",
-        label: "Race",
-        type: "select",
-        options: ["Non-Black", "Black"],
-      },
-    ],
-    references: [
-      {
-        authors: "Levey AS, et al.",
-        year: 2009,
-        title: "A new equation to estimate glomerular filtration rate",
-        journal: "Annals of Internal Medicine",
-        volume: "150",
-        pages: "604-612",
-        citations: 3200,
-        impactFactor: 26.0,
-      },
-    ],
-  },
-
   {
     id: "creatinine_clearance",
     name: "Creatinine Clearance",
@@ -1035,7 +590,6 @@ export const completeCalculators: Calculator[] = [
       },
     ],
   },
-
   {
     id: "meld",
     name: "MELD Score",
@@ -1078,233 +632,6 @@ export const completeCalculators: Calculator[] = [
       },
     ],
   },
-
-  // ============================================================================
-  // GASTROENTEROLOGY
-  // ============================================================================
-  {
-    id: "glasgow_blatchford",
-    name: "Glasgow-Blatchford Score",
-    categories: ["Gastroenterology", "Intensive Care"],
-    description: "Upper GI bleed risk - Predicts need for intervention",
-    clinicalUses: ["GI bleed severity", "Intervention prediction", "Admission decisions"],
-    inputs: [
-      {
-        id: "blood_urea",
-        label: "Blood Urea (mmol/L)",
-        type: "number",
-        min: 0,
-        max: 50,
-      },
-      {
-        id: "hemoglobin",
-        label: "Hemoglobin (g/dL)",
-        type: "number",
-        min: 5,
-        max: 18,
-      },
-      {
-        id: "systolic_bp",
-        label: "Systolic BP (mmHg)",
-        type: "number",
-        min: 50,
-        max: 250,
-      },
-      {
-        id: "pulse",
-        label: "Pulse (bpm)",
-        type: "number",
-        min: 30,
-        max: 200,
-      },
-      {
-        id: "melena",
-        label: "Melena Present",
-        type: "boolean",
-      },
-      {
-        id: "syncope",
-        label: "Syncope",
-        type: "boolean",
-      },
-    ],
-    references: [
-      {
-        authors: "Blatchford O, et al.",
-        year: 2000,
-        title: "A risk score to predict need for treatment for upper-gastrointestinal haemorrhage",
-        journal: "Lancet",
-        volume: "356",
-        pages: "1318-1321",
-        citations: 1200,
-        impactFactor: 60.0,
-      },
-    ],
-  },
-
-  {
-    id: "bisap",
-    name: "BISAP Score",
-    categories: ["Gastroenterology", "Intensive Care"],
-    description: "Acute pancreatitis severity - Predicts mortality",
-    clinicalUses: ["Pancreatitis severity", "Mortality prediction", "ICU admission"],
-    inputs: [
-      {
-        id: "bun",
-        label: "BUN >25 mg/dL",
-        type: "boolean",
-      },
-      {
-        id: "impaired_mental",
-        label: "Impaired Mental Status",
-        type: "boolean",
-      },
-      {
-        id: "sirs",
-        label: "SIRS Criteria (≥2)",
-        type: "boolean",
-      },
-      {
-        id: "age",
-        label: "Age >60 years",
-        type: "boolean",
-      },
-      {
-        id: "pleural_effusion",
-        label: "Pleural Effusion",
-        type: "boolean",
-      },
-    ],
-    references: [
-      {
-        authors: "Wu BU, et al.",
-        year: 2008,
-        title: "The early prediction of mortality in acute pancreatitis",
-        journal: "Archives of Internal Medicine",
-        volume: "168",
-        pages: "1996-2002",
-        citations: 800,
-        impactFactor: 18.3,
-      },
-    ],
-  },
-
-  // ============================================================================
-  // INFECTIOUS DISEASE
-  // ============================================================================
-  {
-    id: "centor",
-    name: "Centor Score",
-    categories: ["Infectious Disease", "Intensive Care"],
-    description: "Strep throat risk - Guides antibiotic therapy",
-    clinicalUses: ["Strep throat risk", "Antibiotic decisions", "Testing decisions"],
-    inputs: [
-      {
-        id: "fever",
-        label: "Fever >38.3°C (101°F)",
-        type: "boolean",
-      },
-      {
-        id: "cough",
-        label: "Cough Absent",
-        type: "boolean",
-      },
-      {
-        id: "exudate",
-        label: "Pharyngeal Exudate",
-        type: "boolean",
-      },
-      {
-        id: "nodes",
-        label: "Tender Anterior Cervical Nodes",
-        type: "boolean",
-      },
-      {
-        id: "age",
-        label: "Age 3-14 years",
-        type: "boolean",
-      },
-    ],
-    references: [
-      {
-        authors: "Centor RM, et al.",
-        year: 1981,
-        title: "The diagnosis of strep throat in adults in the emergency room",
-        journal: "Medical Decision Making",
-        volume: "1",
-        pages: "239-246",
-        citations: 900,
-        impactFactor: 2.5,
-      },
-    ],
-  },
-
-  // ============================================================================
-  // GERIATRIC & OTHER
-  // ============================================================================
-  {
-    id: "news2",
-    name: "NEWS2 Score",
-    categories: ["Intensive Care"],
-    description: "National Early Warning Score - Detects clinical deterioration",
-    clinicalUses: ["Early deterioration detection", "Escalation decisions", "Monitoring"],
-    inputs: [
-      {
-        id: "respiration",
-        label: "Respiratory Rate (breaths/min)",
-        type: "number",
-        min: 0,
-        max: 60,
-      },
-      {
-        id: "oxygen",
-        label: "Oxygen Saturation (%)",
-        type: "number",
-        min: 50,
-        max: 100,
-      },
-      {
-        id: "temp",
-        label: "Temperature (°C)",
-        type: "number",
-        min: 25,
-        max: 45,
-      },
-      {
-        id: "sbp",
-        label: "Systolic BP (mmHg)",
-        type: "number",
-        min: 50,
-        max: 250,
-      },
-      {
-        id: "hr",
-        label: "Heart Rate (bpm)",
-        type: "number",
-        min: 0,
-        max: 300,
-      },
-      {
-        id: "consciousness",
-        label: "Consciousness",
-        type: "select",
-        options: ["Alert", "Verbal", "Pain", "Unresponsive"],
-      },
-    ],
-    references: [
-      {
-        authors: "Royal College of Physicians",
-        year: 2017,
-        title: "National Early Warning Score (NEWS) 2",
-        journal: "Clinical Guide",
-        volume: "",
-        pages: "",
-        citations: 600,
-        impactFactor: 0,
-      },
-    ],
-  },
-
   {
     id: "glasgow_coma",
     name: "Glasgow Coma Scale",
@@ -1344,139 +671,6 @@ export const completeCalculators: Calculator[] = [
       },
     ],
   },
-
-  {
-    id: "wells_dvt",
-    name: "Wells' DVT Score",
-    categories: ["Cardiology", "Intensive Care", "Hematology"],
-    description: "Deep vein thrombosis risk - Guides imaging decisions",
-    clinicalUses: ["DVT risk assessment", "Imaging decisions", "Treatment decisions"],
-    inputs: [
-      {
-        id: "clinical_signs",
-        label: "Clinical Signs of DVT",
-        type: "boolean",
-      },
-      {
-        id: "alternative",
-        label: "Alternative Diagnosis Less Likely",
-        type: "boolean",
-      },
-      {
-        id: "heart_rate",
-        label: "Heart Rate >100",
-        type: "boolean",
-      },
-      {
-        id: "immobilization",
-        label: "Immobilization >3 days or Surgery",
-        type: "boolean",
-      },
-      {
-        id: "localized_tenderness",
-        label: "Localized Tenderness",
-        type: "boolean",
-      },
-      {
-        id: "swelling",
-        label: "Entire Leg Swelling",
-        type: "boolean",
-      },
-      {
-        id: "asymmetry",
-        label: "Calf Swelling Asymmetry >3cm",
-        type: "boolean",
-      },
-      {
-        id: "pitting_edema",
-        label: "Pitting Edema",
-        type: "boolean",
-      },
-      {
-        id: "collateral_veins",
-        label: "Collateral Superficial Veins",
-        type: "boolean",
-      },
-      {
-        id: "previous_dvt",
-        label: "Previous DVT",
-        type: "boolean",
-      },
-    ],
-    references: [
-      {
-        authors: "Wells PS, et al.",
-        year: 1997,
-        title: "Accuracy of clinical assessment of deep-vein thrombosis",
-        journal: "Lancet",
-        volume: "345",
-        pages: "1326-1330",
-        citations: 1800,
-        impactFactor: 60.0,
-      },
-    ],
-  },
-
-  {
-    id: "wells_pe",
-    name: "Wells' PE Score",
-    categories: ["Cardiology", "Intensive Care", "Hematology"],
-    description: "Pulmonary embolism risk - Guides imaging decisions",
-    clinicalUses: ["PE risk assessment", "Imaging decisions", "Treatment decisions"],
-    inputs: [
-      {
-        id: "clinical_dvt",
-        label: "Clinical Signs of DVT",
-        type: "boolean",
-      },
-      {
-        id: "pe_likely",
-        label: "PE Most Likely Diagnosis",
-        type: "boolean",
-      },
-      {
-        id: "heart_rate",
-        label: "Heart Rate >100",
-        type: "boolean",
-      },
-      {
-        id: "immobilization",
-        label: "Immobilization >3 days or Surgery",
-        type: "boolean",
-      },
-      {
-        id: "previous_vte",
-        label: "Previous VTE",
-        type: "boolean",
-      },
-      {
-        id: "hemoptysis",
-        label: "Hemoptysis",
-        type: "boolean",
-      },
-      {
-        id: "malignancy",
-        label: "Malignancy",
-        type: "boolean",
-      },
-    ],
-    references: [
-      {
-        authors: "Wells PS, et al.",
-        year: 2000,
-        title: "Derivation of a simple clinical model to categorize patients probability of pulmonary embolism",
-        journal: "Thrombosis and Haemostasis",
-        volume: "83",
-        pages: "416-420",
-        citations: 1500,
-        impactFactor: 4.2,
-      },
-    ],
-  },
-
-  // ============================================================================
-  // PERIOPERATIVE MEDICINE & ANESTHESIOLOGY
-  // ============================================================================
   {
     id: "asa_physical_status",
     name: "ASA Physical Status Classification",
@@ -1527,7 +721,6 @@ export const completeCalculators: Calculator[] = [
       },
     ],
   },
-
   {
     id: "rcri",
     name: "RCRI (Revised Cardiac Risk Index)",
@@ -1593,7 +786,6 @@ export const completeCalculators: Calculator[] = [
       },
     ],
   },
-
   {
     id: "caprini_vte",
     name: "Caprini Score for VTE Risk",
@@ -1671,7 +863,6 @@ export const completeCalculators: Calculator[] = [
       },
     ],
   },
-
   {
     id: "pesi",
     name: "PESI (Pulmonary Embolism Severity Index)",
@@ -1760,7 +951,6 @@ export const completeCalculators: Calculator[] = [
       },
     ],
   },
-
   {
     id: "smart_cop",
     name: "SMART-COP Score",
@@ -1834,10 +1024,6 @@ export const completeCalculators: Calculator[] = [
       },
     ],
   },
-
-  // ============================================================================
-  // HEPATOLOGY (EXPANDED)
-  // ============================================================================
   {
     id: "child_pugh",
     name: "Child-Pugh Score",
@@ -1902,7 +1088,6 @@ export const completeCalculators: Calculator[] = [
       },
     ],
   },
-
   {
     id: "fib4",
     name: "FIB-4 Index",
@@ -1962,7 +1147,6 @@ export const completeCalculators: Calculator[] = [
       },
     ],
   },
-
   {
     id: "meld_na",
     name: "MELD-Na Score",
@@ -2027,7 +1211,6 @@ export const completeCalculators: Calculator[] = [
       },
     ],
   },
-
   {
     id: "apri",
     name: "APRI Score",
