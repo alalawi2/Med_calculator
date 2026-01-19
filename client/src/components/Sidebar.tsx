@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Search, Heart, AlertTriangle, Clock, Star, Stethoscope } from "lucide-react";
+import { Search, Heart, AlertTriangle, Clock, Star, Stethoscope, CheckCircle2 } from "lucide-react";
 import { calculators } from "@/lib/calculators";
 
 interface SidebarProps {
@@ -112,7 +112,12 @@ export function Sidebar({
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="truncate">{calc.name}</span>
+                      <div className="flex items-center gap-1.5 truncate">
+                        <span className="truncate">{calc.name}</span>
+                        <span title="Validated & Working" className="flex-shrink-0">
+                          <CheckCircle2 className="w-3 h-3 text-green-600" />
+                        </span>
+                      </div>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -154,7 +159,12 @@ export function Sidebar({
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="truncate">{calc.name}</span>
+                      <div className="flex items-center gap-1.5 truncate">
+                        <span className="truncate">{calc.name}</span>
+                        <span title="Validated & Working" className="flex-shrink-0">
+                          <CheckCircle2 className="w-3 h-3 text-green-600" />
+                        </span>
+                      </div>
                       <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                     </div>
                   </button>
@@ -224,7 +234,12 @@ export function Sidebar({
                   >
                     <div className="flex items-center justify-between">
                       <div className="truncate flex-1">
-                        <p className="font-medium truncate">{calc.name}</p>
+                        <div className="flex items-center gap-1.5">
+                          <p className="font-medium truncate">{calc.name}</p>
+                          <span title="Validated & Working" className="flex-shrink-0">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />
+                          </span>
+                        </div>
                         <p className="text-xs text-slate-500 truncate">{calc.description}</p>
                       </div>
                       <button

@@ -37,5 +37,12 @@
 - [x] Verify TypeScript clean
 
 ## Phase 4: Deploy
-- [ ] Save checkpoint
-- [ ] Push to GitHub
+- [x] Save checkpoint (version 24ae5134)
+- [x] Push to GitHub (automatic via checkpoint)
+
+
+## UI Enhancement: Calculator Status Badges
+- [x] Add "✓ Validated" badge to all 20 working calculators
+- [x] Design badge styling (green checkmark, subtle, mobile-friendly)
+- [x] Update calculator list component to show badges
+- [x] Test on mobile and desktop (verified in screenshot)
