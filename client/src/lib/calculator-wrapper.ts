@@ -42,17 +42,11 @@ export function executeCalculator(
         });
 
       case "sofa":
-        // Map cardiovascular select to score (0-4)
-        let cardiovascularScore = 0;
-        if (inputs.cardiovascular === "MAP <70 mmHg") cardiovascularScore = 1;
-        else if (inputs.cardiovascular === "Dopamine ≤5 or dobutamine") cardiovascularScore = 2;
-        else if (inputs.cardiovascular === "Dopamine >5 or epinephrine/norepinephrine") cardiovascularScore = 4;
-        
         return calculateSOFA({
           pao2_fio2: parseFloat(inputs.pao2_fio2) || 400,
           platelets: parseFloat(inputs.platelets) || 150,
           bilirubin: parseFloat(inputs.bilirubin) || 1,
-          cardiovascular: cardiovascularScore,
+          cardiovascular: parseFloat(inputs.cardiovascular) || 0,
           gcs: parseFloat(inputs.gcs) || 15,
           creatinine: parseFloat(inputs.creatinine) || 1,
         });
@@ -132,7 +126,6 @@ export function executeCalculator(
           inr: parseFloat(inputs.inr) || 1,
           bilirubin_meld: parseFloat(inputs.bilirubin_meld) || 1,
           creatinine_meld: parseFloat(inputs.creatinine_meld) || 1,
-          dialysis: inputs.dialysis || false,
         });
 
       // Perioperative Medicine

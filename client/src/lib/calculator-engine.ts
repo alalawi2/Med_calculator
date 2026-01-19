@@ -127,10 +127,11 @@ export function calculateSOFA(inputs: {
   else if (inputs.creatinine >= 1.2) score += 1;
 
   const riskLevel = score >= 11 ? "critical" : score >= 8 ? "high" : score >= 5 ? "moderate" : "low";
+  // MDCalc SOFA mortality estimates
   const mortalityRates: Record<string, number> = {
     critical: 95,
     high: 60,
-    medium: 25,
+    moderate: 25,
     low: 5,
   };
 
@@ -334,14 +335,15 @@ export function calculateCHA2DS2VASc(inputs: Record<string, boolean>): Calculati
   if (inputs.age_65_74) score += 1;
   if (inputs.female) score += 1;
 
+  // MDCalc: Stroke/TIA/Systemic Embolism Risk (%) - Lip 2010 validation study
   const strokeRiskRates: Record<number, number> = {
-    0: 0,
-    1: 1.3,
-    2: 2.2,
-    3: 3.2,
-    4: 4.0,
-    5: 6.7,
-    6: 9.6,
+    0: 0.3,
+    1: 0.9,
+    2: 2.9,
+    3: 4.6,
+    4: 6.7,
+    5: 10.0,
+    6: 13.6,
     7: 15.7,
     8: 15.2,
     9: 17.4,
@@ -376,55 +378,80 @@ export function calculateCHA2DS2VASc(inputs: Record<string, boolean>): Calculati
   };
 }
 
-export function calculateHASBLED(inputs: Record<string, boolean>): CalculationResult {
+export function calculateHASBLED(inputs: {
+  hypertension: boolean;
+  renal_disease: boolean;
+  liver_disease: boolean;
+  stroke_history: boolean;
+  prior_bleeding: boolean;
+  labile_inr: boolean;
+  age_over_65: boolean;
+  medication_usage: boolean;
+  alcohol_use: boolean;
+}): CalculationResult {
   let score = 0;
+
+  // H - Hypertension (uncontrolled, SBP >160 mmHg)
   if (inputs.hypertension) score += 1;
+
+  // A - Abnormal renal function (1 pt) AND/OR liver function (1 pt)
   if (inputs.renal_disease) score += 1;
   if (inputs.liver_disease) score += 1;
+
+  // S - Stroke history
   if (inputs.stroke_history) score += 1;
+
+  // B - Bleeding history or predisposition
   if (inputs.prior_bleeding) score += 1;
+
+  // L - Labile INR (if on warfarin, TTR <60%)
   if (inputs.labile_inr) score += 1;
+
+  // E - Elderly (≥65 years)
   if (inputs.age_over_65) score += 1;
+
+  // D - Drugs (antiplatelet agents, NSAIDs) (1 pt) AND/OR alcohol excess (1 pt)
   if (inputs.medication_usage) score += 1;
   if (inputs.alcohol_use) score += 1;
 
+  // MDCalc HAS-BLED bleeding risk rates (annual major bleeding %)
   const bleedingRiskRates: Record<number, number> = {
-    0: 1.13,
-    1: 1.02,
-    2: 1.88,
-    3: 3.74,
-    4: 8.70,
-    5: 12.50,
-    6: 12.50,
-    7: 12.50,
-    8: 12.50,
-    9: 12.50,
+    0: 1.1,
+    1: 1.0,
+    2: 1.9,
+    3: 3.7,
+    4: 8.7,
+    5: 12.5,
+    6: 12.5,
+    7: 12.5,
+    8: 12.5,
+    9: 12.5,
   };
 
   const riskPercentage = bleedingRiskRates[Math.min(score, 9)] ?? 12.5;
-  const riskLevel = score >= 3 ? "high" : score >= 2 ? "moderate" : "low";
+  const riskLevel: "low" | "moderate" | "high" = score <= 1 ? "low" : score === 2 ? "moderate" : "high";
 
   return {
     score,
     maxScore: 9,
     riskLevel,
     riskPercentage,
-    interpretation: `HAS-BLED Score: ${score} - Annual major bleeding risk: ${riskPercentage}%`,
+    interpretation: `HAS-BLED Score: ${score} - ${riskPercentage}% annual major bleeding risk`,
     recommendations: [
-      riskLevel === "high"
-        ? "✓ High bleeding risk - Consider alternatives to anticoagulation or closer monitoring"
-        : riskLevel === "moderate"
-          ? "✓ Moderate bleeding risk - Anticoagulation with caution and regular review"
-          : "✓ Low bleeding risk - Anticoagulation appropriate if indicated",
-      "✓ Address modifiable risk factors (hypertension, alcohol, medications)",
-      "✓ Regular INR monitoring if on warfarin",
-      "✓ Patient education on bleeding signs",
+      score >= 3
+        ? "✓ High bleeding risk - requires careful monitoring on anticoagulation"
+        : score === 2
+          ? "✓ Moderate bleeding risk - consider individual factors"
+          : "✓ Low bleeding risk - anticoagulation generally safe",
+      "✓ HAS-BLED ≥3 does NOT contraindicate anticoagulation",
+      "✓ Address modifiable risk factors (hypertension, labile INR, medications, alcohol)",
+      score >= 3 ? "✓ More frequent monitoring recommended" : "✓ Standard monitoring",
     ],
     managementPathway: [
       {
-        priority: riskLevel === "high" ? "urgent" : "routine",
+        priority: score >= 3 ? "urgent" : "routine",
         action: `Bleeding risk assessment (${riskPercentage}% annual risk)`,
-        rationale: "HAS-BLED predicts major bleeding risk in AF patients on anticoagulation",
+        rationale: "HAS-BLED guides monitoring intensity, not anticoagulation decision",
       },
     ],
   };
@@ -552,13 +579,14 @@ export function calculateCURB65(inputs: Record<string, boolean>): CalculationRes
   if (inputs.blood_pressure_curb) score += 1;
   if (inputs.age_65_curb) score += 1;
 
+  // MDCalc validated 30-day mortality rates
   const mortalityRates: Record<number, number> = {
-    0: 0.7,
-    1: 3.2,
-    2: 13.0,
-    3: 17.0,
-    4: 41.5,
-    5: 57.0,
+    0: 0.6,
+    1: 2.7,
+    2: 6.8,
+    3: 14.0,
+    4: 27.8,
+    5: 27.8,
   };
 
   const riskLevel = score === 0 ? "low" : score <= 2 ? "moderate" : "high";
@@ -672,9 +700,10 @@ export function calculateMELD(inputs: {
 
   const score = Math.min(Math.max(Math.round(meld), 6), 40);
 
+  // MDCalc MELD mortality estimates
   const mortalityRates: Record<string, number> = {
     low: 2,
-    medium: 10,
+    moderate: 10,
     high: 40,
     critical: 80,
   };
@@ -846,14 +875,16 @@ export function calculateCaprini(inputs: Record<string, any>): CalculationResult
   if (inputs.previous_vte) score += 3;
   if (inputs.thrombophilia) score += 3;
 
+  // MDCalc Caprini risk stratification: 0-1 low, 2 moderate, 3-4 high, ≥5 highest
   const riskLevel: "low" | "moderate" | "high" | "critical" =
-    score <= 2 ? "low" : score <= 4 ? "moderate" : score <= 6 ? "high" : "critical";
+    score <= 1 ? "low" : score === 2 ? "moderate" : score <= 4 ? "high" : "critical";
 
+  // MDCalc VTE risk rates by category
   const vteRiskRates: Record<string, number> = {
     low: 0.5,
-    medium: 1.5,
+    moderate: 1.5,
     high: 3.0,
-    critical: 10.7,
+    critical: 6.0,
   };
 
   return {
@@ -863,24 +894,24 @@ export function calculateCaprini(inputs: Record<string, any>): CalculationResult
     riskPercentage: vteRiskRates[riskLevel],
     interpretation: `Caprini Score: ${score} - ${riskLevel.toUpperCase()} VTE RISK (${vteRiskRates[riskLevel]}% risk)`,
     recommendations: [
-      score <= 2
+      score <= 1
         ? "✓ Early ambulation recommended"
-        : score <= 4
+        : score === 2
           ? "✓ Mechanical prophylaxis (compression devices)"
-          : score <= 6
-            ? "✓ Mechanical + pharmacologic prophylaxis (LMWH/heparin)"
-            : "✓ Aggressive prophylaxis - LMWH + mechanical devices + extended duration",
+          : score <= 4
+            ? "✓ Pharmacologic prophylaxis recommended"
+            : "✓ Pharmacologic + mechanical prophylaxis, consider extended duration (30 days)",
       "✓ Risk reassessment daily",
-      score >= 5 ? "✓ Consider extended prophylaxis (30 days post-op)" : "✓ Standard duration prophylaxis",
+      score >= 5 ? "✓ Extended prophylaxis recommended (7-30 days post-op)" : "✓ Standard duration prophylaxis",
       "✓ Early mobilization when safe",
     ],
     managementPathway: [
       {
-        priority: score >= 7 ? "immediate" : "routine",
+        priority: score >= 5 ? "urgent" : "routine",
         action:
-          score <= 2
+          score <= 1
             ? "Ambulation only"
-            : score <= 4
+            : score === 2
               ? "Mechanical prophylaxis"
               : "Pharmacologic + mechanical prophylaxis",
         rationale: `${vteRiskRates[riskLevel]}% VTE risk - Caprini ${score}`,
@@ -1014,9 +1045,9 @@ export function calculateChildPugh(inputs: Record<string, any>): CalculationResu
   else if (inputs.albumin >= 2.8) score += 2;
   else score += 3;
 
-  // INR
+  // INR - MDCalc: <1.7 (1pt), 1.7-2.2 (2pt), >2.2 (3pt)
   if (inputs.inr < 1.7) score += 1;
-  else if (inputs.inr <= 2.3) score += 2;
+  else if (inputs.inr <= 2.2) score += 2;
   else score += 3;
 
   // Ascites
@@ -1149,9 +1180,10 @@ export function calculateMELDNa(inputs: {
   const riskLevel: "low" | "moderate" | "high" | "critical" =
     score < 10 ? "low" : score < 20 ? "moderate" : score < 30 ? "high" : "critical";
 
+  // MDCalc MELD-Na mortality estimates
   const mortalityRates: Record<string, number> = {
     low: 2,
-    medium: 10,
+    moderate: 10,
     high: 40,
     critical: 80,
   };

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'medresearch-academy-v2';
+const CACHE_NAME = 'medresearch-academy-v1';
 const urlsToCache = [
   '/',
   '/index.html',
