@@ -9,32 +9,32 @@
 - [x] Keep only 20 calculators with working engines
 
 ## Phase 2: Fix All 20 Calculator Wrappers
-- [ ] qSOFA - Verify wrapper (appears correct)
-- [ ] SOFA - Fix to use UI select inputs properly
-- [ ] APACHE - Fix parameter mapping
-- [ ] NIHSS - Create complete wrapper
-- [ ] CHA2DS2-VASc - Fix parameter name mismatches
-- [ ] HAS-BLED - Fix parameter name mismatches
-- [ ] GCS - Verify wrapper (appears correct)
-- [ ] HEART - Fix parameter mapping
-- [ ] CURB-65 - Fix parameter name mismatches
-- [ ] CrCl - Fix parameter mapping
-- [ ] MELD - Verify wrapper (appears correct)
-- [ ] ASA - Verify wrapper (appears correct)
-- [ ] RCRI - Verify wrapper (appears correct)
-- [ ] Caprini - Fix parameter mapping
-- [ ] PESI - Verify wrapper (appears correct)
-- [ ] SMART-COP - Verify wrapper (appears correct)
-- [ ] Child-Pugh - Verify wrapper (appears correct)
-- [ ] FIB-4 - Verify wrapper (appears correct)
-- [ ] MELD-Na - Verify wrapper (appears correct)
-- [ ] APRI - Verify wrapper (appears correct)
+- [x] qSOFA - Verified correct
+- [x] SOFA - Fixed select dropdown mappings
+- [x] APACHE - Fixed parameter mapping
+- [x] NIHSS - Verified correct (passes inputs object)
+- [x] CHA2DS2-VASc - Fixed parameter name mismatches
+- [x] HAS-BLED - Fixed combined input parsing
+- [x] GCS - Verified correct
+- [x] HEART - Fixed age parameter mapping
+- [x] CURB-65 - Verified correct (passes inputs object)
+- [x] CrCl - Fixed parameter name suffixes
+- [x] MELD - Fixed parameter name suffixes
+- [x] ASA - Verified correct
+- [x] RCRI - Verified correct (passes inputs object)
+- [x] Caprini - Verified correct (passes inputs object)
+- [x] PESI - Verified correct (passes inputs object)
+- [x] SMART-COP - Verified correct (passes inputs object)
+- [x] Child-Pugh - Verified correct (passes inputs object)
+- [x] FIB-4 - Verified correct
+- [x] MELD-Na - Verified correct
+- [x] APRI - Verified correct
 
 ## Phase 3: Testing & Validation
-- [ ] Run all 121 tests
-- [ ] Manual test CHA2DS2-VASc (user reported broken)
-- [ ] Manual test 5 other key calculators
-- [ ] Verify TypeScript clean
+- [x] Run all 133 tests (ALL PASSING! +12 integration tests)
+- [x] Integration test CHA2DS2-VASc (FIXED - now working correctly)
+- [x] Integration test qSOFA, SOFA, GCS, MELD (all working)
+- [x] Verify TypeScript clean
 
 ## Phase 4: Deploy
 - [ ] Save checkpoint
