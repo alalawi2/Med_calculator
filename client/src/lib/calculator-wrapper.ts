@@ -60,7 +60,7 @@ export function executeCalculator(
   inputs: Record<string, any>
 ): CalculationResult | null {
   // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/a211a2ec-f066-4fc4-95bc-89cfb5ea6b15',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'calculator-wrapper.ts:32',message:'executeCalculator entry',data:{calculatorId:calculator.id,rawInputs:inputs,inputTypes:Object.keys(inputs).reduce((acc,k)=>{acc[k]=typeof inputs[k];return acc},{})},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A,B,C,D,E'})}).catch(()=>{});
+  fetch('http://127.0.0.1:7242/ingest/a211a2ec-f066-4fc4-95bc-89cfb5ea6b15',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'calculator-wrapper.ts:32',message:'executeCalculator entry',data:{calculatorId:calculator.id,rawInputs:inputs,inputTypes:Object.keys(inputs).reduce((acc: Record<string, string>,k)=>{acc[k]=typeof inputs[k];return acc},{})},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A,B,C,D,E'})}).catch(()=>{});
   // #endregion
   try {
     switch (calculator.id) {
@@ -185,7 +185,7 @@ export function executeCalculator(
           medication_usage: drugsAlcohol.includes("Drugs") || drugsAlcohol.includes("medication"),
           alcohol_use: drugsAlcohol.includes("Alcohol") || drugsAlcohol.includes("alcohol"),
         };
-        fetch('http://127.0.0.1:7242/ingest/a211a2ec-f066-4fc4-95bc-89cfb5ea6b15',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'calculator-wrapper.ts:127',message:'HAS-BLED parsed inputs',data:{raw:{hypertension:inputs.hypertension,stroke:inputs.stroke,bleeding:inputs.bleeding,labile_inr:inputs.labile_inr,elderly:inputs.elderly,renal_liver,drugs_alcohol},parsed:hasbledParsed,hypertensionType:typeof inputs.hypertension,hypertensionValue:inputs.hypertension,strokeType:typeof inputs.stroke,strokeValue:inputs.stroke},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B,D'})}).catch(()=>{});
+        fetch('http://127.0.0.1:7242/ingest/a211a2ec-f066-4fc4-95bc-89cfb5ea6b15',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'calculator-wrapper.ts:127',message:'HAS-BLED parsed inputs',data:{raw:{hypertension:inputs.hypertension,stroke:inputs.stroke,bleeding:inputs.bleeding,labile_inr:inputs.labile_inr,elderly:inputs.elderly,renalLiver,drugsAlcohol},parsed:hasbledParsed,hypertensionType:typeof inputs.hypertension,hypertensionValue:inputs.hypertension,strokeType:typeof inputs.stroke,strokeValue:inputs.stroke},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B,D'})}).catch(()=>{});
         // #endregion
         const hasbledResult = calculateHASBLED(hasbledParsed);
         // #region agent log
@@ -271,7 +271,7 @@ export function executeCalculator(
       // ===================================================================
       case "rcri":
         // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/a211a2ec-f066-4fc4-95bc-89cfb5ea6b15',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'calculator-wrapper.ts:264',message:'RCRI inputs',data:{inputs,inputTypes:Object.keys(inputs).reduce((acc,k)=>{acc[k]=typeof inputs[k];return acc},{})},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+        fetch('http://127.0.0.1:7242/ingest/a211a2ec-f066-4fc4-95bc-89cfb5ea6b15',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'calculator-wrapper.ts:264',message:'RCRI inputs',data:{inputs,inputTypes:Object.keys(inputs).reduce((acc: Record<string, string>,k)=>{acc[k]=typeof inputs[k];return acc},{})},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
         // #endregion
         return calculateRCRI(inputs);
 
