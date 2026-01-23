@@ -255,7 +255,11 @@ export function calculateAPACHE(inputs: {
 // ============================================================================
 
 export function calculateNIHSS(inputs: Record<string, number>): CalculationResult {
-  const score = Object.values(inputs).reduce((a, b) => a + (typeof b === "number" ? b : 0), 0);
+  // BUG FIX: Handle string numbers from form inputs
+  const score = Object.values(inputs).reduce((a, b) => {
+    const num = typeof b === "number" ? b : parseFloat(String(b)) || 0;
+    return a + (isNaN(num) ? 0 : num);
+  }, 0);
 
   let riskLevel: "low" | "moderate" | "high" | "critical" = "low";
   let interpretation = "";
@@ -326,14 +330,22 @@ export function calculateNIHSS(inputs: Record<string, number>): CalculationResul
 
 export function calculateCHA2DS2VASc(inputs: Record<string, boolean>): CalculationResult {
   let score = 0;
-  if (inputs.chf) score += 1;
-  if (inputs.hypertension) score += 1;
-  if (inputs.age_75) score += 2;
-  if (inputs.diabetes) score += 1;
-  if (inputs.stroke_tia) score += 2;
-  if (inputs.vascular_disease) score += 1;
-  if (inputs.age_65_74) score += 1;
-  if (inputs.female) score += 1;
+  
+  // BUG FIX: Properly handle boolean inputs (may come as strings from form)
+  const toBool = (val: any): boolean => {
+    if (typeof val === "boolean") return val;
+    if (typeof val === "string") return val.toLowerCase() === "true" || val === "1";
+    return Boolean(val);
+  };
+  
+  if (toBool(inputs.chf)) score += 1;
+  if (toBool(inputs.hypertension)) score += 1;
+  if (toBool(inputs.age_75)) score += 2;
+  if (toBool(inputs.diabetes)) score += 1;
+  if (toBool(inputs.stroke_tia)) score += 2;
+  if (toBool(inputs.vascular_disease)) score += 1;
+  if (toBool(inputs.age_65_74)) score += 1;
+  if (toBool(inputs.female)) score += 1;
 
   // MDCalc: Stroke/TIA/Systemic Embolism Risk (%) - Lip 2010 validation study
   const strokeRiskRates: Record<number, number> = {
@@ -391,18 +403,25 @@ export function calculateHASBLED(inputs: {
 }): CalculationResult {
   let score = 0;
 
+  // BUG FIX: Properly handle boolean inputs (may come as strings from form)
+  const toBool = (val: any): boolean => {
+    if (typeof val === "boolean") return val;
+    if (typeof val === "string") return val.toLowerCase() === "true" || val === "1";
+    return Boolean(val);
+  };
+
   // H - Hypertension (uncontrolled, SBP >160 mmHg)
-  if (inputs.hypertension) score += 1;
+  if (toBool(inputs.hypertension)) score += 1;
 
   // A - Abnormal renal function (1 pt) AND/OR liver function (1 pt)
-  if (inputs.renal_disease) score += 1;
-  if (inputs.liver_disease) score += 1;
+  if (toBool(inputs.renal_disease)) score += 1;
+  if (toBool(inputs.liver_disease)) score += 1;
 
   // S - Stroke history
-  if (inputs.stroke_history) score += 1;
+  if (toBool(inputs.stroke_history)) score += 1;
 
   // B - Bleeding history or predisposition
-  if (inputs.prior_bleeding) score += 1;
+  if (toBool(inputs.prior_bleeding)) score += 1;
 
   // L - Labile INR (if on warfarin, TTR <60%)
   if (inputs.labile_inr) score += 1;
@@ -573,11 +592,19 @@ export function calculateHEART(inputs: {
 
 export function calculateCURB65(inputs: Record<string, boolean>): CalculationResult {
   let score = 0;
-  if (inputs.confusion) score += 1;
-  if (inputs.urea) score += 1;
-  if (inputs.respiratory_rate_curb) score += 1;
-  if (inputs.blood_pressure_curb) score += 1;
-  if (inputs.age_65_curb) score += 1;
+  
+  // BUG FIX: Properly handle boolean inputs (may come as strings from form)
+  const toBool = (val: any): boolean => {
+    if (typeof val === "boolean") return val;
+    if (typeof val === "string") return val.toLowerCase() === "true" || val === "1";
+    return Boolean(val);
+  };
+  
+  if (toBool(inputs.confusion)) score += 1;
+  if (toBool(inputs.urea)) score += 1;
+  if (toBool(inputs.respiratory_rate_curb)) score += 1;
+  if (toBool(inputs.blood_pressure_curb)) score += 1;
+  if (toBool(inputs.age_65_curb)) score += 1;
 
   // MDCalc validated 30-day mortality rates
   const mortalityRates: Record<number, number> = {
@@ -633,6 +660,29 @@ export function calculateCrCl(inputs: {
   gender_crcl: "male" | "female";
 }): CalculationResult {
   // Cockcroft-Gault equation
+  // CRITICAL: Handle division by zero if creatinine is 0
+  if (inputs.creatinine_crcl <= 0) {
+    return {
+      score: 0,
+      maxScore: 120,
+      riskLevel: "critical",
+      riskPercentage: 100,
+      interpretation: "Creatinine Clearance: Cannot calculate (creatinine ≤ 0). Please verify input.",
+      recommendations: [
+        "✓ Verify creatinine value",
+        "✓ Creatinine must be > 0 for calculation",
+        "✓ Consider alternative GFR estimation methods",
+      ],
+      managementPathway: [
+        {
+          priority: "urgent",
+          action: "Verify lab values",
+          rationale: "Invalid creatinine value prevents calculation",
+        },
+      ],
+    };
+  }
+  
   let crcl =
     ((140 - inputs.age_crcl) * inputs.weight_crcl) / (72 * inputs.creatinine_crcl);
   if (inputs.gender_crcl === "female") crcl *= 0.85;
@@ -801,12 +851,20 @@ export function calculateASA(inputs: { asa_class: string; emergency: boolean }):
 
 export function calculateRCRI(inputs: Record<string, boolean>): CalculationResult {
   let score = 0;
-  if (inputs.high_risk_surgery) score += 1;
-  if (inputs.ischemic_heart_disease) score += 1;
-  if (inputs.heart_failure) score += 1;
-  if (inputs.cerebrovascular_disease) score += 1;
-  if (inputs.diabetes_insulin) score += 1;
-  if (inputs.renal_insufficiency) score += 1;
+  
+  // BUG FIX: Properly handle boolean inputs (may come as strings from form)
+  const toBool = (val: any): boolean => {
+    if (typeof val === "boolean") return val;
+    if (typeof val === "string") return val.toLowerCase() === "true" || val === "1";
+    return Boolean(val);
+  };
+  
+  if (toBool(inputs.high_risk_surgery)) score += 1;
+  if (toBool(inputs.ischemic_heart_disease)) score += 1;
+  if (toBool(inputs.heart_failure)) score += 1;
+  if (toBool(inputs.cerebrovascular_disease)) score += 1;
+  if (toBool(inputs.diabetes_insulin)) score += 1;
+  if (toBool(inputs.renal_insufficiency)) score += 1;
 
   // MDCalc/Lee Criteria validated risk rates for major cardiac complications
   // (MI, cardiac arrest, complete heart block, death)
@@ -861,19 +919,26 @@ export function calculateCaprini(inputs: Record<string, any>): CalculationResult
   };
   score += ageMap[inputs.age] || 0;
 
+  // BUG FIX: Properly handle boolean inputs
+  const toBool = (val: any): boolean => {
+    if (typeof val === "boolean") return val;
+    if (typeof val === "string") return val.toLowerCase() === "true" || val === "1";
+    return Boolean(val);
+  };
+
   // Surgery scoring
-  if (inputs.minor_surgery) score += 1;
-  if (inputs.major_surgery) score += 2;
+  if (toBool(inputs.minor_surgery)) score += 1;
+  if (toBool(inputs.major_surgery)) score += 2;
 
   // Other risk factors (1 point each)
-  if (inputs.bmi) score += 1;
-  if (inputs.varicose_veins) score += 1;
-  if (inputs.immobility) score += 2;
+  if (toBool(inputs.bmi)) score += 1;
+  if (toBool(inputs.varicose_veins)) score += 1;
+  if (toBool(inputs.immobility)) score += 2;
 
   // Major risk factors
-  if (inputs.current_cancer) score += 2;
-  if (inputs.previous_vte) score += 3;
-  if (inputs.thrombophilia) score += 3;
+  if (toBool(inputs.current_cancer)) score += 2;
+  if (toBool(inputs.previous_vte)) score += 3;
+  if (toBool(inputs.thrombophilia)) score += 3;
 
   // MDCalc Caprini risk stratification: 0-1 low, 2 moderate, 3-4 high, ≥5 highest
   const riskLevel: "low" | "moderate" | "high" | "critical" =
@@ -921,17 +986,27 @@ export function calculateCaprini(inputs: Record<string, any>): CalculationResult
 }
 
 export function calculatePESI(inputs: Record<string, any>): CalculationResult {
-  let score = inputs.age; // Age in years
-  if (inputs.male) score += 10;
-  if (inputs.cancer) score += 30;
-  if (inputs.heart_failure) score += 10;
-  if (inputs.chronic_lung_disease) score += 10;
-  if (inputs.pulse) score += 20;
-  if (inputs.systolic_bp) score += 30;
-  if (inputs.respiratory_rate) score += 20;
-  if (inputs.temperature) score += 20;
-  if (inputs.altered_mental) score += 60;
-  if (inputs.oxygen_sat) score += 20;
+  // BUG FIX: Validate age and handle undefined/null
+  const age = typeof inputs.age === "number" ? inputs.age : parseFloat(inputs.age) || 0;
+  let score = age; // Age in years
+  
+  // BUG FIX: Properly handle boolean inputs (strings "true"/"false" should be converted)
+  const toBool = (val: any): boolean => {
+    if (typeof val === "boolean") return val;
+    if (typeof val === "string") return val.toLowerCase() === "true" || val === "1";
+    return Boolean(val);
+  };
+  
+  if (toBool(inputs.male)) score += 10;
+  if (toBool(inputs.cancer)) score += 30;
+  if (toBool(inputs.heart_failure)) score += 10;
+  if (toBool(inputs.chronic_lung_disease)) score += 10;
+  if (toBool(inputs.pulse)) score += 20;
+  if (toBool(inputs.systolic_bp)) score += 30;
+  if (toBool(inputs.respiratory_rate)) score += 20;
+  if (toBool(inputs.temperature)) score += 20;
+  if (toBool(inputs.altered_mental)) score += 60;
+  if (toBool(inputs.oxygen_sat)) score += 20;
 
   const riskClass =
     score < 66
@@ -983,15 +1058,23 @@ export function calculatePESI(inputs: Record<string, any>): CalculationResult {
 
 export function calculateSMARTCOP(inputs: Record<string, boolean>): CalculationResult {
   let score = 0;
+  
+  // BUG FIX: Properly handle boolean inputs (may come as strings from form)
+  const toBool = (val: any): boolean => {
+    if (typeof val === "boolean") return val;
+    if (typeof val === "string") return val.toLowerCase() === "true" || val === "1";
+    return Boolean(val);
+  };
+  
   // MDCalc SMART-COP scoring criteria
-  if (inputs.systolic_bp) score += 2; // S - Systolic BP <90 mmHg
-  if (inputs.multilobar) score += 1; // M - Multilobar infiltrates on CXR
-  if (inputs.albumin) score += 1; // A - Albumin <3.5 g/dL
-  if (inputs.respiratory_rate) score += 1; // R - RR >30/min (age-adjusted)
-  if (inputs.tachycardia) score += 1; // T - Tachycardia (HR >125 bpm)
-  if (inputs.confusion) score += 1; // C - Confusion (acute)
-  if (inputs.oxygen) score += 2; // O - Oxygen low (SpO2 <90% or PaO2 <60)
-  if (inputs.ph) score += 2; // P - pH <7.35
+  if (toBool(inputs.systolic_bp)) score += 2; // S - Systolic BP <90 mmHg
+  if (toBool(inputs.multilobar)) score += 1; // M - Multilobar infiltrates on CXR
+  if (toBool(inputs.albumin)) score += 1; // A - Albumin <3.5 g/dL
+  if (toBool(inputs.respiratory_rate)) score += 1; // R - RR >30/min (age-adjusted)
+  if (toBool(inputs.tachycardia)) score += 1; // T - Tachycardia (HR >125 bpm)
+  if (toBool(inputs.confusion)) score += 1; // C - Confusion (acute)
+  if (toBool(inputs.oxygen)) score += 2; // O - Oxygen low (SpO2 <90% or PaO2 <60)
+  if (toBool(inputs.ph)) score += 2; // P - pH <7.35
 
   // MDCalc validated IRVS (Intensive Respiratory or Vasopressor Support) risk
   // 0-2: Low risk (~4% need IRVS)
@@ -1035,19 +1118,24 @@ export function calculateSMARTCOP(inputs: Record<string, boolean>): CalculationR
 export function calculateChildPugh(inputs: Record<string, any>): CalculationResult {
   let score = 0;
 
+  // BUG FIX: Parse numeric inputs (may come as strings from form)
+  const bilirubin = typeof inputs.bilirubin === "number" ? inputs.bilirubin : parseFloat(String(inputs.bilirubin)) || 0;
+  const albumin = typeof inputs.albumin === "number" ? inputs.albumin : parseFloat(String(inputs.albumin)) || 0;
+  const inr = typeof inputs.inr === "number" ? inputs.inr : parseFloat(String(inputs.inr)) || 1;
+
   // Bilirubin
-  if (inputs.bilirubin < 2) score += 1;
-  else if (inputs.bilirubin <= 3) score += 2;
+  if (bilirubin < 2) score += 1;
+  else if (bilirubin <= 3) score += 2;
   else score += 3;
 
   // Albumin
-  if (inputs.albumin > 3.5) score += 1;
-  else if (inputs.albumin >= 2.8) score += 2;
+  if (albumin > 3.5) score += 1;
+  else if (albumin >= 2.8) score += 2;
   else score += 3;
 
   // INR - MDCalc: <1.7 (1pt), 1.7-2.2 (2pt), >2.2 (3pt)
-  if (inputs.inr < 1.7) score += 1;
-  else if (inputs.inr <= 2.2) score += 2;
+  if (inr < 1.7) score += 1;
+  else if (inr <= 2.2) score += 2;
   else score += 3;
 
   // Ascites
@@ -1108,6 +1196,18 @@ export function calculateChildPugh(inputs: Record<string, any>): CalculationResu
 
 export function calculateFIB4(inputs: { age: number; ast: number; alt: number; platelets: number }): CalculationResult {
   // FIB-4 Formula: (Age × AST) / (Platelet count × √ALT)
+  // BUG FIX: Handle division by zero and invalid sqrt
+  if (inputs.platelets <= 0 || inputs.alt <= 0) {
+    return {
+      score: 0,
+      maxScore: 12,
+      riskLevel: "low",
+      riskPercentage: 0,
+      interpretation: "FIB-4: Cannot calculate (platelets ≤0 or ALT ≤0). Please verify inputs.",
+      recommendations: ["✓ Verify lab values", "✓ Platelets and ALT must be > 0"],
+      managementPathway: [{ priority: "routine", action: "Verify lab values", rationale: "Invalid inputs prevent calculation" }],
+    };
+  }
   const fib4 = (inputs.age * inputs.ast) / (inputs.platelets * Math.sqrt(inputs.alt));
   const score = Math.round(fib4 * 100) / 100;
 
@@ -1211,6 +1311,18 @@ export function calculateMELDNa(inputs: {
 }
 
 export function calculateAPRI(inputs: { ast: number; ast_upper_limit: number; platelets: number }): CalculationResult {
+  // BUG FIX: Handle division by zero
+  if (inputs.ast_upper_limit <= 0 || inputs.platelets <= 0) {
+    return {
+      score: 0,
+      maxScore: 10,
+      riskLevel: "low",
+      riskPercentage: 0,
+      interpretation: "APRI: Cannot calculate (AST upper limit ≤0 or platelets ≤0). Please verify inputs.",
+      recommendations: ["✓ Verify lab values", "✓ AST upper limit and platelets must be > 0"],
+      managementPathway: [{ priority: "routine", action: "Verify lab values", rationale: "Invalid inputs prevent calculation" }],
+    };
+  }
   const apri = ((inputs.ast / inputs.ast_upper_limit) * 100) / inputs.platelets;
   const score = Math.round(apri * 100) / 100;
 

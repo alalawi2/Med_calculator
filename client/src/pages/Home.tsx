@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useAuth } from "@/_core/hooks/useAuth";
 import { Sidebar } from "@/components/Sidebar";
 import { CalculatorFormEnhanced } from "@/components/CalculatorFormEnhanced";
 import { ResultsDisplayEnhanced } from "@/components/ResultsDisplayEnhanced";
@@ -7,37 +6,46 @@ import { MedicationDosing } from "@/components/MedicationDosing";
 import { SearchBar } from "@/components/SearchBar";
 import WelcomeScreen from "@/components/WelcomeScreen";
 import { calculators, medications } from "@/lib/calculators";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { executeCalculator } from "@/lib/calculator-wrapper";
 import { CalculationResult } from "@/lib/calculator-engine";
 import { FeedbackModal } from "@/components/FeedbackModal";
-import { Menu, X, Stethoscope, AlertCircle, Pill } from "lucide-react";
+import { Menu, X, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { UnitToggle } from "@/components/UnitToggle";
 
 export default function Home() {
-  // The userAuth hooks provides authentication state
-  // To implement login/logout functionality, simply call logout() or redirect to getLoginUrl()
-  let { user, loading, error, isAuthenticated, logout } = useAuth();
-
   const [selectedCalculatorId, setSelectedCalculatorId] = useState<string | null>(null);
   const [recentlyUsed, setRecentlyUsed] = useState<string[]>(() => {
-    const stored = localStorage.getItem("medresearch_recent");
-    return stored ? JSON.parse(stored) : [];
+    try {
+      const stored = localStorage.getItem("medresearch_recent");
+      return stored ? JSON.parse(stored) : [];
+    } catch (error) {
+      console.error("Error parsing recent calculators from localStorage:", error);
+      return [];
+    }
   });
   const [favorites, setFavorites] = useState<string[]>(() => {
-    const stored = localStorage.getItem("medresearch_favorites");
-    return stored ? JSON.parse(stored) : [];
+    try {
+      const stored = localStorage.getItem("medresearch_favorites");
+      return stored ? JSON.parse(stored) : [];
+    } catch (error) {
+      console.error("Error parsing favorites from localStorage:", error);
+      return [];
+    }
   });
-  const [activeTab, setActiveTab] = useState("calculators");
   const [calculationResult, setCalculationResult] = useState<CalculationResult | null>(null);
   const [lastInputs, setLastInputs] = useState<Record<string, any>>({});
   const [showFeedback, setShowFeedback] = useState(false);
   const [showMedications, setShowMedications] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window !== "undefined") {
+      return window.innerWidth < 768;
+    }
+    return false;
+  });
 
   useEffect(() => {
     const handleResize = () => {
@@ -72,10 +80,16 @@ export default function Home() {
   const selectedCalculator = selectedCalculatorId ? calculators.find((c) => c.id === selectedCalculatorId) : null;
 
   const handleCalculate = (inputs: Record<string, any>) => {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/a211a2ec-f066-4fc4-95bc-89cfb5ea6b15',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Home.tsx:82',message:'handleCalculate entry',data:{calculatorId:selectedCalculator?.id,calculatorName:selectedCalculator?.name,inputs,inputKeys:Object.keys(inputs),inputValues:Object.values(inputs)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A,B,C,D,E'})}).catch(()=>{});
+    // #endregion
     setIsLoading(true);
     try {
       if (selectedCalculator) {
         const result = executeCalculator(selectedCalculator, inputs);
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/a211a2ec-f066-4fc4-95bc-89cfb5ea6b15',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Home.tsx:86',message:'handleCalculate result',data:{result,score:result?.score,maxScore:result?.maxScore,riskLevel:result?.riskLevel},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A,B,C,D,E'})}).catch(()=>{});
+        // #endregion
         setCalculationResult(result);
         setLastInputs(inputs);
       }
@@ -99,10 +113,6 @@ export default function Home() {
         mainContent.scrollTop = 0;
       }
     }, 0);
-  };
-
-  const handleSelectMedication = (medicationId: string) => {
-    // Handle medication selection if needed
   };
 
   const handleBackToHome = () => {
