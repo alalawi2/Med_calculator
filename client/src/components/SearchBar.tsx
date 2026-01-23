@@ -118,12 +118,12 @@ export function SearchBar({
         <Card className="absolute top-full left-0 right-0 mt-2 z-50 shadow-lg">
           <div className="max-h-96 overflow-y-auto">
             {searchResults.length === 0 && searchQuery ? (
-              <div className="p-4 text-center text-slate-600">
-                <p>No results found for "{searchQuery}"</p>
-                <p className="text-xs text-slate-500 mt-1">Try searching by calculator name, condition, or medication</p>
+              <div className="p-4 text-center text-slate-700">
+                <p className="text-sm font-medium">No results found for "{searchQuery}"</p>
+                <p className="text-sm text-slate-600 mt-1">Try searching by calculator name, condition, or medication</p>
               </div>
             ) : searchResults.length === 0 ? (
-              <div className="p-4 text-center text-slate-600">
+              <div className="p-4 text-center text-slate-700">
                 <p className="text-sm">Start typing to search calculators and medications</p>
               </div>
             ) : (

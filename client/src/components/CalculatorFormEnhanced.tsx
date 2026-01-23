@@ -150,10 +150,10 @@ export function CalculatorFormEnhanced({
       {/* Progress Bar */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <span id={`${formId}-progress-label`} className="text-sm font-medium text-slate-700">
+          <span id={`${formId}-progress-label`} className="text-sm font-medium text-slate-800">
             Patient Information
           </span>
-          <span className="text-sm text-slate-500" aria-live="polite">
+          <span className="text-sm text-slate-600 font-medium" aria-live="polite">
             {filledCount} of {inputs.length} fields completed
           </span>
         </div>
@@ -200,6 +200,7 @@ export function CalculatorFormEnhanced({
                     className="block text-base font-semibold text-slate-900"
                   >
                     {input.label}
+                    <span className="text-red-500 ml-1" aria-label="required">*</span>
                     <span className="sr-only"> (required)</span>
                   </label>
                   {isTouched && (
@@ -214,8 +215,8 @@ export function CalculatorFormEnhanced({
                 </div>
 
                 {input.description && (
-                  <p id={descriptionId} className="text-sm text-slate-600 flex items-start gap-2">
-                    <Info className="w-4 h-4 flex-shrink-0 mt-0.5" aria-hidden="true" />
+                  <p id={descriptionId} className="text-sm text-slate-700 flex items-start gap-2 leading-relaxed">
+                    <Info className="w-4 h-4 flex-shrink-0 mt-0.5 text-slate-500" aria-hidden="true" />
                     <span>{input.description}</span>
                   </p>
                 )}
@@ -309,8 +310,8 @@ export function CalculatorFormEnhanced({
                 )}
 
                 {hasError && isTouched && (
-                  <p id={errorId} className="text-sm text-red-600 flex items-start gap-2 mt-2" role="alert">
-                    <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" aria-hidden="true" />
+                  <p id={errorId} className="text-sm font-medium text-red-700 flex items-start gap-2 mt-2" role="alert">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-red-600" aria-hidden="true" />
                     <span>{hasError}</span>
                   </p>
                 )}

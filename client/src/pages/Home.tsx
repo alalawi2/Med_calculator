@@ -213,9 +213,9 @@ export default function Home() {
         {/* Disclaimer Alert */}
         <div className="bg-blue-50 border-b border-blue-200 p-3 md:p-4">
           <Alert className="border-0 bg-transparent">
-            <AlertCircle className="h-4 w-4 text-blue-600" />
-            <AlertDescription className="text-xs md:text-sm text-blue-800 ml-2">
-              <strong>Disclaimer:</strong> These calculators are clinical decision support tools only and should NOT replace professional medical judgment, clinical expertise, or consultation with qualified healthcare providers. Always verify results with current clinical guidelines and patient-specific factors. Brought by MedResearch Academy.
+            <AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0" />
+            <AlertDescription className="text-sm md:text-base text-blue-900 ml-2 leading-relaxed">
+              <strong className="font-semibold">Disclaimer:</strong> These calculators are clinical decision support tools only and should NOT replace professional medical judgment, clinical expertise, or consultation with qualified healthcare providers. Always verify results with current clinical guidelines and patient-specific factors. Brought by MedResearch Academy.
             </AlertDescription>
           </Alert>
         </div>

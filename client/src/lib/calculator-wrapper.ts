@@ -194,14 +194,50 @@ export function executeCalculator(
         return hasbledResult;
 
       // ===================================================================
-      // Glasgow Coma Scale - CORRECT (UI inputs match engine params)
+      // Glasgow Coma Scale - NEEDS MAPPING (UI has select dropdowns with text, engine expects numbers)
+      // UI: eye_opening (select), verbal_response (select), motor_response (select)
+      // Engine: eye_opening (1-4), verbal_response (1-5), motor_response (1-6)
       // ===================================================================
       case "gcs":
-        // GCS components: eye (1-4), verbal (1-5), motor (1-6) - 0 is invalid, so defaults are appropriate
+      case "glasgow_coma":
+        // Map text options to numeric scores
+        const eyeOpeningMap: Record<string, number> = {
+          "Spontaneous": 4,
+          "To verbal command": 3,
+          "To pain": 2,
+          "No response": 1,
+        };
+        const verbalResponseMap: Record<string, number> = {
+          "Oriented": 5,
+          "Confused": 4,
+          "Inappropriate": 3,
+          "Incomprehensible": 2,
+          "No response": 1,
+        };
+        const motorResponseMap: Record<string, number> = {
+          "Obeys commands": 6,
+          "Localizes pain": 5,
+          "Withdraws": 4,
+          "Abnormal flexion": 3,
+          "Abnormal extension": 2,
+          "No response": 1,
+        };
+        
+        // Handle both text (from select) and numeric (direct input) values
+        const eyeOpening = typeof inputs.eye_opening === "string" 
+          ? eyeOpeningMap[inputs.eye_opening] || parseNumber(inputs.eye_opening, 4)
+          : parseNumber(inputs.eye_opening, 4);
+        const verbalResponse = typeof inputs.verbal_response === "string"
+          ? verbalResponseMap[inputs.verbal_response] || parseNumber(inputs.verbal_response, 5)
+          : parseNumber(inputs.verbal_response, 5);
+        const motorResponse = typeof inputs.motor_response === "string"
+          ? motorResponseMap[inputs.motor_response] || parseNumber(inputs.motor_response, 6)
+          : parseNumber(inputs.motor_response, 6);
+        
         return calculateGCS({
-          eye_opening: parseNumber(inputs.eye_opening, 4),
-          verbal_response: parseNumber(inputs.verbal_response, 5),
-          motor_response: parseNumber(inputs.motor_response, 6),
+          eye_opening: eyeOpening,
+          verbal_response: verbalResponse,
+          motor_response: motorResponse,
         });
 
       // ===================================================================

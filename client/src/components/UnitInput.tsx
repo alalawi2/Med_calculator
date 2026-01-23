@@ -1,7 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { useUnitSystem } from "@/contexts/UnitSystemContext";
 import { getUnit, convertValue, getReferenceRange } from "@/lib/unit-conversions";
-import { Info } from "lucide-react";
+import { Info, AlertCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 
 interface UnitInputProps {
@@ -116,9 +116,15 @@ export function UnitInput({
         )}
       </div>
       {referenceRange && (
-        <p className="text-xs text-slate-500 flex items-center gap-1">
-          <Info className="w-3 h-3" />
+        <p className="text-sm text-slate-600 flex items-center gap-1">
+          <Info className="w-4 h-4" />
           Normal range: {referenceRange}
+        </p>
+      )}
+      {hasError && isTouched && errorId && (
+        <p id={errorId} className="text-sm font-medium text-red-700 flex items-start gap-2 mt-1" role="alert">
+          <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-red-600" aria-hidden="true" />
+          <span>This field is required</span>
         </p>
       )}
     </div>
