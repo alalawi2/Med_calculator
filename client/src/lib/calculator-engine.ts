@@ -286,7 +286,7 @@ export function calculateNIHSS(inputs: Record<string, number>): CalculationResul
       "✓ ICU admission",
       "✓ Thrombectomy evaluation if within 24 hours",
     ];
-  } else if (score <= 20) {
+  } else if (score < 20) {
     riskLevel = "high";
     interpretation = "Moderate-to-severe stroke - Consider thrombectomy";
     recommendations = [
