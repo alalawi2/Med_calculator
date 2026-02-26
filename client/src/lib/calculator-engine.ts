@@ -340,11 +340,12 @@ export function calculateCHA2DS2VASc(inputs: Record<string, boolean>): Calculati
   
   if (toBool(inputs.chf)) score += 1;
   if (toBool(inputs.hypertension)) score += 1;
+  // Age categories are mutually exclusive: ≥75 (2 pts) takes priority over 65-74 (1 pt)
   if (toBool(inputs.age_75)) score += 2;
+  else if (toBool(inputs.age_65_74)) score += 1;
   if (toBool(inputs.diabetes)) score += 1;
   if (toBool(inputs.stroke_tia)) score += 2;
   if (toBool(inputs.vascular_disease)) score += 1;
-  if (toBool(inputs.age_65_74)) score += 1;
   if (toBool(inputs.female)) score += 1;
 
   // MDCalc: Stroke/TIA/Systemic Embolism Risk (%) - Lip 2010 validation study
