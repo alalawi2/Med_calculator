@@ -11,9 +11,9 @@ const UnitSystemContext = createContext<UnitSystemContextType | undefined>(undef
 
 export function UnitSystemProvider({ children }: { children: React.ReactNode }) {
   const [unitSystem, setUnitSystemState] = useState<UnitSystem>(() => {
-    // Load from localStorage or default to American units
+    // Load from localStorage or default to SI units (Gulf region standard)
     const stored = localStorage.getItem("medad_unit_system");
-    return (stored as UnitSystem) || "american";
+    return (stored as UnitSystem) || "si";
   });
 
   const setUnitSystem = (system: UnitSystem) => {

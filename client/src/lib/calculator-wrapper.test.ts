@@ -18,11 +18,11 @@ describe("Calculator Wrapper Integration Tests", () => {
       const inputs = {
         chf: false,
         hypertension: false,
-        age: "<65",
+        age: 50,
         diabetes: false,
         stroke: false,
         vascular: false,
-        sex: "Male",
+        sex: false,
       };
 
       const result = executeCalculator(calculator, inputs);
@@ -34,11 +34,11 @@ describe("Calculator Wrapper Integration Tests", () => {
       const inputs = {
         chf: false,
         hypertension: false,
-        age: "≥75",
+        age: 80,
         diabetes: false,
         stroke: false,
         vascular: false,
-        sex: "Male",
+        sex: false,
       };
 
       const result = executeCalculator(calculator, inputs);
@@ -50,11 +50,11 @@ describe("Calculator Wrapper Integration Tests", () => {
       const inputs = {
         chf: false,
         hypertension: false,
-        age: "65-74",
+        age: 70,
         diabetes: false,
         stroke: false,
         vascular: false,
-        sex: "Male",
+        sex: false,
       };
 
       const result = executeCalculator(calculator, inputs);
@@ -66,11 +66,11 @@ describe("Calculator Wrapper Integration Tests", () => {
       const inputs = {
         chf: false,
         hypertension: false,
-        age: "<65",
+        age: 50,
         diabetes: false,
         stroke: false,
         vascular: false,
-        sex: "Female",
+        sex: true,
       };
 
       const result = executeCalculator(calculator, inputs);
@@ -82,11 +82,11 @@ describe("Calculator Wrapper Integration Tests", () => {
       const inputs = {
         chf: true,
         hypertension: true,
-        age: "≥75",
+        age: 80,
         diabetes: true,
         stroke: true,
         vascular: true,
-        sex: "Female",
+        sex: true,
       };
 
       const result = executeCalculator(calculator, inputs);
@@ -152,7 +152,7 @@ describe("Calculator Wrapper Integration Tests", () => {
         respiration: "PaO2/FiO2 ≥400",
         coagulation: 150,
         liver: 1.0,
-        cardiovascular: "Dopamine >5 or epinephrine/norepinephrine",
+        cardiovascular: "Dopamine >5 or epinephrine/norepinephrine ≤0.1",
         cns: 15,
         renal: 1.0,
       };

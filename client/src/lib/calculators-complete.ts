@@ -71,7 +71,7 @@ export const completeCalculators: Calculator[] = [
         label: "Respiratory Component",
         description: "PaO2/FiO2 ratio or mechanical ventilation",
         type: "select",
-        options: ["PaO2/FiO2 ≥400", "PaO2/FiO2 300-399", "PaO2/FiO2 200-299 (intubated)", "PaO2/FiO2 <100 (intubated)"],
+        options: ["PaO2/FiO2 ≥400", "PaO2/FiO2 300-399", "PaO2/FiO2 200-299 (intubated)", "PaO2/FiO2 100-199 (intubated)", "PaO2/FiO2 <100 (intubated)"],
       },
       {
         id: "coagulation",
@@ -94,7 +94,7 @@ export const completeCalculators: Calculator[] = [
         label: "Cardiovascular",
         description: "Hypotension requirement",
         type: "select",
-        options: ["No hypotension", "MAP <70 mmHg", "Dopamine ≤5 or dobutamine", "Dopamine >5 or epinephrine/norepinephrine"],
+        options: ["No hypotension", "MAP <70 mmHg", "Dopamine ≤5 or dobutamine", "Dopamine >5 or epinephrine/norepinephrine ≤0.1", "Dopamine >15 or norepinephrine/epinephrine >0.1"],
       },
       {
         id: "cns",
@@ -350,12 +350,19 @@ export const completeCalculators: Calculator[] = [
     inputs: [
       {
         id: "hypertension",
-        label: "Hypertension (uncontrolled)",
+        label: "Hypertension (uncontrolled, >160 mmHg)",
         type: "boolean",
       },
       {
-        id: "renal_liver",
-        label: "Abnormal Renal/Liver Function",
+        id: "renal_disease",
+        label: "Abnormal Renal Function",
+        description: "Dialysis, transplant, Cr >2.26 mg/dL (>200 µmol/L)",
+        type: "boolean",
+      },
+      {
+        id: "liver_disease",
+        label: "Abnormal Liver Function",
+        description: "Cirrhosis or bilirubin >2x normal with AST/ALT/AP >3x normal",
         type: "boolean",
       },
       {
@@ -365,12 +372,13 @@ export const completeCalculators: Calculator[] = [
       },
       {
         id: "bleeding",
-        label: "Bleeding History",
+        label: "Prior Major Bleeding or Predisposition",
         type: "boolean",
       },
       {
         id: "labile_inr",
         label: "Labile INR",
+        description: "Unstable/high INRs, time in therapeutic range <60%",
         type: "boolean",
       },
       {
@@ -379,8 +387,15 @@ export const completeCalculators: Calculator[] = [
         type: "boolean",
       },
       {
-        id: "drugs_alcohol",
-        label: "Drugs or Alcohol Use",
+        id: "medication_usage",
+        label: "Medication Usage Predisposing to Bleeding",
+        description: "Aspirin, clopidogrel, NSAIDs",
+        type: "boolean",
+      },
+      {
+        id: "alcohol_use",
+        label: "Alcohol Use",
+        description: "≥8 drinks/week",
         type: "boolean",
       },
     ],

@@ -926,16 +926,18 @@ describe("SMART-COP accuracy", () => {
 // ============================================================================
 describe("APACHE II (simplified) accuracy", () => {
   it("normal vitals, young patient → low score", () => {
+    // Use MAP 80 (normal) instead of SBP 120 — APACHE II uses MAP, not SBP
     const r = calculateAPACHE({
       temperature: 37, heart_rate: 80, respiratory_rate_apache: 16,
-      systolic_apache: 120, age_apache: 30,
+      systolic_apache: 80, age_apache: 30,
     });
     expect(r.score).toBe(0);
     expect(r.riskLevel).toBe("low");
   });
 
   it("age points: 45-54 → +2, 55-64 → +3, 65-74 → +5, ≥75 → +6", () => {
-    const base = { temperature: 37, heart_rate: 80, respiratory_rate_apache: 16, systolic_apache: 120 };
+    // Use MAP 80 (normal range 70-109 = 0 points)
+    const base = { temperature: 37, heart_rate: 80, respiratory_rate_apache: 16, systolic_apache: 80 };
     expect(calculateAPACHE({ ...base, age_apache: 44 }).score).toBe(0);
     expect(calculateAPACHE({ ...base, age_apache: 45 }).score).toBe(2);
     expect(calculateAPACHE({ ...base, age_apache: 55 }).score).toBe(3);
@@ -952,10 +954,22 @@ describe("APACHE II (simplified) accuracy", () => {
     expect(r.riskLevel).not.toBe("low");
   });
 
-  it("acknowledges simplified nature in output", () => {
+  it("full 12-variable scoring with lab values", () => {
+    const r = calculateAPACHE({
+      temperature: 39.5, heart_rate: 130, respiratory_rate_apache: 35,
+      map: 55, ph: 7.2, sodium: 155, potassium: 6.5,
+      creatinine: 3.5, hematocrit: 55, wbc: 25, gcs: 8,
+    });
+    // All abnormal values should produce a high score
+    expect(r.score).toBeGreaterThanOrEqual(25);
+    expect(r.riskLevel).toBe("critical");
+    expect(r.interpretation).not.toContain("Simplified");
+  });
+
+  it("acknowledges simplified nature when lab values missing", () => {
     const r = calculateAPACHE({
       temperature: 37, heart_rate: 80, respiratory_rate_apache: 16,
-      systolic_apache: 120, age_apache: 50,
+      systolic_apache: 80, age_apache: 50,
     });
     expect(r.interpretation.toLowerCase()).toContain("simplified");
   });

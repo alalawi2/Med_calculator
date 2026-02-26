@@ -1,6 +1,6 @@
 /**
  * Calculator Wrapper - Maps calculator inputs to calculation engine functions
- * CORRECTED VERSION - All mappings match UI input IDs
+ * Maps UI form field IDs to engine function parameter names
  */
 
 import {
@@ -59,52 +59,40 @@ export function executeCalculator(
   calculator: Calculator,
   inputs: Record<string, any>
 ): CalculationResult | null {
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/a211a2ec-f066-4fc4-95bc-89cfb5ea6b15',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'calculator-wrapper.ts:32',message:'executeCalculator entry',data:{calculatorId:calculator.id,rawInputs:inputs,inputTypes:Object.keys(inputs).reduce((acc: Record<string, string>,k)=>{acc[k]=typeof inputs[k];return acc},{})},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A,B,C,D,E'})}).catch(()=>{});
-  // #endregion
   try {
     switch (calculator.id) {
       // ===================================================================
-      // qSOFA - CORRECT (UI inputs match engine params)
+      // qSOFA - UI inputs match engine params
       // ===================================================================
       case "qsofa":
-        // #region agent log
-        const qsofaParsed = {
+        return calculateQSOFA({
           altered_mentation: parseBoolean(inputs.altered_mentation, false),
           respiratory_rate: parseNumber(inputs.respiratory_rate, 0),
           systolic_bp: parseNumber(inputs.systolic_bp, 0),
-        };
-        fetch('http://127.0.0.1:7242/ingest/a211a2ec-f066-4fc4-95bc-89cfb5ea6b15',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'calculator-wrapper.ts:42',message:'qSOFA parsed inputs',data:{raw:inputs,parsed:qsofaParsed,rawRespRate:inputs.respiratory_rate,rawSystolicBP:inputs.systolic_bp,parsedRespRate:qsofaParsed.respiratory_rate,parsedSystolicBP:qsofaParsed.systolic_bp,alteredMentationType:typeof inputs.altered_mentation,alteredMentationValue:inputs.altered_mentation},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A,B'})}).catch(()=>{});
-        // #endregion
-        const qsofaResult = calculateQSOFA(qsofaParsed);
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/a211a2ec-f066-4fc4-95bc-89cfb5ea6b15',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'calculator-wrapper.ts:46',message:'qSOFA result',data:{result:qsofaResult},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A,B'})}).catch(()=>{});
-        // #endregion
-        return qsofaResult;
+        });
 
       // ===================================================================
-      // SOFA - NEEDS MAPPING (UI has select dropdowns, engine expects numbers)
-      // UI: respiration (select), coagulation (number), liver (number),
-      //     cardiovascular (select), cns (number), renal (number)
-      // Engine: pao2_fio2, platelets, bilirubin, cardiovascular, gcs, creatinine
+      // SOFA - UI has select dropdowns, engine expects numbers
       // ===================================================================
-      case "sofa":
+      case "sofa": {
         // Map respiration select to PaO2/FiO2 ratio
         const respirationMap: Record<string, number> = {
           "PaO2/FiO2 ≥400": 400,
           "PaO2/FiO2 300-399": 350,
           "PaO2/FiO2 200-299 (intubated)": 250,
+          "PaO2/FiO2 100-199 (intubated)": 150,
           "PaO2/FiO2 <100 (intubated)": 90,
         };
-        
-        // Map cardiovascular select to score
+
+        // Map cardiovascular select to score (0-4)
         const cardiovascularMap: Record<string, number> = {
           "No hypotension": 0,
           "MAP <70 mmHg": 1,
           "Dopamine ≤5 or dobutamine": 2,
-          "Dopamine >5 or epinephrine/norepinephrine": 3,
+          "Dopamine >5 or epinephrine/norepinephrine ≤0.1": 3,
+          "Dopamine >15 or norepinephrine/epinephrine >0.1": 4,
         };
-        
+
         return calculateSOFA({
           pao2_fio2: respirationMap[inputs.respiration] ?? 400,
           platelets: parseNumber(inputs.coagulation, 150),
@@ -113,188 +101,200 @@ export function executeCalculator(
           gcs: parseNumber(inputs.cns, 15),
           creatinine: parseNumber(inputs.renal, 1),
         });
+      }
 
       // ===================================================================
-      // APACHE II - NEEDS MAPPING (UI has different param names)
+      // APACHE II - Full 12-variable scoring
       // UI: temperature, map, hr, rr, fio2, ph, sodium, potassium,
       //     creatinine, hematocrit, wbc, gcs
-      // Engine: temperature, heart_rate, respiratory_rate_apache,
-      //         systolic_apache, age_apache
       // ===================================================================
-      case "apache":
+      case "apache2":
         return calculateAPACHE({
           temperature: parseNumber(inputs.temperature, 37),
           heart_rate: parseNumber(inputs.hr, 80),
           respiratory_rate_apache: parseNumber(inputs.rr, 16),
-          systolic_apache: parseNumber(inputs.map, 70), // MAP ~= systolic/1.5
-          age_apache: parseNumber(inputs.age, 50),
+          map: parseNumber(inputs.map, 80),
+          ph: parseNumber(inputs.ph, 7.4),
+          sodium: parseNumber(inputs.sodium, 140),
+          potassium: parseNumber(inputs.potassium, 4.0),
+          creatinine: parseNumber(inputs.creatinine, 1.0),
+          hematocrit: parseNumber(inputs.hematocrit, 40),
+          wbc: parseNumber(inputs.wbc, 10),
+          gcs: parseNumber(inputs.gcs, 15),
         });
 
       // ===================================================================
-      // NIHSS - CORRECT (passes entire inputs object)
+      // NIHSS - passes entire inputs object (select options → index scores)
       // ===================================================================
       case "nihss":
         return calculateNIHSS(inputs);
 
       // ===================================================================
-      // CHA2DS2-VASc - NEEDS MAPPING (UI has different param names)
-      // UI: chf, hypertension, age (select), diabetes, stroke, vascular, sex (select)
-      // Engine: chf, hypertension, age_75, diabetes, stroke_tia,
-      //         vascular_disease, age_65_74, female
+      // CHA2DS2-VASc - UI has age (number) and sex (boolean "Female Sex")
+      // Engine expects age_75, age_65_74, female (booleans)
       // ===================================================================
-      case "cha2ds2vasc":
-        // #region agent log
-        const cha2ds2Parsed = {
+      case "cha2ds2vasc": {
+        const ageNum = parseNumber(inputs.age, 0);
+        return calculateCHA2DS2VASc({
           chf: parseBoolean(inputs.chf, false),
           hypertension: parseBoolean(inputs.hypertension, false),
-          age_75: inputs.age === "≥75",
+          age_75: ageNum >= 75,
           diabetes: parseBoolean(inputs.diabetes, false),
           stroke_tia: parseBoolean(inputs.stroke, false),
           vascular_disease: parseBoolean(inputs.vascular, false),
-          age_65_74: inputs.age === "65-74",
-          female: inputs.sex === "Female",
-        };
-        fetch('http://127.0.0.1:7242/ingest/a211a2ec-f066-4fc4-95bc-89cfb5ea6b15',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'calculator-wrapper.ts:145',message:'CHA2DS2VASc parsed inputs',data:{raw:inputs,parsed:cha2ds2Parsed,age:inputs.age,ageType:typeof inputs.age,sex:inputs.sex,sexType:typeof inputs.sex},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-        // #endregion
-        const cha2ds2Result = calculateCHA2DS2VASc(cha2ds2Parsed);
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/a211a2ec-f066-4fc4-95bc-89cfb5ea6b15',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'calculator-wrapper.ts:155',message:'CHA2DS2VASc result',data:{result:cha2ds2Result},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-        // #endregion
-        return cha2ds2Result;
+          age_65_74: ageNum >= 65 && ageNum < 75,
+          female: parseBoolean(inputs.sex, false),
+        });
+      }
 
       // ===================================================================
-      // HAS-BLED - NEEDS MAPPING (UI has combined inputs)
-      // UI: hypertension, renal_liver (combined), stroke, bleeding,
-      //     labile_inr, elderly, drugs_alcohol (combined)
-      // Engine: hypertension, renal_disease, liver_disease, stroke_history,
-      //         prior_bleeding, labile_inr, age_over_65, medication_usage, alcohol_use
+      // HAS-BLED - UI has individual boolean inputs matching engine params
       // ===================================================================
       case "hasbled":
-        // Parse combined inputs - BUG FIX: Ensure strings before calling .includes()
-        const renalLiver = typeof inputs.renal_liver === "string" ? inputs.renal_liver : String(inputs.renal_liver || "");
-        const drugsAlcohol = typeof inputs.drugs_alcohol === "string" ? inputs.drugs_alcohol : String(inputs.drugs_alcohol || "");
-        // #region agent log
-        const hasbledParsed = {
+        return calculateHASBLED({
           hypertension: parseBoolean(inputs.hypertension, false),
-          renal_disease: renalLiver.includes("Renal") || renalLiver.includes("renal"),
-          liver_disease: renalLiver.includes("Liver") || renalLiver.includes("liver"),
+          renal_disease: parseBoolean(inputs.renal_disease, false),
+          liver_disease: parseBoolean(inputs.liver_disease, false),
           stroke_history: parseBoolean(inputs.stroke, false),
           prior_bleeding: parseBoolean(inputs.bleeding, false),
           labile_inr: parseBoolean(inputs.labile_inr, false),
           age_over_65: parseBoolean(inputs.elderly, false),
-          medication_usage: drugsAlcohol.includes("Drugs") || drugsAlcohol.includes("medication"),
-          alcohol_use: drugsAlcohol.includes("Alcohol") || drugsAlcohol.includes("alcohol"),
-        };
-        fetch('http://127.0.0.1:7242/ingest/a211a2ec-f066-4fc4-95bc-89cfb5ea6b15',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'calculator-wrapper.ts:127',message:'HAS-BLED parsed inputs',data:{raw:{hypertension:inputs.hypertension,stroke:inputs.stroke,bleeding:inputs.bleeding,labile_inr:inputs.labile_inr,elderly:inputs.elderly,renalLiver,drugsAlcohol},parsed:hasbledParsed,hypertensionType:typeof inputs.hypertension,hypertensionValue:inputs.hypertension,strokeType:typeof inputs.stroke,strokeValue:inputs.stroke},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B,D'})}).catch(()=>{});
-        // #endregion
-        const hasbledResult = calculateHASBLED(hasbledParsed);
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/a211a2ec-f066-4fc4-95bc-89cfb5ea6b15',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'calculator-wrapper.ts:142',message:'HAS-BLED result',data:{result:hasbledResult},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B,D'})}).catch(()=>{});
-        // #endregion
-        return hasbledResult;
+          medication_usage: parseBoolean(inputs.medication_usage, false),
+          alcohol_use: parseBoolean(inputs.alcohol_use, false),
+        });
 
       // ===================================================================
-      // Glasgow Coma Scale - NEEDS MAPPING (UI has select dropdowns with text, engine expects numbers)
-      // UI: eye_opening (select), verbal_response (select), motor_response (select)
-      // Engine: eye_opening (1-4), verbal_response (1-5), motor_response (1-6)
+      // Glasgow Coma Scale - UI has select dropdowns with text
       // ===================================================================
       case "gcs":
-      case "glasgow_coma":
-        // Map text options to numeric scores
+      case "glasgow_coma": {
         const eyeOpeningMap: Record<string, number> = {
-          "Spontaneous": 4,
+          Spontaneous: 4,
           "To verbal command": 3,
           "To pain": 2,
           "No response": 1,
         };
         const verbalResponseMap: Record<string, number> = {
-          "Oriented": 5,
-          "Confused": 4,
-          "Inappropriate": 3,
-          "Incomprehensible": 2,
+          Oriented: 5,
+          Confused: 4,
+          Inappropriate: 3,
+          Incomprehensible: 2,
           "No response": 1,
         };
         const motorResponseMap: Record<string, number> = {
           "Obeys commands": 6,
           "Localizes pain": 5,
-          "Withdraws": 4,
+          Withdraws: 4,
           "Abnormal flexion": 3,
           "Abnormal extension": 2,
           "No response": 1,
         };
-        
-        // Handle both text (from select) and numeric (direct input) values
-        const eyeOpening = typeof inputs.eye_opening === "string" 
-          ? eyeOpeningMap[inputs.eye_opening] || parseNumber(inputs.eye_opening, 4)
-          : parseNumber(inputs.eye_opening, 4);
-        const verbalResponse = typeof inputs.verbal_response === "string"
-          ? verbalResponseMap[inputs.verbal_response] || parseNumber(inputs.verbal_response, 5)
-          : parseNumber(inputs.verbal_response, 5);
-        const motorResponse = typeof inputs.motor_response === "string"
-          ? motorResponseMap[inputs.motor_response] || parseNumber(inputs.motor_response, 6)
-          : parseNumber(inputs.motor_response, 6);
-        
+
+        const eyeOpening =
+          typeof inputs.eye_opening === "string"
+            ? eyeOpeningMap[inputs.eye_opening] || parseNumber(inputs.eye_opening, 4)
+            : parseNumber(inputs.eye_opening, 4);
+        const verbalResponse =
+          typeof inputs.verbal_response === "string"
+            ? verbalResponseMap[inputs.verbal_response] || parseNumber(inputs.verbal_response, 5)
+            : parseNumber(inputs.verbal_response, 5);
+        const motorResponse =
+          typeof inputs.motor_response === "string"
+            ? motorResponseMap[inputs.motor_response] || parseNumber(inputs.motor_response, 6)
+            : parseNumber(inputs.motor_response, 6);
+
         return calculateGCS({
           eye_opening: eyeOpening,
           verbal_response: verbalResponse,
           motor_response: motorResponse,
         });
+      }
 
       // ===================================================================
-      // HEART Score - NEEDS MAPPING (age vs age_heart)
+      // HEART Score - UI has select dropdowns for history, ecg, risk_factors, troponin
+      // Must map text options to numeric scores (0-2 each)
       // ===================================================================
-      case "heart":
+      case "heart": {
+        const historyMap: Record<string, number> = {
+          "Non-anginal chest pain": 0,
+          "Atypical angina": 1,
+          "Typical angina": 2,
+        };
+        const ecgMap: Record<string, number> = {
+          Normal: 0,
+          "Nonspecific changes": 1,
+          "Ischemic changes": 2,
+        };
+        const riskFactorsMap: Record<string, number> = {
+          "No known risk factors": 0,
+          "1-2 risk factors": 1,
+          "3+ risk factors or history of CAD": 2,
+        };
+        const troponinMap: Record<string, number> = {
+          "≤0.01 ng/mL": 0,
+          "0.01-0.03 ng/mL": 1,
+          ">0.03 ng/mL": 2,
+        };
+
         return calculateHEART({
-          history: parseNumber(inputs.history, 0),
-          ecg: parseNumber(inputs.ecg, 0),
+          history:
+            typeof inputs.history === "string"
+              ? historyMap[inputs.history] ?? 0
+              : parseNumber(inputs.history, 0),
+          ecg:
+            typeof inputs.ecg === "string"
+              ? ecgMap[inputs.ecg] ?? 0
+              : parseNumber(inputs.ecg, 0),
           age_heart: parseNumber(inputs.age, 50),
-          risk_factors: parseNumber(inputs.risk_factors, 0),
-          troponin: parseNumber(inputs.troponin, 0),
+          risk_factors:
+            typeof inputs.risk_factors === "string"
+              ? riskFactorsMap[inputs.risk_factors] ?? 0
+              : parseNumber(inputs.risk_factors, 0),
+          troponin:
+            typeof inputs.troponin === "string"
+              ? troponinMap[inputs.troponin] ?? 0
+              : parseNumber(inputs.troponin, 0),
+        });
+      }
+
+      // ===================================================================
+      // CURB-65 - Map UI field IDs (rr, bp, age) to engine param names
+      // ===================================================================
+      case "curb65":
+        return calculateCURB65({
+          confusion: inputs.confusion,
+          urea: inputs.urea,
+          respiratory_rate_curb: inputs.rr,
+          blood_pressure_curb: inputs.bp,
+          age_65_curb: inputs.age,
         });
 
       // ===================================================================
-      // CURB-65 - CORRECT (passes entire inputs object)
-      // ===================================================================
-      case "curb65":
-        return calculateCURB65(inputs);
-
-      // ===================================================================
-      // Creatinine Clearance - NEEDS MAPPING (param name suffixes)
+      // Creatinine Clearance (Cockcroft-Gault) - Map UI field IDs
       // UI: age, weight, sex, creatinine
       // Engine: age_crcl, weight_crcl, creatinine_crcl, gender_crcl
       // ===================================================================
-      case "crcl":
+      case "creatinine_clearance":
         return calculateCrCl({
           age_crcl: parseNumber(inputs.age, 50),
           weight_crcl: parseNumber(inputs.weight, 70),
           creatinine_crcl: parseNumber(inputs.creatinine, 1),
-          gender_crcl: inputs.sex || "male",
+          gender_crcl: inputs.sex === "Female" ? "female" : "male",
         });
 
       // ===================================================================
-      // MELD - NEEDS MAPPING (param name suffixes)
-      // UI: inr, creatinine, bilirubin
-      // Engine: inr, bilirubin_meld, creatinine_meld, dialysis
+      // MELD - Map UI field IDs to engine param names
       // ===================================================================
       case "meld":
-        // #region agent log
-        const meldRaw = {inr:inputs.inr,bilirubin:inputs.bilirubin,creatinine:inputs.creatinine,dialysis:inputs.dialysis};
-        const meldParsed = {
+        return calculateMELD({
           inr: parseNumber(inputs.inr, 1),
           bilirubin_meld: parseNumber(inputs.bilirubin, 1),
           creatinine_meld: parseNumber(inputs.creatinine, 1),
           dialysis: parseBoolean(inputs.dialysis, false),
-        };
-        fetch('http://127.0.0.1:7242/ingest/a211a2ec-f066-4fc4-95bc-89cfb5ea6b15',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'calculator-wrapper.ts:190',message:'MELD parsed inputs',data:{raw:meldRaw,parsed:meldParsed,rawCreatinine:inputs.creatinine,parsedCreatinine:meldParsed.creatinine_meld,rawBilirubin:inputs.bilirubin,parsedBilirubin:meldParsed.bilirubin_meld,creatinineIsZero:parseFloat(inputs.creatinine)===0,bilirubinIsZero:parseFloat(inputs.bilirubin)===0},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A,C'})}).catch(()=>{});
-        // #endregion
-        const meldResult = calculateMELD(meldParsed);
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/a211a2ec-f066-4fc4-95bc-89cfb5ea6b15',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'calculator-wrapper.ts:196',message:'MELD result',data:{result:meldResult},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A,C'})}).catch(()=>{});
-        // #endregion
-        return meldResult;
+        });
 
       // ===================================================================
-      // ASA Physical Status - CORRECT (UI inputs match engine params)
+      // ASA Physical Status - UI inputs match engine params
       // ===================================================================
       case "asa_physical_status":
         return calculateASA({
@@ -303,54 +303,37 @@ export function executeCalculator(
         });
 
       // ===================================================================
-      // RCRI - CORRECT (passes entire inputs object)
+      // RCRI - passes entire inputs object
       // ===================================================================
       case "rcri":
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/a211a2ec-f066-4fc4-95bc-89cfb5ea6b15',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'calculator-wrapper.ts:264',message:'RCRI inputs',data:{inputs,inputTypes:Object.keys(inputs).reduce((acc: Record<string, string>,k)=>{acc[k]=typeof inputs[k];return acc},{})},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-        // #endregion
         return calculateRCRI(inputs);
 
       // ===================================================================
-      // Caprini VTE - CORRECT (passes entire inputs object)
+      // Caprini VTE - passes entire inputs object
       // ===================================================================
       case "caprini_vte":
         return calculateCaprini(inputs);
 
       // ===================================================================
-      // PESI - CORRECT (passes entire inputs object)
+      // PESI - passes entire inputs object
       // ===================================================================
       case "pesi":
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/a211a2ec-f066-4fc4-95bc-89cfb5ea6b15',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'calculator-wrapper.ts:276',message:'PESI inputs',data:{inputs,age:inputs.age,ageType:typeof inputs.age},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-        // #endregion
-        const pesiResult = calculatePESI(inputs);
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/a211a2ec-f066-4fc4-95bc-89cfb5ea6b15',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'calculator-wrapper.ts:277',message:'PESI result',data:{result:pesiResult},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-        // #endregion
-        return pesiResult;
+        return calculatePESI(inputs);
 
       // ===================================================================
-      // SMART-COP - CORRECT (passes entire inputs object)
+      // SMART-COP - passes entire inputs object
       // ===================================================================
       case "smart_cop":
         return calculateSMARTCOP(inputs);
 
       // ===================================================================
-      // Child-Pugh - CORRECT (passes entire inputs object)
+      // Child-Pugh - passes entire inputs object
       // ===================================================================
       case "child_pugh":
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/a211a2ec-f066-4fc4-95bc-89cfb5ea6b15',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'calculator-wrapper.ts:288',message:'Child-Pugh inputs',data:{inputs,bilirubin:inputs.bilirubin,bilirubinType:typeof inputs.bilirubin,albumin:inputs.albumin,albuminType:typeof inputs.albumin,inr:inputs.inr,inrType:typeof inputs.inr},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-        // #endregion
-        const childPughResult = calculateChildPugh(inputs);
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/a211a2ec-f066-4fc4-95bc-89cfb5ea6b15',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'calculator-wrapper.ts:289',message:'Child-Pugh result',data:{result:childPughResult},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-        // #endregion
-        return childPughResult;
+        return calculateChildPugh(inputs);
 
       // ===================================================================
-      // FIB-4 - CORRECT (UI inputs match engine params)
+      // FIB-4 - UI inputs match engine params
       // ===================================================================
       case "fib4":
         return calculateFIB4({
@@ -361,7 +344,7 @@ export function executeCalculator(
         });
 
       // ===================================================================
-      // MELD-Na - CORRECT (UI inputs match engine params)
+      // MELD-Na - UI inputs match engine params
       // ===================================================================
       case "meld_na":
         return calculateMELDNa({
@@ -373,7 +356,7 @@ export function executeCalculator(
         });
 
       // ===================================================================
-      // APRI - CORRECT (UI inputs match engine params)
+      // APRI - UI inputs match engine params
       // ===================================================================
       case "apri":
         return calculateAPRI({

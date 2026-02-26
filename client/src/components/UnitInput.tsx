@@ -73,9 +73,6 @@ export function UnitInput({
     const numValue = parseFloat(inputValue);
     if (!isNaN(numValue)) {
       const converted = convertValue(numValue, parameter, unitSystem, "american");
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/a211a2ec-f066-4fc4-95bc-89cfb5ea6b15',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'UnitInput.tsx:75',message:'Unit conversion',data:{parameter,unitSystem,displayValue:inputValue,displayNum:numValue,convertedValue:converted,convertedString:converted.toString()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-      // #endregion
       onChange(converted.toString());
     } else {
       onChange(inputValue);

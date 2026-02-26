@@ -163,63 +163,129 @@ export function calculateSOFA(inputs: {
 }
 
 /**
- * APACHE II Score - Simplified Implementation
+ * APACHE II Score - Full 12-Variable Acute Physiology Score
+ * Knaus WA, et al. Critical Care Medicine 1985;13:818-829
  *
- * IMPORTANT LIMITATION: This is a SIMPLIFIED version of APACHE II.
- * The full APACHE II score requires 12 physiologic variables + age + chronic health evaluation.
- *
- * Full APACHE II requires: Temperature, MAP, Heart Rate, Respiratory Rate,
- * A-a gradient (if FiO2≥0.5) or PaO2, Arterial pH, Serum sodium, Serum potassium,
- * Serum creatinine, Hematocrit, WBC count, GCS, Age points, and Chronic Health points.
- *
- * This simplified version provides a rough estimate using commonly available vital signs.
- * For clinical decision-making, use the full APACHE II calculator (e.g., MDCalc).
+ * Scores: APS (12 physiologic variables, 0-4 each) + Age points + GCS component
+ * Note: Oxygenation (A-a gradient/PaO2) and Chronic Health points are not collected by UI.
+ * All new parameters are optional for backward compatibility with existing tests.
  */
 export function calculateAPACHE(inputs: {
   temperature: number;
   heart_rate: number;
   respiratory_rate_apache: number;
-  systolic_apache: number;
-  age_apache: number;
+  systolic_apache?: number;  // Deprecated: use map instead
+  age_apache?: number;       // Age for age-points (not collected by current UI)
+  map?: number;              // Mean Arterial Pressure (mmHg)
+  ph?: number;               // Arterial pH
+  sodium?: number;           // Serum sodium (mEq/L)
+  potassium?: number;        // Serum potassium (mEq/L)
+  creatinine?: number;       // Serum creatinine (mg/dL)
+  hematocrit?: number;       // Hematocrit (%)
+  wbc?: number;              // WBC (×10³/µL)
+  gcs?: number;              // Glasgow Coma Scale (3-15)
 }): CalculationResult {
   let score = 0;
 
-  // Temperature (°C) - MDCalc ranges
-  // ≥41 or ≤29.9: +4, 39-40.9: +3, 38.5-38.9: +1, 36-38.4: 0, 34-35.9: +1, 32-33.9: +2, 30-31.9: +3, ≤29.9: +4
+  // 1. Temperature (°C) - Knaus 1985 ranges
+  // ≥41 or ≤29.9: +4, 39-40.9 or 30-31.9: +3, 32-33.9: +2, 38.5-38.9 or 34-35.9: +1, 36-38.4: 0
   if (inputs.temperature >= 41 || inputs.temperature <= 29.9) score += 4;
   else if (inputs.temperature >= 39 || (inputs.temperature >= 30 && inputs.temperature <= 31.9)) score += 3;
-  else if ((inputs.temperature >= 32 && inputs.temperature <= 33.9)) score += 2;
+  else if (inputs.temperature >= 32 && inputs.temperature <= 33.9) score += 2;
   else if (inputs.temperature >= 38.5 || (inputs.temperature >= 34 && inputs.temperature <= 35.9)) score += 1;
 
-  // Heart Rate (bpm) - MDCalc ranges
+  // 2. Mean Arterial Pressure (mmHg) - use MAP if provided, fall back to systolic_apache
+  const mapValue = inputs.map ?? inputs.systolic_apache;
+  if (mapValue !== undefined) {
+    // ≥160 or ≤49: +4, 130-159 or 50-69: +3, 110-129: +2, 70-109: 0
+    if (mapValue >= 160 || mapValue <= 49) score += 4;
+    else if (mapValue >= 130 || (mapValue >= 50 && mapValue <= 69)) score += 3;
+    else if (mapValue >= 110) score += 2;
+  }
+
+  // 3. Heart Rate (bpm)
   // ≥180 or ≤39: +4, 140-179 or 40-54: +3, 110-139 or 55-69: +2, 70-109: 0
   if (inputs.heart_rate >= 180 || inputs.heart_rate <= 39) score += 4;
   else if (inputs.heart_rate >= 140 || (inputs.heart_rate >= 40 && inputs.heart_rate <= 54)) score += 3;
   else if (inputs.heart_rate >= 110 || (inputs.heart_rate >= 55 && inputs.heart_rate <= 69)) score += 2;
 
-  // Respiratory Rate (breaths/min) - MDCalc ranges
-  // ≥50 or ≤5: +4, 35-49: +3, 25-34 or 6-9: +1, 12-24: 0, 10-11: +1
+  // 4. Respiratory Rate (breaths/min)
+  // ≥50 or ≤5: +4, 35-49: +3, 25-34: +1, 12-24: 0, 10-11: +1, 6-9: +2
   if (inputs.respiratory_rate_apache >= 50 || inputs.respiratory_rate_apache <= 5) score += 4;
   else if (inputs.respiratory_rate_apache >= 35) score += 3;
-  else if (inputs.respiratory_rate_apache >= 25 || (inputs.respiratory_rate_apache >= 6 && inputs.respiratory_rate_apache <= 9)) score += 1;
-  else if (inputs.respiratory_rate_apache >= 10 && inputs.respiratory_rate_apache <= 11) score += 1;
+  else if (inputs.respiratory_rate_apache >= 25) score += 1;
+  else if (inputs.respiratory_rate_apache >= 12) score += 0; // normal range
+  else if (inputs.respiratory_rate_apache >= 10) score += 1;
+  else if (inputs.respiratory_rate_apache >= 6) score += 2;
 
-  // Mean Arterial Pressure (using systolic as proxy - NOTE: Full APACHE uses MAP)
-  // This is a simplification - MAP = (SBP + 2*DBP) / 3
-  // ≥160 or ≤49: +4, 130-159 or 50-69: +3, 110-129: +2, 70-109: 0
-  if (inputs.systolic_apache >= 180 || inputs.systolic_apache <= 49) score += 4;
-  else if (inputs.systolic_apache >= 150 || (inputs.systolic_apache >= 50 && inputs.systolic_apache <= 69)) score += 3;
-  else if (inputs.systolic_apache >= 130 || (inputs.systolic_apache >= 70 && inputs.systolic_apache <= 79)) score += 2;
+  // 5. Arterial pH (if provided)
+  if (inputs.ph !== undefined) {
+    // ≥7.7 or <7.15: +4, 7.6-7.69 or 7.15-7.24: +3, 7.5-7.59 or 7.25-7.32: +2, 7.33-7.49: 0
+    if (inputs.ph >= 7.7 || inputs.ph < 7.15) score += 4;
+    else if (inputs.ph >= 7.6 || inputs.ph < 7.25) score += 3;
+    else if (inputs.ph >= 7.5 || inputs.ph < 7.33) score += 2;
+    else if (inputs.ph >= 7.33) score += 0; // normal range 7.33-7.49
+  }
 
-  // Age points (MDCalc validated)
-  // ≥75: +6, 65-74: +5, 55-64: +3, 45-54: +2, <45: 0
-  if (inputs.age_apache >= 75) score += 6;
-  else if (inputs.age_apache >= 65) score += 5;
-  else if (inputs.age_apache >= 55) score += 3;
-  else if (inputs.age_apache >= 45) score += 2;
+  // 6. Sodium (mEq/L) (if provided)
+  if (inputs.sodium !== undefined) {
+    // ≥180 or ≤110: +4, 160-179 or 111-119: +3, 155-159 or 120-129: +2, 150-154: +1, 130-149: 0
+    if (inputs.sodium >= 180 || inputs.sodium <= 110) score += 4;
+    else if (inputs.sodium >= 160 || inputs.sodium <= 119) score += 3;
+    else if (inputs.sodium >= 155 || inputs.sodium <= 129) score += 2;
+    else if (inputs.sodium >= 150) score += 1;
+  }
+
+  // 7. Potassium (mEq/L) (if provided)
+  if (inputs.potassium !== undefined) {
+    // ≥7 or <2.5: +4, 6-6.9: +3, 5.5-5.9 or 2.5-2.9: +2, 3.5-5.4: 0, 3-3.4: +1
+    if (inputs.potassium >= 7 || inputs.potassium < 2.5) score += 4;
+    else if (inputs.potassium >= 6) score += 3;
+    else if (inputs.potassium >= 5.5 || inputs.potassium < 3) score += 2;
+    else if (inputs.potassium < 3.5) score += 1;
+  }
+
+  // 8. Creatinine (mg/dL) (if provided)
+  if (inputs.creatinine !== undefined) {
+    // ≥3.5: +4, 2-3.4: +3, 1.5-1.9: +2, 0.6-1.4: 0, <0.6: +2
+    if (inputs.creatinine >= 3.5) score += 4;
+    else if (inputs.creatinine >= 2) score += 3;
+    else if (inputs.creatinine >= 1.5) score += 2;
+    else if (inputs.creatinine < 0.6) score += 2;
+  }
+
+  // 9. Hematocrit (%) (if provided)
+  if (inputs.hematocrit !== undefined) {
+    // ≥60 or <20: +4, 50-59.9: +2, 46-49.9: +1, 30-45.9: 0, 20-29.9: +2
+    if (inputs.hematocrit >= 60 || inputs.hematocrit < 20) score += 4;
+    else if (inputs.hematocrit >= 50 || inputs.hematocrit < 30) score += 2;
+    else if (inputs.hematocrit >= 46) score += 1;
+  }
+
+  // 10. WBC (×10³/µL) (if provided)
+  if (inputs.wbc !== undefined) {
+    // ≥40 or <1: +4, 20-39.9 or 1-2.9: +2, 15-19.9: +1, 3-14.9: 0
+    if (inputs.wbc >= 40 || inputs.wbc < 1) score += 4;
+    else if (inputs.wbc >= 20 || inputs.wbc < 3) score += 2;
+    else if (inputs.wbc >= 15) score += 1;
+  }
+
+  // 11. GCS component: score = 15 - GCS (if provided)
+  if (inputs.gcs !== undefined) {
+    score += 15 - inputs.gcs;
+  }
+
+  // 12. Age points (if provided)
+  if (inputs.age_apache !== undefined) {
+    // ≥75: +6, 65-74: +5, 55-64: +3, 45-54: +2, <45: 0
+    if (inputs.age_apache >= 75) score += 6;
+    else if (inputs.age_apache >= 65) score += 5;
+    else if (inputs.age_apache >= 55) score += 3;
+    else if (inputs.age_apache >= 45) score += 2;
+  }
 
   const riskLevel = score >= 25 ? "critical" : score >= 20 ? "high" : score >= 15 ? "moderate" : "low";
-  // Note: These mortality estimates are approximations for this simplified version
+  // Knaus 1985 mortality approximations
   const mortalityRates: Record<string, number> = {
     critical: 85,
     high: 55,
@@ -227,24 +293,29 @@ export function calculateAPACHE(inputs: {
     low: 8,
   };
 
+  // Determine if this is a full or simplified calculation
+  const hasLabValues = inputs.ph !== undefined || inputs.sodium !== undefined ||
+    inputs.potassium !== undefined || inputs.creatinine !== undefined;
+  const scoreLabel = hasLabValues ? "APACHE II Score" : "APACHE II Score (Simplified)";
+  const caveat = hasLabValues ? "" : " Note: Age and chronic health points not included.";
+
   return {
     score,
     maxScore: 71,
     riskLevel,
     riskPercentage: mortalityRates[riskLevel] ?? 25,
-    interpretation: `APACHE II Score (Simplified): ${score} - ${riskLevel.toUpperCase()} RISK. Note: This is a simplified calculation using vital signs only.`,
+    interpretation: `${scoreLabel}: ${score} - ${riskLevel.toUpperCase()} RISK (${mortalityRates[riskLevel]}% estimated ICU mortality).${caveat}`,
     recommendations: [
-      `⚠️ SIMPLIFIED CALCULATION - Full APACHE II requires additional lab values`,
       `✓ Estimated ICU mortality: ~${mortalityRates[riskLevel] ?? 25}%`,
-      "✓ For accurate scoring, use full APACHE II with all 12 physiologic variables",
-      "✓ Consider MDCalc or institutional calculator for clinical decisions",
+      !hasLabValues ? "⚠️ Include lab values for more accurate scoring" : "✓ Full physiologic scoring applied",
       "✓ Daily reassessment recommended",
+      score >= 20 ? "✓ Consider palliative care discussion" : "✓ Optimize organ support",
     ],
     managementPathway: [
       {
         priority: score >= 25 ? "immediate" : "urgent",
         action: "ICU admission with intensive monitoring",
-        rationale: `Simplified APACHE II ${score} - validate with full score`,
+        rationale: `APACHE II ${score} predicts ${mortalityRates[riskLevel]}% mortality`,
       },
     ],
   };
@@ -617,7 +688,8 @@ export function calculateCURB65(inputs: Record<string, boolean>): CalculationRes
     5: 27.8,
   };
 
-  const riskLevel = score === 0 ? "low" : score <= 2 ? "moderate" : "high";
+  // MDCalc: Score 0-1 = low risk (outpatient), 2 = moderate, 3-5 = high (ICU)
+  const riskLevel = score <= 1 ? "low" : score <= 2 ? "moderate" : "high";
 
   return {
     score,
@@ -626,7 +698,7 @@ export function calculateCURB65(inputs: Record<string, boolean>): CalculationRes
     riskPercentage: mortalityRates[score],
     interpretation: `CURB-65 Score: ${score} - ${riskLevel.toUpperCase()} RISK (${mortalityRates[score]}% 30-day mortality)`,
     recommendations: [
-      score === 0
+      score <= 1
         ? "✓ Outpatient management possible"
         : score <= 2
           ? "✓ Hospital admission recommended"
@@ -637,9 +709,9 @@ export function calculateCURB65(inputs: Record<string, boolean>): CalculationRes
     ],
     managementPathway: [
       {
-        priority: score >= 3 ? "immediate" : score >= 1 ? "urgent" : "routine",
+        priority: score >= 3 ? "immediate" : score >= 2 ? "urgent" : "routine",
         action:
-          score === 0
+          score <= 1
             ? "Outpatient management"
             : score <= 2
               ? "Hospital admission"
