@@ -26,6 +26,7 @@ import {
   calculateAPRI,
   calculateGenericScore,
   type CalculationResult,
+  type ScoreBreakdownItem,
 } from "./calculator-engine";
 import { Calculator } from "./calculators";
 
@@ -55,21 +56,115 @@ function parseBoolean(value: any, defaultValue: boolean): boolean {
   return Boolean(value);
 }
 
+/**
+ * Build a score breakdown showing how each input contributed to the total.
+ * This gives clinicians transparency into the calculation.
+ */
+function buildBreakdown(
+  calculatorId: string,
+  inputs: Record<string, any>,
+  calculator: Calculator
+): ScoreBreakdownItem[] | undefined {
+  const breakdown: ScoreBreakdownItem[] = [];
+  const b = (label: string, value: string | number | boolean, points: number) =>
+    breakdown.push({ label, value, points });
+
+  switch (calculatorId) {
+    case "qsofa": {
+      const mentation = parseBoolean(inputs.altered_mentation, false);
+      const rr = parseNumber(inputs.respiratory_rate, 0);
+      const sbp = parseNumber(inputs.systolic_bp, 0);
+      b("Altered Mentation", mentation ? "Yes" : "No", mentation ? 1 : 0);
+      b("Respiratory Rate", rr, rr >= 22 ? 1 : 0);
+      b("Systolic BP", `${sbp} mmHg`, sbp <= 100 ? 1 : 0);
+      return breakdown;
+    }
+    case "cha2ds2vasc": {
+      const age = parseNumber(inputs.age, 0);
+      b("CHF", parseBoolean(inputs.chf, false) ? "Yes" : "No", parseBoolean(inputs.chf, false) ? 1 : 0);
+      b("Hypertension", parseBoolean(inputs.hypertension, false) ? "Yes" : "No", parseBoolean(inputs.hypertension, false) ? 1 : 0);
+      b("Age", `${age} years`, age >= 75 ? 2 : age >= 65 ? 1 : 0);
+      b("Diabetes", parseBoolean(inputs.diabetes, false) ? "Yes" : "No", parseBoolean(inputs.diabetes, false) ? 1 : 0);
+      b("Stroke/TIA", parseBoolean(inputs.stroke, false) ? "Yes" : "No", parseBoolean(inputs.stroke, false) ? 2 : 0);
+      b("Vascular Disease", parseBoolean(inputs.vascular, false) ? "Yes" : "No", parseBoolean(inputs.vascular, false) ? 1 : 0);
+      b("Female Sex", parseBoolean(inputs.sex, false) ? "Yes" : "No", parseBoolean(inputs.sex, false) ? 1 : 0);
+      return breakdown;
+    }
+    case "hasbled": {
+      b("Hypertension", parseBoolean(inputs.hypertension, false) ? "Yes" : "No", parseBoolean(inputs.hypertension, false) ? 1 : 0);
+      b("Renal Disease", parseBoolean(inputs.renal_disease, false) ? "Yes" : "No", parseBoolean(inputs.renal_disease, false) ? 1 : 0);
+      b("Liver Disease", parseBoolean(inputs.liver_disease, false) ? "Yes" : "No", parseBoolean(inputs.liver_disease, false) ? 1 : 0);
+      b("Stroke History", parseBoolean(inputs.stroke, false) ? "Yes" : "No", parseBoolean(inputs.stroke, false) ? 1 : 0);
+      b("Prior Bleeding", parseBoolean(inputs.bleeding, false) ? "Yes" : "No", parseBoolean(inputs.bleeding, false) ? 1 : 0);
+      b("Labile INR", parseBoolean(inputs.labile_inr, false) ? "Yes" : "No", parseBoolean(inputs.labile_inr, false) ? 1 : 0);
+      b("Age >65", parseBoolean(inputs.elderly, false) ? "Yes" : "No", parseBoolean(inputs.elderly, false) ? 1 : 0);
+      b("Medications", parseBoolean(inputs.medication_usage, false) ? "Yes" : "No", parseBoolean(inputs.medication_usage, false) ? 1 : 0);
+      b("Alcohol", parseBoolean(inputs.alcohol_use, false) ? "Yes" : "No", parseBoolean(inputs.alcohol_use, false) ? 1 : 0);
+      return breakdown;
+    }
+    case "heart": {
+      const historyMap: Record<string, number> = { "Non-anginal chest pain": 0, "Atypical angina": 1, "Typical angina": 2 };
+      const ecgMap: Record<string, number> = { Normal: 0, "Nonspecific changes": 1, "Ischemic changes": 2 };
+      const rfMap: Record<string, number> = { "No known risk factors": 0, "1-2 risk factors": 1, "3+ risk factors or history of CAD": 2 };
+      const tropMap: Record<string, number> = { "≤0.01 ng/mL": 0, "0.01-0.03 ng/mL": 1, ">0.03 ng/mL": 2 };
+      const age = parseNumber(inputs.age, 50);
+      b("History", String(inputs.history), typeof inputs.history === "string" ? historyMap[inputs.history] ?? 0 : parseNumber(inputs.history, 0));
+      b("ECG", String(inputs.ecg), typeof inputs.ecg === "string" ? ecgMap[inputs.ecg] ?? 0 : parseNumber(inputs.ecg, 0));
+      b("Age", `${age} years`, age < 45 ? 0 : age < 65 ? 1 : 2);
+      b("Risk Factors", String(inputs.risk_factors), typeof inputs.risk_factors === "string" ? rfMap[inputs.risk_factors] ?? 0 : parseNumber(inputs.risk_factors, 0));
+      b("Troponin", String(inputs.troponin), typeof inputs.troponin === "string" ? tropMap[inputs.troponin] ?? 0 : parseNumber(inputs.troponin, 0));
+      return breakdown;
+    }
+    case "curb65": {
+      b("Confusion", parseBoolean(inputs.confusion, false) ? "Yes" : "No", parseBoolean(inputs.confusion, false) ? 1 : 0);
+      b("Urea >7 mmol/L", parseBoolean(inputs.urea, false) ? "Yes" : "No", parseBoolean(inputs.urea, false) ? 1 : 0);
+      b("RR ≥30", parseBoolean(inputs.rr, false) ? "Yes" : "No", parseBoolean(inputs.rr, false) ? 1 : 0);
+      b("Low BP", parseBoolean(inputs.bp, false) ? "Yes" : "No", parseBoolean(inputs.bp, false) ? 1 : 0);
+      b("Age ≥65", parseBoolean(inputs.age, false) ? "Yes" : "No", parseBoolean(inputs.age, false) ? 1 : 0);
+      return breakdown;
+    }
+    case "rcri": {
+      b("High-Risk Surgery", parseBoolean(inputs.high_risk_surgery, false) ? "Yes" : "No", parseBoolean(inputs.high_risk_surgery, false) ? 1 : 0);
+      b("Ischemic Heart Disease", parseBoolean(inputs.ischemic_heart_disease, false) ? "Yes" : "No", parseBoolean(inputs.ischemic_heart_disease, false) ? 1 : 0);
+      b("Heart Failure", parseBoolean(inputs.heart_failure, false) ? "Yes" : "No", parseBoolean(inputs.heart_failure, false) ? 1 : 0);
+      b("Cerebrovascular Disease", parseBoolean(inputs.cerebrovascular_disease, false) ? "Yes" : "No", parseBoolean(inputs.cerebrovascular_disease, false) ? 1 : 0);
+      b("Diabetes on Insulin", parseBoolean(inputs.diabetes_insulin, false) ? "Yes" : "No", parseBoolean(inputs.diabetes_insulin, false) ? 1 : 0);
+      b("Renal Insufficiency", parseBoolean(inputs.renal_insufficiency, false) ? "Yes" : "No", parseBoolean(inputs.renal_insufficiency, false) ? 1 : 0);
+      return breakdown;
+    }
+    default:
+      // For calculators without explicit breakdown, generate from input definitions
+      if (calculator.inputs) {
+        for (const input of calculator.inputs) {
+          const val = inputs[input.id];
+          if (val !== undefined && val !== null) {
+            b(input.label, typeof val === "boolean" ? (val ? "Yes" : "No") : String(val), 0);
+          }
+        }
+        if (breakdown.length > 0) return breakdown;
+      }
+      return undefined;
+  }
+}
+
 export function executeCalculator(
   calculator: Calculator,
   inputs: Record<string, any>
 ): CalculationResult | null {
   try {
+    let result: CalculationResult | null = null;
+
     switch (calculator.id) {
       // ===================================================================
       // qSOFA - UI inputs match engine params
       // ===================================================================
       case "qsofa":
-        return calculateQSOFA({
+        result = calculateQSOFA({
           altered_mentation: parseBoolean(inputs.altered_mentation, false),
           respiratory_rate: parseNumber(inputs.respiratory_rate, 0),
           systolic_bp: parseNumber(inputs.systolic_bp, 0),
         });
+        break;
 
       // ===================================================================
       // SOFA - UI has select dropdowns, engine expects numbers
@@ -93,7 +188,7 @@ export function executeCalculator(
           "Dopamine >15 or norepinephrine/epinephrine >0.1": 4,
         };
 
-        return calculateSOFA({
+        result = calculateSOFA({
           pao2_fio2: respirationMap[inputs.respiration] ?? 400,
           platelets: parseNumber(inputs.coagulation, 150),
           bilirubin: parseNumber(inputs.liver, 1),
@@ -101,6 +196,7 @@ export function executeCalculator(
           gcs: parseNumber(inputs.cns, 15),
           creatinine: parseNumber(inputs.renal, 1),
         });
+        break;
       }
 
       // ===================================================================
@@ -109,7 +205,7 @@ export function executeCalculator(
       //     creatinine, hematocrit, wbc, gcs
       // ===================================================================
       case "apache2":
-        return calculateAPACHE({
+        result = calculateAPACHE({
           temperature: parseNumber(inputs.temperature, 37),
           heart_rate: parseNumber(inputs.hr, 80),
           respiratory_rate_apache: parseNumber(inputs.rr, 16),
@@ -122,12 +218,14 @@ export function executeCalculator(
           wbc: parseNumber(inputs.wbc, 10),
           gcs: parseNumber(inputs.gcs, 15),
         });
+        break;
 
       // ===================================================================
       // NIHSS - passes entire inputs object (select options → index scores)
       // ===================================================================
       case "nihss":
-        return calculateNIHSS(inputs);
+        result = calculateNIHSS(inputs);
+        break;
 
       // ===================================================================
       // CHA2DS2-VASc - UI has age (number) and sex (boolean "Female Sex")
@@ -135,7 +233,7 @@ export function executeCalculator(
       // ===================================================================
       case "cha2ds2vasc": {
         const ageNum = parseNumber(inputs.age, 0);
-        return calculateCHA2DS2VASc({
+        result = calculateCHA2DS2VASc({
           chf: parseBoolean(inputs.chf, false),
           hypertension: parseBoolean(inputs.hypertension, false),
           age_75: ageNum >= 75,
@@ -145,13 +243,14 @@ export function executeCalculator(
           age_65_74: ageNum >= 65 && ageNum < 75,
           female: parseBoolean(inputs.sex, false),
         });
+        break;
       }
 
       // ===================================================================
       // HAS-BLED - UI has individual boolean inputs matching engine params
       // ===================================================================
       case "hasbled":
-        return calculateHASBLED({
+        result = calculateHASBLED({
           hypertension: parseBoolean(inputs.hypertension, false),
           renal_disease: parseBoolean(inputs.renal_disease, false),
           liver_disease: parseBoolean(inputs.liver_disease, false),
@@ -162,6 +261,7 @@ export function executeCalculator(
           medication_usage: parseBoolean(inputs.medication_usage, false),
           alcohol_use: parseBoolean(inputs.alcohol_use, false),
         });
+        break;
 
       // ===================================================================
       // Glasgow Coma Scale - UI has select dropdowns with text
@@ -203,11 +303,12 @@ export function executeCalculator(
             ? motorResponseMap[inputs.motor_response] || parseNumber(inputs.motor_response, 6)
             : parseNumber(inputs.motor_response, 6);
 
-        return calculateGCS({
+        result = calculateGCS({
           eye_opening: eyeOpening,
           verbal_response: verbalResponse,
           motor_response: motorResponse,
         });
+        break;
       }
 
       // ===================================================================
@@ -236,7 +337,7 @@ export function executeCalculator(
           ">0.03 ng/mL": 2,
         };
 
-        return calculateHEART({
+        result = calculateHEART({
           history:
             typeof inputs.history === "string"
               ? historyMap[inputs.history] ?? 0
@@ -255,19 +356,21 @@ export function executeCalculator(
               ? troponinMap[inputs.troponin] ?? 0
               : parseNumber(inputs.troponin, 0),
         });
+        break;
       }
 
       // ===================================================================
       // CURB-65 - Map UI field IDs (rr, bp, age) to engine param names
       // ===================================================================
       case "curb65":
-        return calculateCURB65({
+        result = calculateCURB65({
           confusion: inputs.confusion,
           urea: inputs.urea,
           respiratory_rate_curb: inputs.rr,
           blood_pressure_curb: inputs.bp,
           age_65_curb: inputs.age,
         });
+        break;
 
       // ===================================================================
       // Creatinine Clearance (Cockcroft-Gault) - Map UI field IDs
@@ -275,99 +378,118 @@ export function executeCalculator(
       // Engine: age_crcl, weight_crcl, creatinine_crcl, gender_crcl
       // ===================================================================
       case "creatinine_clearance":
-        return calculateCrCl({
+        result = calculateCrCl({
           age_crcl: parseNumber(inputs.age, 50),
           weight_crcl: parseNumber(inputs.weight, 70),
           creatinine_crcl: parseNumber(inputs.creatinine, 1),
           gender_crcl: inputs.sex === "Female" ? "female" : "male",
         });
+        break;
 
       // ===================================================================
       // MELD - Map UI field IDs to engine param names
       // ===================================================================
       case "meld":
-        return calculateMELD({
+        result = calculateMELD({
           inr: parseNumber(inputs.inr, 1),
           bilirubin_meld: parseNumber(inputs.bilirubin, 1),
           creatinine_meld: parseNumber(inputs.creatinine, 1),
           dialysis: parseBoolean(inputs.dialysis, false),
         });
+        break;
 
       // ===================================================================
       // ASA Physical Status - UI inputs match engine params
       // ===================================================================
       case "asa_physical_status":
-        return calculateASA({
+        result = calculateASA({
           asa_class: inputs.asa_class || "I - Healthy patient",
           emergency: parseBoolean(inputs.emergency, false),
         });
+        break;
 
       // ===================================================================
       // RCRI - passes entire inputs object
       // ===================================================================
       case "rcri":
-        return calculateRCRI(inputs);
+        result = calculateRCRI(inputs);
+        break;
 
       // ===================================================================
       // Caprini VTE - passes entire inputs object
       // ===================================================================
       case "caprini_vte":
-        return calculateCaprini(inputs);
+        result = calculateCaprini(inputs);
+        break;
 
       // ===================================================================
       // PESI - passes entire inputs object
       // ===================================================================
       case "pesi":
-        return calculatePESI(inputs);
+        result = calculatePESI(inputs);
+        break;
 
       // ===================================================================
       // SMART-COP - passes entire inputs object
       // ===================================================================
       case "smart_cop":
-        return calculateSMARTCOP(inputs);
+        result = calculateSMARTCOP(inputs);
+        break;
 
       // ===================================================================
       // Child-Pugh - passes entire inputs object
       // ===================================================================
       case "child_pugh":
-        return calculateChildPugh(inputs);
+        result = calculateChildPugh(inputs);
+        break;
 
       // ===================================================================
       // FIB-4 - UI inputs match engine params
       // ===================================================================
       case "fib4":
-        return calculateFIB4({
+        result = calculateFIB4({
           age: parseNumber(inputs.age, 50),
           ast: parseNumber(inputs.ast, 30),
           alt: parseNumber(inputs.alt, 30),
           platelets: parseNumber(inputs.platelets, 200),
         });
+        break;
 
       // ===================================================================
       // MELD-Na - UI inputs match engine params
       // ===================================================================
       case "meld_na":
-        return calculateMELDNa({
+        result = calculateMELDNa({
           creatinine: parseNumber(inputs.creatinine, 1.0),
           bilirubin: parseNumber(inputs.bilirubin, 1.0),
           inr: parseNumber(inputs.inr, 1.0),
           sodium: parseNumber(inputs.sodium, 140),
           dialysis: parseBoolean(inputs.dialysis, false),
         });
+        break;
 
       // ===================================================================
       // APRI - UI inputs match engine params
       // ===================================================================
       case "apri":
-        return calculateAPRI({
+        result = calculateAPRI({
           ast: parseNumber(inputs.ast, 30),
           ast_upper_limit: parseNumber(inputs.ast_upper_limit, 40),
           platelets: parseNumber(inputs.platelets, 200),
         });
+        break;
 
       default:
-        return calculateGenericScore(inputs);
+        result = calculateGenericScore(inputs);
+        break;
     }
+
+    // Attach score breakdown for transparency
+    if (result && !result.scoreBreakdown) {
+      result.scoreBreakdown = buildBreakdown(calculator.id, inputs, calculator);
+    }
+
+    return result;
   } catch (error) {
     console.error(`Error calculating ${calculator.id}:`, error);
     return null;

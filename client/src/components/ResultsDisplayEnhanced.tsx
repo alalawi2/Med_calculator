@@ -8,13 +8,21 @@ import { jsPDF } from "jspdf";
 import { saveCalculation } from "@/lib/history-storage";
 import type { CalculationResult as EngineCalculationResult } from "@/lib/calculator-engine";
 
+interface ScoreBreakdownItem {
+  label: string;
+  value: string | number | boolean;
+  points: number;
+}
+
 interface CalculationResult {
   score: number;
+  maxScore?: number;
   riskLevel: "low" | "moderate" | "high" | "critical";
   riskPercentage: number;
   recommendations: string[];
   managementPathway: any;
   interpretation: string;
+  scoreBreakdown?: ScoreBreakdownItem[];
 }
 
 interface ResultsDisplayEnhancedProps {
@@ -615,6 +623,44 @@ Disclaimer: This is for clinical decision support only. Always verify with curre
               </p>
             </div>
           </div>
+
+          {/* Score Breakdown */}
+          {result.scoreBreakdown && result.scoreBreakdown.length > 0 && (
+            <div className="p-4 bg-white rounded-lg border border-slate-200">
+              <p className="text-xs font-semibold text-slate-600 uppercase mb-3">Score Breakdown</p>
+              <div className="space-y-1.5" role="table" aria-label="Score breakdown by component">
+                {result.scoreBreakdown.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between py-1.5 px-2 rounded hover:bg-slate-50"
+                    role="row"
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="text-sm text-slate-700 truncate">{item.label}</span>
+                      <span className="text-xs text-slate-400 truncate">
+                        {typeof item.value === "boolean" ? (item.value ? "Yes" : "No") : item.value}
+                      </span>
+                    </div>
+                    <span
+                      className={`text-sm font-semibold px-2 py-0.5 rounded ${
+                        item.points > 0
+                          ? "text-orange-700 bg-orange-50"
+                          : "text-green-700 bg-green-50"
+                      }`}
+                    >
+                      {item.points > 0 ? `+${item.points}` : "0"}
+                    </span>
+                  </div>
+                ))}
+                <div className="flex items-center justify-between pt-2 mt-1 border-t border-slate-200 px-2">
+                  <span className="text-sm font-semibold text-slate-700">Total</span>
+                  <span className={`text-sm font-bold ${colors.text}`}>
+                    {result.score}{result.maxScore ? ` / ${result.maxScore}` : ""}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Interpretation */}
           <div className="p-4 bg-white rounded-lg border border-slate-200">

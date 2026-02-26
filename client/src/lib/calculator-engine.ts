@@ -3,6 +3,12 @@
  * Implements evidence-based scoring algorithms with risk stratification
  */
 
+export interface ScoreBreakdownItem {
+  label: string;
+  value: string | number | boolean;
+  points: number;
+}
+
 export interface CalculationResult {
   score: number;
   maxScore: number;
@@ -11,6 +17,7 @@ export interface CalculationResult {
   interpretation: string;
   recommendations: string[];
   managementPathway: ManagementStep[];
+  scoreBreakdown?: ScoreBreakdownItem[];
 }
 
 export interface ManagementStep {
