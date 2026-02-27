@@ -204,10 +204,10 @@ export function calculateAPACHE(inputs: {
   // 2. Mean Arterial Pressure (mmHg) - use MAP if provided, fall back to systolic_apache
   const mapValue = inputs.map ?? inputs.systolic_apache;
   if (mapValue !== undefined) {
-    // ≥160 or ≤49: +4, 130-159 or 50-69: +3, 110-129: +2, 70-109: 0
+    // Knaus 1985: ≥160 or ≤49: +4, 130-159: +3, 110-129 or 50-69: +2, 70-109: 0
     if (mapValue >= 160 || mapValue <= 49) score += 4;
-    else if (mapValue >= 130 || (mapValue >= 50 && mapValue <= 69)) score += 3;
-    else if (mapValue >= 110) score += 2;
+    else if (mapValue >= 130) score += 3;
+    else if (mapValue >= 110 || (mapValue >= 50 && mapValue <= 69)) score += 2;
   }
 
   // 3. Heart Rate (bpm)
@@ -227,11 +227,12 @@ export function calculateAPACHE(inputs: {
 
   // 5. Arterial pH (if provided)
   if (inputs.ph !== undefined) {
-    // ≥7.7 or <7.15: +4, 7.6-7.69 or 7.15-7.24: +3, 7.5-7.59 or 7.25-7.32: +2, 7.33-7.49: 0
+    // Knaus 1985: ≥7.7 or <7.15: +4, 7.6-7.69 or 7.15-7.24: +3, 7.5-7.59: +1, 7.33-7.49: 0, 7.25-7.32: +2
     if (inputs.ph >= 7.7 || inputs.ph < 7.15) score += 4;
     else if (inputs.ph >= 7.6 || inputs.ph < 7.25) score += 3;
-    else if (inputs.ph >= 7.5 || inputs.ph < 7.33) score += 2;
-    else if (inputs.ph >= 7.33) score += 0; // normal range 7.33-7.49
+    else if (inputs.ph < 7.33) score += 2;
+    else if (inputs.ph >= 7.5) score += 1;
+    // 7.33-7.49: 0 (normal, no points added)
   }
 
   // 6. Sodium (mEq/L) (if provided)
@@ -245,11 +246,11 @@ export function calculateAPACHE(inputs: {
 
   // 7. Potassium (mEq/L) (if provided)
   if (inputs.potassium !== undefined) {
-    // ≥7 or <2.5: +4, 6-6.9: +3, 5.5-5.9 or 2.5-2.9: +2, 3.5-5.4: 0, 3-3.4: +1
+    // Knaus 1985: ≥7 or <2.5: +4, 6-6.9: +3, 2.5-2.9: +2, 5.5-5.9 or 3-3.4: +1, 3.5-5.4: 0
     if (inputs.potassium >= 7 || inputs.potassium < 2.5) score += 4;
     else if (inputs.potassium >= 6) score += 3;
-    else if (inputs.potassium >= 5.5 || inputs.potassium < 3) score += 2;
-    else if (inputs.potassium < 3.5) score += 1;
+    else if (inputs.potassium < 3) score += 2;
+    else if (inputs.potassium >= 5.5 || inputs.potassium < 3.5) score += 1;
   }
 
   // 8. Creatinine (mg/dL) (if provided)
