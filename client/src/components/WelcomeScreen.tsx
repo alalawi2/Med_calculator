@@ -61,6 +61,7 @@ export default function WelcomeScreen({ calculators, onSelectCalculator }: Welco
                 <Button
                   variant="outline"
                   className="border-white text-white hover:bg-blue-700 font-semibold px-6 py-2 h-auto"
+                  onClick={() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" })}
                 >
                   Learn More
                 </Button>
@@ -135,7 +136,7 @@ export default function WelcomeScreen({ calculators, onSelectCalculator }: Welco
       </div>
 
       {/* Getting Started Guide - Full Width */}
-      <div className="bg-gradient-to-b from-gray-50 to-white py-16 w-full px-6 md:px-12 lg:px-16">
+      <div id="how-it-works" className="bg-gradient-to-b from-gray-50 to-white py-16 w-full px-6 md:px-12 lg:px-16">
         <div className="mb-8">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">How It Works</h2>
           <p className="text-gray-600">Three simple steps to clinical insights</p>

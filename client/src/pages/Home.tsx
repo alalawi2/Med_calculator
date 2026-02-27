@@ -80,16 +80,10 @@ export default function Home() {
   const selectedCalculator = selectedCalculatorId ? calculators.find((c) => c.id === selectedCalculatorId) : null;
 
   const handleCalculate = (inputs: Record<string, any>) => {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/a211a2ec-f066-4fc4-95bc-89cfb5ea6b15',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Home.tsx:82',message:'handleCalculate entry',data:{calculatorId:selectedCalculator?.id,calculatorName:selectedCalculator?.name,inputs,inputKeys:Object.keys(inputs),inputValues:Object.values(inputs)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A,B,C,D,E'})}).catch(()=>{});
-    // #endregion
     setIsLoading(true);
     try {
       if (selectedCalculator) {
         const result = executeCalculator(selectedCalculator, inputs);
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/a211a2ec-f066-4fc4-95bc-89cfb5ea6b15',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Home.tsx:86',message:'handleCalculate result',data:{result,score:result?.score,maxScore:result?.maxScore,riskLevel:result?.riskLevel},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A,B,C,D,E'})}).catch(()=>{});
-        // #endregion
         setCalculationResult(result);
         setLastInputs(inputs);
       }
@@ -184,7 +178,7 @@ export default function Home() {
         {/* Mobile Sidebar */}
         {sidebarOpen && isMobile && (
           <>
-            <aside className="fixed inset-y-0 left-0 z-40 w-64 bg-gray-50 border-r border-gray-200 overflow-y-auto pt-14">
+            <aside className="fixed top-0 bottom-0 left-0 z-40 w-72 bg-white border-r border-gray-200 overflow-y-auto pt-[56px] shadow-xl">
             <Sidebar
               selectedCalculatorId={selectedCalculatorId}
               onSelectCalculator={handleSelectCalculator}
@@ -193,7 +187,7 @@ export default function Home() {
               recentlyUsed={recentlyUsed}
             />
             </aside>
-            <div className="fixed inset-0 z-30 bg-black/50" onClick={() => setSidebarOpen(false)} />
+            <div className="fixed inset-0 z-30 bg-black/40 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
           </>
         )}
       
@@ -226,14 +220,9 @@ export default function Home() {
         ) : selectedCalculator ? (
           <div className="p-4 md:p-6">
             <div className="space-y-6">
-              <div>
-                <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">{selectedCalculator.name}</h2>
-                <p className="text-sm md:text-base text-gray-600">{selectedCalculator.description}</p>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                 {/* Form */}
-                <div className="lg:col-span-1 bg-white rounded-lg border border-gray-200 p-3 md:p-6 shadow-sm">
+                <div className="bg-white rounded-lg border border-gray-200 p-3 md:p-6 shadow-sm">
                   <CalculatorFormEnhanced
                     calculatorName={selectedCalculator.name}
                     calculatorDescription={selectedCalculator.description}
@@ -245,25 +234,25 @@ export default function Home() {
 
                 {/* Results */}
                 {calculationResult && (
-                  <div className="lg:col-span-2 bg-white rounded-lg border border-gray-200 p-3 md:p-6 shadow-sm lg:sticky lg:top-24">
+                  <div className="bg-white rounded-lg border border-gray-200 p-3 md:p-6 shadow-sm lg:sticky lg:top-24 lg:self-start">
                     <ResultsDisplayEnhanced
                       result={calculationResult}
                       calculatorName={selectedCalculator.name}
                       calculatorId={selectedCalculator.id}
                       inputs={lastInputs}
                     />
-                    <div className="flex flex-col gap-2 mt-4">
+                    <div className="flex flex-col sm:flex-row gap-2 mt-4">
                       <Button
                         onClick={() => setShowFeedback(true)}
                         variant="outline"
-                        className="w-full"
+                        className="flex-1"
                       >
                         Provide Feedback
                       </Button>
                       <Button
                         onClick={() => setShowMedications(true)}
                         variant="outline"
-                        className="w-full"
+                        className="flex-1"
                       >
                         View Medication Dosing
                       </Button>
